@@ -1,0 +1,3556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pipeline Extraction – Supervisé & Non supervisé</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="/static/style.css" rel="stylesheet" />
+  <link href="/static/style.css" rel="stylesheet" />
+  <style>
+    .lang-switcher{position:fixed;top:10px;right:10px;display:flex;gap:8px;z-index: 214748364828918093090}
+    .lang-toggle{
+      width:40px;height:40px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      border:2px solid rgba(255,255,255,.3);
+      background:var(--lang-bg,transparent);
+      cursor:pointer;font-size:18px;line-height:1
+    }
+    .lang-menu{display:flex;gap:8px;padding:6px;border-radius:999px;background:rgba(0,0,0,.08);backdrop-filter:saturate(120%) blur(6px)}
+    .lang-btn{
+      width:32px;height:32px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      border:2px solid rgba(255,255,255,.3);
+      background:var(--lang-bg,transparent);
+      cursor:pointer;font-size:18px;line-height:1
+    }
+    .lang-btn:hover{transform:scale(1.05)}
+    .lang-btn.active{box-shadow:0 0 0 2px rgba(255,255,255,.6) inset}
+    
+  </style>
+</head>
+<body>
+
+  
+  <!-- Sélecteur de langue (rond unique + menu) -->
+<div class="lang-switcher" role="navigation" aria-label="Language menu">
+  <button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false" title="Language">
+    <span id="langFlag">🇫🇷</span>
+  </button>
+  <div class="lang-menu" id="langMenu" role="menu" hidden>
+    <button class="lang-btn" data-lang="fr" role="menuitem" aria-label="Français">🇫🇷</button>
+    <button class="lang-btn" data-lang="en" role="menuitem" aria-label="English">🇬🇧</button>
+    <button class="lang-btn" data-lang="es" role="menuitem" aria-label="Español">🇪🇸</button>
+    <button class="lang-btn" data-lang="it" role="menuitem" aria-label="Italiano">🇮🇹</button>
+    <button class="lang-btn" data-lang="de" role="menuitem" aria-label="Deutsch">🇩🇪</button>
+  </div>
+</div>
+<!-- Fond de swipe -->
+<div id="swipeBg" class="swipe-bg" aria-hidden="true"></div>
+
+<!-- PAGE D'ACCUEIL 0 (landing OpticAIre) -->
+<div id="landingIntro" class="home-intro landing-intro" role="dialog" aria-modal="true">
+  <!-- Partenaires (rail vertical) -->
+<aside class="partners-rail" aria-label="Partenaires">
+  <a class="img-link" href="https://www.unicancer.fr/fr/" target="_blank" rel="noopener" title="Unicancer">
+    <img src="/static/images/image_1.png" alt="Unicancer" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.oeci.eu" target="_blank" rel="noopener" title="OECI">
+    <img src="/static/images/image_2.png" alt="OECI" loading="lazy">
+  </a>
+  <a class="img-link" href="https://mistral.ai" target="_blank" rel="noopener" title="Mistral AI">
+    <img src="/static/images/image_3.png" alt="Mistral AI" loading="lazy">
+  </a>
+  <a class="img-link" href="https://loamics.com" target="_blank" rel="noopener" title="Loamics">
+    <img src="/static/images/image_4.png" alt="Loamics" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.istitutotumori.mi.it/come-contattarci" target="_blank" rel="noopener" title="INT Milano">
+    <img src="/static/images/image_7.png" alt="INT Milano" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.semeia.io" target="_blank" rel="noopener" title="semeia">
+    <img src="/static/images/image_9.png" alt="semeia" loading="lazy">
+  </a>  
+  <a class="img-link" href="https://www.edhec.edu/fr" target="_blank" rel="noopener" title="EDHEC">
+    <img src="/static/images/image_10.png" alt="EDHEC" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.unl.pt/en/" target="_blank" rel="noopener" title="NOVAo">
+    <img src="/static/images/image_11.png" alt="NOVA" loading="lazy">
+  </a>
+</aside>
+
+  <header class="home-head">
+
+      <h1 class="home-title landing-title">GenAI4EU</h1>
+        <!-- 👉 Ajout Europe + texte -->
+        <div class="eu-banner">
+          <img
+            src="/static/images/Europe.png"
+            alt="GenAI4EU / Europe"
+            class="eu-logo"
+            decoding="async"
+          />
+          <p class="eu-caption" data-i18n="landing.eu_text" data-i18n-html></p>
+            Cet outil se place dans le cadre de l'appel à projet GenAI4EU.
+          </p>
+        </div>
+      </header>
+    <header class="home-head">
+      <h1 class="home-title landing-title">OpticAIre</h1>
+      <img
+        src="/static/images/opticaire.png"
+        alt="OptiCAIre"
+        class="landing-logo"
+        decoding="async"
+      />
+      <p class="home-lead" data-i18n="landing.lead"></p>
+      <!-- Illustration / schéma sous le lead -->
+<div class="landing-schema">
+  <img
+    src="/static/images/schema.png"
+    alt="Schéma OptiCAIre"
+    class="schema-img"
+    loading="lazy"
+    decoding="async"
+  />
+</div>
+    </header>
+
+    <button id="btnDiscover" class="button cta" data-i18n="landing.discover">
+      Découvrir l’outil
+    </button>
+
+
+
+</div>
+
+
+<!-- PAGE D'ACCUEIL (overlay beige) -->
+<div id="homeIntro" class="home-intro" aria-modal="true" role="dialog" hidden>
+  <div class="home-wrap">
+    <header class="home-head">
+      <h1 class="home-title" data-i18n="home.title">Nettoyage Code — Extraction & Analyse</h1>
+      <p class="home-lead" data-i18n="home.lead"></p>
+      <p class="home-text" data-i18n="home.body" data-i18n-html>
+        <b>Comment ça marche :</b> 1) Extraction du contenu → JSON, 2) Clustering + nommage,
+        3) Choix de champs, 4) Extraction des champs, 5) Export tableur.
+      </p>
+    </header>
+
+<!-- Bandeau d'images scrollable -->
+<div class="home-gallery footer-gallery">
+  <a class="img-link" href="https://www.unicancer.fr/fr/" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 1">
+    <img src="/static/images/image_1.png" alt="Image 1" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.oeci.eu" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 2">
+    <img src="/static/images/image_2.png" alt="Image 2" loading="lazy">
+  </a>
+  <a class="img-link" href="https://mistral.ai" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 3">
+    <img src="/static/images/image_3.png" alt="Image 3" loading="lazy">
+  </a>
+  <a class="img-link" href="https://loamics.com" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 4">
+    <img src="/static/images/image_4.png" alt="Image 4" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.istitutotumori.mi.it/come-contattarci" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 7">
+    <img src="/static/images/image_7.png" alt="Image 7" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.semeia.io" target="_blank" rel="noopener" title="semeia">
+    <img src="/static/images/image_9.png" alt="semeia" loading="lazy">
+  </a>  
+  <a class="img-link" href="https://www.edhec.edu/fr" target="_blank" rel="noopener" title="EDHEC">
+    <img src="/static/images/image_10.png" alt="EDHEC" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.unl.pt/en/" target="_blank" rel="noopener" title="NOVAo">
+    <img src="/static/images/image_11.png" alt="NOVA" loading="lazy">
+  </a>
+</div>
+
+    <!-- Choix de mode (réutilise .mode-grid / .mode-card) -->
+    <div class="home-modes mode-grid">
+      <!-- Médical -->
+      <button class="mode-card mode-medical" data-mode="medical">
+        <span class="mode-title" data-i18n="mode.medical.title">Mode médical</span>
+      </button>
+    
+      <!-- Dashboard -->
+      <button class="mode-card mode-medical" id="btnDashboard"
+              data-link="/dashboard" aria-label="Mode Dashboard">
+        <span class="mode-title">
+           <span data-i18n="mode.dashboard.title">Mode Dashboard</span>
+        </span>
+      </button>
+    
+      <!-- Non supervisé -->
+      <button class="mode-card mode-unsup" data-mode="unsup">
+        <span class="mode-title" data-i18n="mode.unsup.title">Mode non supervisé</span>
+      </button>
+    
+      <!-- Dev -->
+      <button class="mode-card mode-dev" data-mode="dev">
+        <span class="mode-title" data-i18n="mode.dev.title">Mode dev</span>
+      </button>
+
+            <!-- Mode personnalisé -->
+            <button class="mode-card mode-custom" id="btnCustom"
+            data-link="/custom" aria-label="Mode personnalisé">
+      <span class="mode-title" data-i18n="mode.custom.title">Mode personnalisé</span>
+
+    </button>
+<!-- Review : donne 'mode-review' + data-link -->
+<button class="mode-card mode-review" data-link="/review" aria-label="Mode review">
+  <span class="mode-title" data-i18n="mode.review.title">Mode review</span>
+</button>
+
+
+
+
+      
+    </div>
+  </div>
+</div>
+
+
+<!-- Sélecteur de mode (overlay d'accueil) -->
+<div id="modePicker" class="mode-picker" aria-modal="true" role="dialog">
+  <div class="mode-grid">
+    <button class="mode-card mode-medical" data-mode="medical">
+      <span class="mode-title" data-i18n="mode.medical.title">Mode médical</span>
+    </button>
+    <button class="mode-card mode-unsup" data-mode="unsup">
+      <span class="mode-title" data-i18n="mode.unsup.title">Mode non supervisé</span>
+    </button>
+    <button class="mode-card mode-dev" data-mode="dev">
+      <span class="mode-title" data-i18n="mode.dev.title">Mode dev</span>
+    </button>
+    <button class="button primary" onclick="location.href='/custom'">
+      Mode personnalisé
+    </button>
+    <p class="muted">Crée/importe ton catalogue et lance la pipeline avec.</p>
+  </div>
+</div>
+
+<!-- Bouton flottant pour changer de mode -->
+<button id="modeSwitcher" class="mode-switcher"
+        data-i18n="mode.switcher" data-i18n-attr="title"
+        title="Changer de mode" style="display:none;">
+        <span data-i18n="mode.switcher">Changer de mode</span></button>
+        <div class="page-center"></div>
+        <h1 class="mode-title landing-title">Patient Pathway Analyser</h1>
+      </div>
+<div class="layout">
+
+
+  <!-- COLONNE GAUCHE : SOURCES -->
+  <section class="left">
+    <h2 data-i18n="left.sources.title">Source des documents</h2>
+
+    <!-- Sélection / Drag & drop dossier -->
+    <div class="card">
+      <h3 data-i18n="left.drop.title">Glisser-déposer / Sélectionner un dossier</h3>
+      <div id="dropZone" class="dropzone" data-i18n="left.drop.cta" aria-live="polite">
+        Glisser un dossier ici ou cliquer pour sélectionner
+      </div>
+      <input id="folderInput" type="file" webkitdirectory directory multiple hidden />
+      <p class="hint" data-i18n="left.drop.hint">
+        Le dossier sera téléversé côté serveur dans un espace de travail.
+        Formats acceptés : pdf, doc, png, txt, docx
+      </p>
+    </div>
+
+    <div class="status">
+      <div><span data-i18n="left.status.job">Job ID :</span> <code id="jobId">—</code></div>
+      <div><span data-i18n="left.status.src">Source :</span> <code id="srcPath">—</code></div>
+    </div>
+
+    <!-- FRISE CHRONO -->
+    <div class="card">
+      <h3 data-i18n="left.timeline.title">Frise chronologique</h3>
+      <div id="timeline" class="timeline"></div>
+    </div>
+
+    <!-- Tooltip frise -->
+    <div id="tl_tip" class="tl-tooltip" role="tooltip" aria-hidden="true"></div>
+
+<!-- FICHE TUMEUR (sous la frise) -->
+<div class="card fiche-card" id="ficheCard" style="display:none;">
+  <h3 data-i18n="fiche.title">Fiche tumeur (PDF)</h3>
+
+  <div class="fiche-actions">
+    <a id="dlFiche"
+       class="button secondary"
+       href="#"
+       target="_blank"
+       rel="noopener"
+       aria-disabled="true"
+       aria-label="Télécharger le PDF"
+       data-i18n="fiche.download"
+       data-i18n-attr="aria-label">
+      <span data-i18n="fiche.download">Télécharger le PDF</span>
+    </a>
+
+    <button id="btnRegenFiche"
+            class="button"
+            aria-label="Régénérer"
+            data-i18n="fiche.regen"
+            data-i18n-attr="aria-label">
+      <span data-i18n="fiche.regen">Régénérer</span>
+    </button>
+
+    <span id="ficheInfo" class="hint" data-i18n="fiche.info.placeholder"></span>
+  </div>
+
+  <!-- ÉTAT VIDE -->
+  <div id="ficheEmpty" class="fiche-empty" role="status">
+    <p data-i18n="fiche.empty.title">Aucune fiche générée pour l’instant.</p>
+    <p class="hint" data-i18n="fiche.empty.hint" data-i18n-html>
+      Cliquez sur <b>Régénérer</b> pour créer la fiche à partir de l’Excel.
+    </p>
+  </div>
+
+  <!-- APERÇU PDF -->
+  <div class="fiche-preview" id="fichePreview" style="display:none;">
+    <iframe id="ficheIframe"
+            title="Aperçu fiche tumeur"
+            data-i18n="fiche.preview.title"
+            data-i18n-attr="title"></iframe>
+  </div>
+</div>
+
+
+  </section>
+
+
+    <!-- COLONNE DROITE : MODES -->
+
+    <section class="right">
+      <!-- SUPERVISÉ -->
+      <div class="card" id="cardSupervise">
+        <h2 data-i18n="right.supervised.title">Mode supervisé (une fenêtre par code)</h2>
+
+        <!-- Paramètres partagés (LLM) -->
+        <details open>
+          <summary data-i18n="right.shared.params">Paramètres partagés LLM</summary>
+          <div class="grid">
+            <label><span data-i18n="right.shared.model">Model</span> <input id="sh_model" value="{{ defaults.model }}"></label>
+            <label><span data-i18n="right.shared.api_key">API Key</span> <input id="sh_api_key" data-i18n="right.shared.api_key.ph" data-i18n-attr="placeholder" placeholder="MISTRAL_API_KEY si vide"></label>
+            <input id="sh_seed" type="hidden" value="{{ defaults.seed }}">
+          </div>
+        </details>
+
+        <!-- 1) Extraction contenu -->
+        <div class="step" data-step="extract_content">
+          <h3 data-i18n="right.ec.title">1) Extraction contenu → JSON</h3>
+          <div class="grid">
+            <label><span data-i18n="right.ec.out">Dossier de sortie</span> <input id="ec_out" data-i18n="right.ec.out.ph" data-i18n-attr="placeholder" placeholder="auto: runs/&lt;job&gt;/work/json_from_files"></label>
+          </div>
+          <div class="actions">
+            <button class="exec" data-i18n="btn.run">Exécuter</button>
+            <button class="next" disabled data-i18n="btn.next">Suivant</button>
+          </div>
+          <pre class="log"></pre>
+        </div>
+
+        <!-- 2) Clustering -->
+        <div class="step" data-step="cluster">
+          <h3 data-i18n="right.cl.title">2) Clustering + nom de catégorie</h3>
+          <div class="grid">
+            <label hidden><span data-i18n="right.cl.embedder">Embedder</span> <input id="cl_embedder" value="{{ defaults.embedder }}"></label>
+            <label hidden><span data-i18n="right.cl.k">k (optionnel)</span> <input id="cl_k" type="number" data-i18n="right.cl.k.ph" data-i18n-attr="placeholder" placeholder="auto"></label>
+            <label hidden><span data-i18n="right.cl.mink">min-k</span> <input id="cl_min_k" type="number" value="{{ defaults.min_k }}"></label>
+            <label hidden><span data-i18n="right.cl.maxk">max-k</span> <input id="cl_max_k" type="number" value="{{ defaults.max_k }}"></label>
+            <label><span data-i18n="right.cl.name_extra">name-extra</span> <input id="cl_name_extra" data-i18n="right.cl.name_extra.ph" data-i18n-attr="placeholder" placeholder="contexte pour le naming"></label>
+            <label hidden><span data-i18n="right.cl.naming">naming-sample-size</span> <input id="cl_naming" type="number" value="{{ defaults.naming_sample_size }}"></label>
+            <label hidden><span data-i18n="right.cl.write_back">write-back</span>
+              <select id="cl_write_back">
+                <option value="true" selected data-i18n="opt.yes">Oui</option>
+                <option value="false" data-i18n="opt.no">Non</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="exec" data-i18n="btn.run">Exécuter</button>
+            <button class="next" disabled data-i18n="btn.next">Suivant</button>
+          </div>
+          <pre class="log"></pre>
+        </div>
+
+        <!-- 3) Choix de champs -->
+        <div class="step" data-step="choose_fields">
+          <h3 data-i18n="right.cf.title">3) Choix de champs (catalogue)</h3>
+          <div class="grid">
+            <label><span data-i18n="right.cf.extra">choose-fields-extra</span> <input id="cf_extra" data-i18n="right.cf.extra.ph" data-i18n-attr="placeholder" placeholder="phrase supplémentaire"></label>
+          </div>
+          <div class="actions">
+            <button class="exec" data-i18n="btn.run">Exécuter</button>
+            <button class="next" disabled data-i18n="btn.next">Suivant</button>
+          </div>
+          <pre class="log"></pre>
+        </div>
+
+        <!-- 4) Extraction de champs -->
+        <div class="step" data-step="extract_fields">
+          <h3 data-i18n="right.ef.title">4) Extraction de champs via catalogue</h3>
+          <div class="grid">
+            <label><span data-i18n="right.ef.extra">extraction-extra</span> <input id="ef_extra" data-i18n="right.ef.extra.ph" data-i18n-attr="placeholder" placeholder="ex: dates AAAA-MM-JJ"></label>
+          </div>
+          <div class="actions">
+            <button class="exec" data-i18n="btn.run">Exécuter</button>
+            <button class="next" disabled data-i18n="btn.next">Suivant</button>
+          </div>
+          <pre class="log"></pre>
+        </div>
+
+        <!-- 5) Export Excel -->
+        <div class="step" data-step="json_to_excel">
+          <h3 data-i18n="right.xl.title">5) Export Excel</h3>
+          <div class="grid">
+            <label><span data-i18n="right.xl.sheet">Nom d’onglet</span> <input id="xl_sheet" value="{{ defaults.sheet }}"></label>
+            <label hidden><span data-i18n="right.xl.maxchars">Max cell chars</span> <input id="xl_maxchars" type="number" value="{{ defaults.max_cell_chars }}"></label>
+          </div>
+          <div class="actions">
+            <button class="exec" data-i18n="btn.run">Exécuter</button>
+            <a id="dlExcel" class="button secondary" href="#" target="_blank" style="display:none;" data-i18n="right.xl.download">Télécharger l’Excel</a>
+          </div>
+          <pre class="log"></pre>
+        </div>
+      </div>
+
+      <!-- NON SUPERVISÉ -->
+      <div class="card" id="cardUnsup">
+        <h2 data-i18n="right.unsup.title">Mode non supervisé</h2>
+        <div class="grid">
+          <label><span data-i18n="right.shared.model">Model</span> <input id="uns_model" value="{{ defaults.model }}"></label>
+          <label><span data-i18n="right.shared.api_key">API Key</span> <input id="uns_api_key" data-i18n="right.shared.api_key.ph" data-i18n-attr="placeholder" placeholder="MISTRAL_API_KEY si vide"></label>
+          <input id="uns_seed" type="hidden" value="{{ defaults.seed }}">
+
+        </div>
+        <button id="btnRunUnsup" data-i18n="right.unsup.run">Lancer le pipeline (non supervisé)</button>
+        <div id="uns_result" class="ns-result"></div>
+      </div>
+<!-- MÉDICAL -->
+<div class="card" id="cardMedical">
+  <h2 data-i18n="right.med.title">Mode médical</h2>
+
+  <div class="med-layout">
+    <!-- Colonne formulaire -->
+    <div class="med-form">
+      <label>
+        <span data-i18n="right.shared.model">Model</span>
+        <input id="med_model" value="{{ defaults.model }}">
+      </label>
+
+      <label>
+        <span data-i18n="right.shared.api_key">API Key</span>
+        <input id="med_api_key"
+               data-i18n="right.shared.api_key.ph"
+               data-i18n-attr="placeholder"
+               placeholder="MISTRAL_API_KEY si vide">
+      </label>
+
+      <input id="med_seed" type="hidden" value="{{ defaults.seed }}">
+    </div>
+
+    <!-- Visuel (image_3 + indicateurs) -->
+    <div class="med-visual">
+      <img src="/static/images/image_3.png" alt="" class="med-img med-img-key" loading="lazy">
+      <div id="ns_progress" class="progress-steps compact" aria-label="Progression du pipeline (Run All)">
+        <div class="pstep todo" data-id="extract_content" title="Extraction contenu">
+          <span class="box" aria-hidden="true"></span>
+          <span class="label">Extraction contenu</span>
+          <span class="meta"></span>
+        </div>
+        <div class="pstep todo" data-id="cluster" title="Clustering">
+          <span class="box" aria-hidden="true"></span>
+          <span class="label">Clustering</span>
+          <span class="meta"></span>
+        </div>
+        <div class="pstep todo" data-id="extract_fields" title="Extraction de champs">
+          <span class="box" aria-hidden="true"></span>
+          <span class="label">Extraction de champs</span>
+          <span class="meta"></span>
+        </div>
+        <div class="pstep todo" data-id="json_to_excel" title="Export Excel">
+          <span class="box" aria-hidden="true"></span>
+          <span class="label">Export Excel</span>
+          <span class="meta"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ligne 2 : bouton Run + image_8 -->
+    <div class="med-run">
+      <button id="btnRunMedical" data-i18n="right.med.run">Lancer le pipeline (médical)</button>
+      <span id="med_result" class="ns-result"></span>
+
+      <span class="med-run-img">
+      <img src="/static/images/image_8.png" alt="" class="med-img med-img-run" loading="lazy">
+    </span>
+  </div>
+</div>
+
+
+      <!-- INDICATEURS (MÉDICAL) -->
+      <div class="card" id="cardIndicators">
+        <div class="row" style="justify-content:space-between; align-items:center; gap:1rem;">
+          <h2 style="margin:0;" data-i18n="ind.title">Indicateurs OECI</h2>
+          <label class="row" style="gap:.5rem; align-items:center; grid-template-columns:auto auto;">
+            <span data-i18n="ind.first_contact">Date 1er contact</span>
+            <input id="firstContactDate" type="date" lang="en-CA" />
+          </label>
+        </div>
+
+        <div class="row" style="gap:.5rem; align-items:center; margin-top:.5rem;">
+          <button id="btnIndicators" data-i18n="ind.run">Calcul d'indicateurs</button>
+          <span id="indicators_log" class="muted"></span>
+        </div>
+
+        <ul id="indicators_list" class="indicators">
+          <!-- D1 -->
+          <li class="indicator-item" data-id="delai1" data-target="10">
+            <span class="swatch neutral"></span>
+            <span class="indicator-label" data-i18n="ind.d1">Délai 1 — contact centre → 1er RV (10 j)</span>
+            <span class="ind-flag" hidden aria-hidden="true">
+              <span class="bang">!</span><span class="rem">0</span>
+              <span class="unit" data-i18n="unit.days.short">j</span>
+            </span>
+            <div class="grow"></div>
+            <label class="mini">
+              <span data-i18n="ind.value_days">Valeur (j)</span>
+              <input type="number" min="0" step="1" class="indicator-value" id="delai1_value" />
+            </label>
+
+          </li>
+
+          <!-- D2 -->
+          <li class="indicator-item" data-id="delai2" data-target="21">
+            <span class="swatch neutral"></span>
+            <span class="indicator-label" data-i18n="ind.d2">Délai 2 — 1er RV → 1ère anapath (21 j si pas d’anapath avant le 1er RV)</span>
+            <span class="ind-flag" hidden aria-hidden="true">
+              <span class="bang">!</span><span class="rem">0</span>
+              <span class="unit" data-i18n="unit.days.short">j</span>
+            </span>
+
+            <div class="grow"></div>
+            <label class="mini">
+              <span data-i18n="ind.value_days">Valeur (j)</span>
+              <input type="number" min="0" step="1" class="indicator-value" id="delai2_value" />
+            </label>
+
+          </li>
+
+          <!-- D3 -->
+          <li class="indicator-item" data-id="delai3" data-target="7">
+            <span class="swatch neutral"></span>
+            <span class="indicator-label" data-i18n="ind.d3">Délai 3 — (1er RV ou anapath si post-RV) → 1ère UCP/RCP (7 j)</span>
+            <span class="ind-flag" hidden aria-hidden="true">
+              <span class="bang">!</span><span class="rem">0</span>
+              <span class="unit" data-i18n="unit.days.short">j</span>
+            </span>
+
+            <div class="grow"></div>
+            <label class="mini">
+              <span data-i18n="ind.value_days">Valeur (j)</span>
+              <input type="number" min="0" step="1" class="indicator-value" id="delai3_value" />
+            </label>
+
+          </li>
+
+          <!-- D4 -->
+          <li class="indicator-item" data-id="delai4" data-target="10">
+            <span class="swatch neutral"></span>
+            <span class="indicator-label" data-i18n="ind.d4">Délai 4 — 1ère UCP/RCP → 1er traitement (10 j)</span>
+            <span class="ind-flag" hidden aria-hidden="true">
+              <span class="bang">!</span><span class="rem">0</span>
+              <span class="unit" data-i18n="unit.days.short">j</span>
+            </span>
+
+            <div class="grow"></div>
+            <label class="mini">
+              <span data-i18n="ind.value_days">Valeur (j)</span>
+              <input type="number" min="0" step="1" class="indicator-value" id="delai4_value" />
+            </label>
+
+          </li>
+
+          
+
+        </ul>
+      </div>
+
+
+    
+
+    </section>
+
+  </div>
+    <!-- === Q/R sur l’Excel généré === -->
+    <div class="card" id="qa_card">
+      <h2 data-i18n="qa.title">Question → Réponse (sur l’Excel)</h2>
+
+      <div class="grid" style="grid-template-columns: 1fr;">
+        <label><span data-i18n="qa.q">Question</span>
+          <input id="qa_q" data-i18n="qa.q.ph" data-i18n-attr="placeholder" placeholder="Ex: SELECT * FROM sheet_feuil1 LIMIT 10">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="qa_run" data-i18n="qa.run">Poser la question</button>
+        <span class="hint" data-i18n="qa.hint">Utilise automatiquement le dernier Excel du job (étape 5).</span>
+      </div>
+
+      <pre id="qa_log" class="log" style="min-height:120px;"></pre>
+
+      <div style="margin-top:6px;">
+        <label style="display:block;margin-bottom:6px;" data-i18n="qa.a">Réponse</label>
+        <textarea id="qa_resp" rows="7" style="width:100%;"></textarea>
+      </div>
+    </div>
+</div>
+  <!-- MODAL DE VALIDATION CLUSTERING -->
+  <div id="clusterReview" class="modal hidden" aria-hidden="true">
+    <div class="window">
+      <div class="modal-header">
+        <h3 data-i18n="modal.cluster.title">Validation du clustering</h3>
+        <button class="close" id="cr_close" data-i18n="modal.close" data-i18n-attr="title" title="Fermer">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="cr_img_wrap" class="cluster-img-wrap">
+          <img id="cr_img" data-i18n="modal.cluster.imgAlt" data-i18n-attr="alt" alt="Aperçu clustering" />
+          <div id="cr_img_placeholder" class="placeholder" data-i18n="modal.cluster.placeholder">Aucune image de clustering trouvée</div>
+        </div>
+
+        <div class="split">
+          <section class="pane">
+            <h4 data-i18n="modal.cluster.rename.title">Renommer les clusters</h4>
+            <div class="table clusters" id="cr_clusters"></div>
+            <div class="actions">
+              <button id="cr_apply_names" data-i18n="modal.cluster.rename.apply">Appliquer les renommages</button>
+            </div>
+          </section>
+
+          <section class="pane">
+            <h4 data-i18n="modal.cluster.docs.title">Corriger les catégories document par document</h4>
+            <div class="table scroll docs" id="cr_docs"></div>
+            <div class="actions">
+              <button class="secondary" id="cr_apply_docs" data-i18n="modal.cluster.docs.save">Enregistrer corrections documents</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span id="cr_status" class="muted"></span>
+        <div class="spacer"></div>
+        <button id="cr_validate" class="primary" data-i18n="modal.validate_close">Valider & fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE VALIDATION CATALOGUE DES CHAMPS -->
+  <div id="catalogReview" class="modal hidden" aria-hidden="true">
+    <div class="window">
+      <div class="modal-header">
+        <h3 data-i18n="modal.catalog.title">Validation du catalogue de champs</h3>
+        <button class="close" id="cat_close" data-i18n="modal.close" data-i18n-attr="title" title="Fermer">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="muted" style="margin:0 0 8px;" data-i18n="modal.catalog.text" data-i18n-html>
+          Modifie les noms de champs par catégorie. Les <b>cases vides</b> seront <b>ignorées</b> à l’enregistrement.
+        </p>
+        <div id="cat_list" class="cat-list"></div>
+      </div>
+
+      <div class="modal-footer">
+        <span id="cat_status" class="muted"></span>
+        <div class="spacer"></div>
+        <button id="cat_save" class="secondary" data-i18n="modal.catalog.save">Enregistrer les modifications</button>
+        <button id="cat_validate" class="primary" data-i18n="modal.validate_close">Valider & fermer</button>
+      </div>
+    </div>
+  </div>
+<!-- Galerie bas de page -->
+
+<div class="footerGallery" footer-gallery">
+  <a class="img-link" href="https://www.unicancer.fr/fr/" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 1">
+    <img src="/static/images/image_1.png" alt="Image 1" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.oeci.eu" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 2">
+    <img src="/static/images/image_2.png" alt="Image 2" loading="lazy">
+  </a>
+  <a class="img-link" href="https://mistral.ai" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 3">
+    <img src="/static/images/image_3.png" alt="Image 3" loading="lazy">
+  </a>
+  <a class="img-link" href="https://loamics.com" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 4">
+    <img src="/static/images/image_4.png" alt="Image 4" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.istitutotumori.mi.it/come-contattarci" target="_blank" rel="noopener" aria-disabled="true" title="Lien image 7">
+    <img src="/static/images/image_7.png" alt="Image 7" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.semeia.io" target="_blank" rel="noopener" title="semeia">
+    <img src="/static/images/image_9.png" alt="semeia" loading="lazy">
+  </a>  
+  <a class="img-link" href="https://www.edhec.edu/fr" target="_blank" rel="noopener" title="EDHEC">
+    <img src="/static/images/image_10.png" alt="EDHEC" loading="lazy">
+  </a>
+  <a class="img-link" href="https://www.unl.pt/en/" target="_blank" rel="noopener" title="NOVAo">
+    <img src="/static/images/image_11.png" alt="NOVA" loading="lazy">
+  </a>
+</div>
+<button id="btnHome" class="home-fab home-fab--icon" aria-label="Accueil" title="Retour à l’accueil"></button>
+
+<script>
+  // === Minimal i18n for Morceau 1 (mode picker + bouton flottant + titre document) ===
+
+
+  const I18N = {
+    fr: {
+      'title.main':    'Pipeline Extraction – Supervisé & Non supervisé',
+      'title.dev':     'Pipeline Extraction – Dev',
+      'title.unsup':   'Pipeline Extraction – Non supervisé',
+      'title.medical': 'Pipeline Extraction – Médical',
+      'mode.medical.title':'Pathway analyser',
+      'mode.medical.sub':'Vert & Beige',
+      'mode.unsup.title':'Mode non supervisé',
+      'mode.unsup.sub':'Rouge & Beige',
+      'mode.dev.title':'Mode dev',
+      'mode.dev.sub':'Thème sombre (actuel)',
+      'mode.switcher':'Changer de mode',
+
+      // À ajouter dans I18N.fr
+      'fiche.title': 'Fiche tumeur (PDF)',
+      'fiche.download': 'Télécharger le PDF',
+      'fiche.regen': 'Régénérer',
+      'fiche.info.placeholder': 'À générer',
+      'fiche.info.generated': 'Fiche générée ✔︎',
+      'fiche.info.generating': 'Génération en cours…',
+      'fiche.info.unavailable': 'Indisponible pour le moment',
+      'fiche.empty.title': 'Aucune fiche générée pour l’instant.',
+      'fiche.empty.hint': 'Cliquez sur <b>Régénérer</b> pour créer la fiche à partir du tableur.',
+      'fiche.preview.title': 'Aperçu fiche tumeur',
+      "mode.custom.title": "Mode personnalisé",
+      "mode.custom.sub": "Crée/importe un catalogue et lance la pipeline"
+    },
+    en: {
+      'title.main':    'Pipeline Extraction – Supervised & Unsupervised',
+      'title.dev':     'Pipeline Extraction – Dev',
+      'title.unsup':   'Pipeline Extraction – Unsupervised',
+      'title.medical': 'Pipeline Extraction – Medical',
+      'mode.medical.title':'Pathway Analyser',
+      'mode.medical.sub':'Green & Beige',
+      'mode.unsup.title':'Unsupervised mode',
+      'mode.unsup.sub':'Red & Beige',
+      'mode.dev.title':'Dev mode',
+      'mode.dev.sub':'Dark theme (current)',
+      'mode.switcher':'Switch mode',
+
+      // À ajouter dans I18N.en
+      'fiche.title': 'Tumor sheet (PDF)',
+      'fiche.download': 'Download PDF',
+      'fiche.regen': 'Regenerate',
+      'fiche.info.placeholder': 'To generate',
+      'fiche.info.generated': 'Sheet generated ✔︎',
+      'fiche.info.generating': 'Generating…',
+      'fiche.info.unavailable': 'Unavailable for now',
+      'fiche.empty.title': 'No sheet generated yet.',
+      'fiche.empty.hint': 'Click <b>Regenerate</b> to create the spreadsheet.',
+      'fiche.preview.title': 'Tumor sheet preview',
+        "mode.custom.title": "Custom mode",
+  "mode.custom.sub": "Create/import a catalog and run the pipeline"
+    },
+    es: {
+      'title.main':    'Extracción de pipeline – Supervisado y No supervisado',
+      'title.dev':     'Extracción de pipeline – Dev',
+      'title.unsup':   'Extracción de pipeline – No supervisado',
+      'title.medical': 'Extracción de pipeline – Médico',
+      'mode.medical.title':'Modo médico',
+      'mode.medical.sub':'Verde y beige',
+      'mode.unsup.title':'Modo no supervisado',
+      'mode.unsup.sub':'Rojo y beige',
+      'mode.dev.title':'Modo dev',
+      'mode.dev.sub':'Tema oscuro (actual)',
+      'mode.switcher':'Cambiar modo',
+        "mode.custom.title": "Modo personalizado",
+  "mode.custom.sub": "Crea/importa un catálogo y ejecuta la pipeline",
+
+      // À ajouter dans I18N.es
+      'fiche.title': 'Ficha tumoral (PDF)',
+      'fiche.download': 'Descargar PDF',
+      'fiche.regen': 'Regenerar',
+      'fiche.info.placeholder': 'Por generar',
+      'fiche.info.generated': 'Ficha generada ✔︎',
+      'fiche.info.generating': 'Generando…',
+      'fiche.info.unavailable': 'No disponible por ahora',
+      'fiche.empty.title': 'Aún no se ha generado ninguna ficha.',
+      'fiche.empty.hint': 'Haz clic en <b>Regenerar</b> para crear la ficha a partir de la tabla.',
+      'fiche.preview.title': 'Vista previa de la ficha tumoral',
+    },
+    it: {
+      'title.main':    'Estrazione pipeline – Supervisionato & Non supervisionato',
+      'title.dev':     'Estrazione pipeline – Dev',
+      'title.unsup':   'Estrazione pipeline – Non supervisionato',
+      'title.medical': 'Estrazione pipeline – Medico',
+      'mode.medical.title':'Modalità medica',
+      'mode.medical.sub':'Verde e beige',
+      'mode.unsup.title':'Modalità non supervisionata',
+      'mode.unsup.sub':'Rosso e beige',
+      'mode.dev.title':'Modalità dev',
+      'mode.dev.sub':'Tema scuro (attuale)',
+      'mode.switcher':'Cambia modalità',
+
+      // À ajouter dans I18N.it
+      'fiche.title': 'Scheda tumore (PDF)',
+      'fiche.download': 'Scarica PDF',
+      'fiche.regen': 'Rigenera',
+      'fiche.info.placeholder': 'Da generare',
+      'fiche.info.generated': 'Scheda generata ✔︎',
+      'fiche.info.generating': 'Generazione in corso…',
+      'fiche.info.unavailable': 'Non disponibile al momento',
+      'fiche.empty.title': 'Nessuna scheda ancora generata.',
+      'fiche.empty.hint': 'Clicca su <b>Rigenera</b> per creare la scheda dalla tabella.',
+      'fiche.preview.title': 'Anteprima scheda tumore',
+        "mode.custom.title": "Modalità personalizzata",
+  "mode.custom.sub": "Crea/importa un catalogo ed esegui la pipeline"
+    },
+    de: {
+      'title.main':    'Pipeline-Extraktion – Überwacht & Unüberwacht',
+      'title.dev':     'Pipeline-Extraktion – Dev',
+      'title.unsup':   'Pipeline-Extraktion – Unüberwacht',
+      'title.medical': 'Pipeline-Extraktion – Medizinisch',
+      'mode.medical.title':'Medizinischer Modus',
+      'mode.medical.sub':'Grün & Beige',
+      'mode.unsup.title':'Unüberwachter Modus',
+      'mode.unsup.sub':'Rot & Beige',
+      'mode.dev.title':'Dev-Modus',
+      'mode.dev.sub':'Dunkles Thema (aktuell)',
+      'mode.switcher':'Modus wechseln',
+
+      // À ajouter dans I18N.de
+    'fiche.title': 'Tumorblatt (PDF)',
+    'fiche.download': 'PDF herunterladen',
+    'fiche.regen': 'Neu erstellen',
+    'fiche.info.placeholder': 'Zu erzeugen',
+    'fiche.info.generated': 'Blatt erstellt ✔︎',
+    'fiche.info.generating': 'Wird erstellt…',
+    'fiche.info.unavailable': 'Zurzeit nicht verfügbar',
+    'fiche.empty.title': 'Noch kein Blatt erstellt.',
+    'fiche.empty.hint': 'Klicke auf <b>Neu erstellen</b>, um das Blatt aus dem Tabellenkalkulationsprogramm zu erstellen.',
+    'fiche.preview.title': 'Vorschau Tumorblatt',
+      "mode.custom.title": "Benutzerdefinierter Modus",
+  "mode.custom.sub": "Katalog erstellen/importieren und Pipeline ausführen"
+    }
+    
+  };
+
+  const LANGS = ['fr','en','es','it','de'];
+  function t(key){ const L = window.appLang || 'fr'; return (I18N[L] && I18N[L][key]) || (I18N.fr[key] || key); }
+
+  function applyTranslations(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key  = el.getAttribute('data-i18n');
+      const attr = el.getAttribute('data-i18n-attr');
+      const html = el.hasAttribute('data-i18n-html');
+      const val  = t(key);
+      if (attr) {
+        el.setAttribute(attr, val);
+      } else if (html) {
+        el.innerHTML = val;   // pour les textes avec <b>, etc.
+      } else {
+        el.textContent = val; // par défaut
+      }
+    });
+    // Titre document selon le mode courant
+    const mode = window.appMode || null;
+    const titlesByMode = { dev:'title.dev', unsup:'title.unsup', medical:'title.medical' };
+    document.title = t(mode ? titlesByMode[mode] : 'title.main');
+  }
+ 
+    // === Dropdown Lang ===
+    const FLAG = { fr:'🇫🇷', en:'🇬🇧', es:'🇪🇸', it:'🇮🇹', de:'🇩🇪' };
+    const MODE_BG = { medical:'#2a7c59', unsup:'#a33b3b', dev:'#2b2b2b' };
+  
+    function updateLangColors(){
+      const c = MODE_BG[window.appMode || 'dev'] || '#2b2b2b';
+      document.documentElement.style.setProperty('--lang-bg', c);
+      document.querySelectorAll('.lang-toggle, .lang-menu .lang-btn').forEach(el=>{
+        el.style.backgroundColor = c;
+      });
+    }
+  
+    function toggleLangMenu(force){
+      const menu = document.getElementById('langMenu');
+      const btn  = document.getElementById('langToggle');
+      const show = (typeof force === 'boolean') ? force : menu.hidden;
+      menu.hidden = !show;
+      btn.setAttribute('aria-expanded', String(show));
+    }
+
+  
+    function setActiveLangButton(lang){
+      document.querySelectorAll('.lang-menu .lang-btn').forEach(b=>{
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+    }
+
+  function setLang(lang){
+    if(!LANGS.includes(lang)) lang = 'fr';
+    window.appLang = lang;
+    localStorage.setItem('app_lang', lang);
+    document.documentElement.setAttribute('lang', lang);
+    document.getElementById('langFlag').textContent = FLAG[lang] || '🏳️';
+    updateLangColors();
+    applyTranslations();
+    setActiveLangButton(lang);
+    fetch('/api/whoami').then(r=>r.json()).then(console.log)
+
+  }
+
+  window.addEventListener('DOMContentLoaded', ()=>{
+    // toggle menu
+    document.getElementById('langToggle')?.addEventListener('click', ()=> toggleLangMenu());
+    // clic extérieur => fermer
+    document.addEventListener('click', (e)=>{
+      const sw = document.querySelector('.lang-switcher');
+      if (sw && !sw.contains(e.target)) toggleLangMenu(false);
+    });
+    // clic sur une langue
+    document.querySelectorAll('.lang-menu .lang-btn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        setLang(b.dataset.lang);
+        toggleLangMenu(false);
+      });
+    });
+
+    // init langue + couleurs
+    const saved = localStorage.getItem('app_lang');
+    const guess = (navigator.language||'fr').slice(0,2).toLowerCase();
+    setLang( saved && LANGS.includes(saved) ? saved : (LANGS.includes(guess) ? guess : 'fr') );
+    updateLangColors();
+  });
+
+  // Expose t() pour les autres scripts plus bas
+  window.t = t;
+  window.setLang = setLang;
+  (() => {
+    const origFetch = window.fetch;
+    window.fetch = function(input, init = {}) {
+      const lang = (window.appLang || localStorage.getItem('app_lang') || 'fr');
+  
+      // Normalise init + headers
+      init = init || {};
+      init.headers = Object.assign({}, init.headers, { 'X-App-Lang': lang });
+  
+      // Si body JSON → injecter { lang }
+      try {
+        const ct = (init.headers['Content-Type'] || init.headers['content-type'] || '').toLowerCase();
+        if (ct.includes('application/json') && typeof init.body === 'string' && init.body.trim().startsWith('{')) {
+          const json = JSON.parse(init.body);
+          if (!('lang' in json)) json.lang = lang;
+          init.body = JSON.stringify(json);
+        }
+      } catch (_) {}
+  
+      // Ajouter ?lang=... sur les appels /api/ pour les GET (utile côté Flask)
+      try {
+        let url = (typeof input === 'string') ? input : input.url;
+        if (url.startsWith('/api/')) {
+          const u = new URL(url, location.origin);
+          if (!u.searchParams.has('lang')) u.searchParams.set('lang', lang);
+          url = u.toString();
+          input = (typeof input === 'string') ? url : new Request(url, input);
+        }
+      } catch (_) {}
+  
+      return origFetch(input, init);
+    };
+  })();
+</script>
+
+<script>
+  // === Ajouts i18n : Colonne gauche (Sources) ===
+  Object.assign(I18N.fr, {
+    'left.sources.title': 'Source des documents',
+    'left.drop.title': 'Glisser-déposer / Sélectionner un dossier',
+    'left.drop.cta': 'Glisser un dossier ici ou cliquer pour sélectionner',
+    'left.drop.hint': 'Le dossier sera téléversé côté serveur dans un espace de travail. Formats acceptés : pdf, doc, png, txt, docx',
+    'left.status.job': 'Job ID :',
+    'left.status.src': 'Source :',
+    'left.timeline.title': 'Frise chronologique'
+  });
+
+  Object.assign(I18N.en, {
+    'left.sources.title': 'Document sources',
+    'left.drop.title': 'Drag & drop / Select a folder',
+    'left.drop.cta': 'Drop a folder here or click to select',
+    'left.drop.hint': 'The folder will be uploaded to the server into a workspace. Accepted formats: pdf, doc, png, txt, docx',
+    'left.status.job': 'Job ID:',
+    'left.status.src': 'Source:',
+    'left.timeline.title': 'Timeline'
+  });
+
+  Object.assign(I18N.es, {
+    'left.sources.title': 'Fuentes de documentos',
+    'left.drop.title': 'Arrastrar y soltar / Seleccionar una carpeta',
+    'left.drop.cta': 'Arrastra una carpeta aquí o haz clic para seleccionar',
+    'left.drop.hint': 'La carpeta se cargará en el servidor en un espacio de trabajo. Formatos aceptados: pdf, doc, png, txt, docx',
+    'left.status.job': 'ID de trabajo:',
+    'left.status.src': 'Fuente:',
+    'left.timeline.title': 'Línea de tiempo'
+  });
+
+  Object.assign(I18N.it, {
+    'left.sources.title': 'Sorgenti dei documenti',
+    'left.drop.title': 'Trascina e rilascia / Seleziona una cartella',
+    'left.drop.cta': 'Trascina qui una cartella oppure clicca per selezionarla',
+    'left.drop.hint': 'La cartella verrà caricata sul server in un’area di lavoro. Formati accettati: pdf, doc, png, txt, docx',
+    'left.status.job': 'ID lavoro:',
+    'left.status.src': 'Sorgente:',
+    'left.timeline.title': 'Cronologia'
+  });
+
+  Object.assign(I18N.de, {
+    'left.sources.title': 'Dokumentenquellen',
+    'left.drop.title': 'Ziehen & Ablegen / Ordner auswählen',
+    'left.drop.cta': 'Ordner hierher ziehen oder zum Auswählen klicken',
+    'left.drop.hint': 'Der Ordner wird serverseitig in einem Arbeitsbereich hochgeladen. Zulässige Formate: pdf, doc, png, txt, docx',
+    'left.status.job': 'Job-ID:',
+    'left.status.src': 'Quelle:',
+    'left.timeline.title': 'Zeitleiste'
+  });
+  Object.assign(I18N.fr, { 'mode.review.title': 'Mode review' });
+  Object.assign(I18N.en, { 'mode.review.title': 'Review mode' });
+  Object.assign(I18N.es, { 'mode.review.title': 'Modo review' });
+  Object.assign(I18N.it, { 'mode.review.title': 'Modalità review' });
+  Object.assign(I18N.de, { 'mode.review.title': 'Review-Modus' });
+  // Met à jour les textes si la page est déjà chargée
+  if (typeof applyTranslations === 'function') applyTranslations();
+</script>
+<script>
+  // === Ajouts i18n : Colonne droite (modes, indicateurs, Q/R) + modales ===
+  Object.assign(I18N.fr, {
+    // Super/Unsup/Med
+    'right.supervised.title': 'Mode supervisé (une fenêtre par code)',
+    'right.shared.params': 'Paramètres partagés LLM',
+    'right.shared.model': 'Model',
+    'right.shared.api_key': 'API Key',
+    'right.shared.api_key.ph': 'MISTRAL_API_KEY si vide',
+    'right.shared.seed': 'Seed',
+
+    'right.ec.title': '1) Extraction contenu → JSON',
+    'right.ec.out': 'Dossier de sortie',
+    'right.ec.out.ph': 'auto: runs/<job>/work/json_from_files',
+
+    'right.cl.title': '2) Clustering + nom de catégorie',
+    'right.cl.embedder': 'Embedder',
+    'right.cl.k': 'k (optionnel)',
+    'right.cl.k.ph': 'auto',
+    'right.cl.mink': 'min-k',
+    'right.cl.maxk': 'max-k',
+    'right.cl.name_extra': 'name-extra',
+    'right.cl.name_extra.ph': 'contexte pour le naming',
+    'right.cl.naming': 'naming-sample-size',
+    'right.cl.write_back': 'write-back',
+
+    'right.cf.title': '3) Choix de champs (catalogue)',
+    'right.cf.extra': 'choose-fields-extra',
+    'right.cf.extra.ph': 'phrase supplémentaire',
+
+    'right.ef.title': '4) Extraction de champs via catalogue',
+    'right.ef.extra': 'extraction-extra',
+    'right.ef.extra.ph': 'ex: dates AAAA-MM-JJ',
+
+    'right.xl.title': '5) Export tableur',
+    'right.xl.sheet': 'Nom d’onglet',
+    'right.xl.maxchars': 'Max cell chars',
+    'right.xl.download': 'Télécharger le tableur',
+
+    'opt.yes': 'Oui',
+    'opt.no': 'Non',
+
+    'right.unsup.title': 'Mode non supervisé',
+    'right.unsup.run': 'Lancer le pipeline (non supervisé)',
+
+    'right.med.title': 'Pathway analyser',
+    'right.med.run': 'Lancer le pipeline (médical)',
+
+    // Indicateurs
+    'ind.title': 'Indicateurs OECI',
+    'ind.first_contact': 'Date 1er contact',
+    'ind.run': 'Calcul d\'indicateurs',
+    'ind.d1': 'Délai 1 — contact centre → 1er RV (10 j)',
+    'ind.d2': 'Délai 2 — 1er RV → 1ère anapath (21 j si pas d’anapath avant le 1er RV)',
+    'ind.d3': 'Délai 3 — 1er RV ou anapath si post-RV → 1ère UCP/RCP (7 j)',
+    'ind.d4': 'Délai 4 — 1ère UCP/RCP → 1er traitement (10 j)',
+    'ind.value_days': 'Valeur (j)',
+    'ind.row': 'Ligne tableur',
+    'ind.organ': 'Organe',
+
+    // Q/R Excel
+    'qa.title': 'Question → Réponse (sur le tableur)',
+    'qa.q': 'Question',
+    'qa.q.ph': 'Ex: SELECT * FROM sheet_feuil1 LIMIT 10',
+    'qa.run': 'Poser la question',
+    'qa.hint': 'Utilise automatiquement le dernier tableur généré.',
+    'qa.a': 'Réponse',
+
+    // Modales
+    'modal.cluster.title': 'Validation du clustering',
+    'modal.close': 'Fermer',
+    'modal.cluster.imgAlt': 'Aperçu clustering',
+    'modal.cluster.placeholder': 'Aucune image de clustering trouvée',
+    'modal.cluster.rename.title': 'Renommer les clusters',
+    'modal.cluster.rename.apply': 'Appliquer les renommages',
+    'modal.cluster.docs.title': 'Corriger les catégories document par document',
+    'modal.cluster.docs.save': 'Enregistrer corrections documents',
+    'modal.validate_close': 'Valider & fermer',
+
+    'modal.catalog.title': 'Validation du catalogue de champs',
+    'modal.catalog.text': 'Modifie les noms de champs par catégorie. Les <b>cases vides</b> seront <b>ignorées</b> à l’enregistrement.',
+    'modal.catalog.save': 'Enregistrer les modifications'
+  });
+
+  Object.assign(I18N.en, {
+    'right.supervised.title': 'Supervised mode (one window per code)',
+    'right.shared.params': 'Shared LLM parameters',
+    'right.shared.model': 'Model',
+    'right.shared.api_key': 'API Key',
+    'right.shared.api_key.ph': 'MISTRAL_API_KEY if empty',
+    'right.shared.seed': 'Seed',
+
+    'right.ec.title': '1) Content extraction → JSON',
+    'right.ec.out': 'Output folder',
+    'right.ec.out.ph': 'auto: runs/<job>/work/json_from_files',
+
+    'right.cl.title': '2) Clustering + category name',
+    'right.cl.embedder': 'Embedder',
+    'right.cl.k': 'k (optional)',
+    'right.cl.k.ph': 'auto',
+    'right.cl.mink': 'min-k',
+    'right.cl.maxk': 'max-k',
+    'right.cl.name_extra': 'name-extra',
+    'right.cl.name_extra.ph': 'context for naming',
+    'right.cl.naming': 'naming-sample-size',
+    'right.cl.write_back': 'write-back',
+
+    'right.cf.title': '3) Field selection (catalog)',
+    'right.cf.extra': 'choose-fields-extra',
+    'right.cf.extra.ph': 'additional phrase',
+
+    'right.ef.title': '4) Field extraction via catalog',
+    'right.ef.extra': 'extraction-extra',
+    'right.ef.extra.ph': 'e.g., dates YYYY-MM-DD',
+
+    'right.xl.title': '5) Export spreadsheet',
+    'right.xl.sheet': 'Sheet name',
+    'right.xl.maxchars': 'Max cell chars',
+    'right.xl.download': 'Download spreadsheet',
+
+    'opt.yes': 'Yes',
+    'opt.no': 'No',
+
+    'right.unsup.title': 'Unsupervised mode',
+    'right.unsup.run': 'Run pipeline (unsupervised)',
+
+    'right.med.title': 'Pathway Analyser',
+    'right.med.run': 'Run pipeline (medical)',
+
+    'ind.title': 'OECI indicators',
+    'ind.first_contact': 'Date of first contact',
+    'ind.run': 'Compute indicators',
+    'ind.d1': 'Delay 1 — center contact → first appointment (10 d)',
+    'ind.d2': 'Delay 2 — first appointment → first pathology (21 d if no pathology before first appointment)',
+    'ind.d3': 'Delay 3 — first appointment or pathology if post-appointment → first tumor board (7 d)',
+    'ind.d4': 'Delay 4 — first tumor board → first treatment (10 d)',
+    'ind.value_days': 'Value (d)',
+    'ind.row': 'Spreadsheet row',
+    'ind.organ': 'Organ',
+
+    'qa.title': 'Question → Answer (about the spreadsheet)',
+    'qa.q': 'Question',
+    'qa.q.ph': 'Eg: SELECT * FROM sheet_feuil1 LIMIT 10',
+    'qa.run': 'Ask',
+    'qa.hint': 'Automatically uses the latest generated spreadsheet.',
+    'qa.a': 'Answer',
+
+    'modal.cluster.title': 'Clustering validation',
+    'modal.close': 'Close',
+    'modal.cluster.imgAlt': 'Clustering preview',
+    'modal.cluster.placeholder': 'No clustering image found',
+    'modal.cluster.rename.title': 'Rename clusters',
+    'modal.cluster.rename.apply': 'Apply renamings',
+    'modal.cluster.docs.title': 'Fix categories document by document',
+    'modal.cluster.docs.save': 'Save document corrections',
+    'modal.validate_close': 'Validate & close',
+
+    'modal.catalog.title': 'Field catalog validation',
+    'modal.catalog.text': 'Edit field names by category. <b>Empty cells</b> will be <b>ignored</b> on save.',
+    'modal.catalog.save': 'Save changes'
+  });
+
+  Object.assign(I18N.es, {
+    'right.supervised.title': 'Modo supervisado (una ventana por código)',
+    'right.shared.params': 'Parámetros compartidos del LLM',
+    'right.shared.model': 'Model',
+    'right.shared.api_key': 'API Key',
+    'right.shared.api_key.ph': 'MISTRAL_API_KEY si está vacío',
+    'right.shared.seed': 'Seed',
+
+    'right.ec.title': '1) Extracción de contenido → JSON',
+    'right.ec.out': 'Carpeta de salida',
+    'right.ec.out.ph': 'auto: runs/<job>/work/json_from_files',
+
+    'right.cl.title': '2) Clustering + nombre de categoría',
+    'right.cl.embedder': 'Embedder',
+    'right.cl.k': 'k (opcional)',
+    'right.cl.k.ph': 'auto',
+    'right.cl.mink': 'min-k',
+    'right.cl.maxk': 'max-k',
+    'right.cl.name_extra': 'name-extra',
+    'right.cl.name_extra.ph': 'contexto para el nombrado',
+    'right.cl.naming': 'naming-sample-size',
+    'right.cl.write_back': 'write-back',
+
+    'right.cf.title': '3) Selección de campos (catálogo)',
+    'right.cf.extra': 'choose-fields-extra',
+    'right.cf.extra.ph': 'frase adicional',
+
+    'right.ef.title': '4) Extracción de campos vía catálogo',
+    'right.ef.extra': 'extraction-extra',
+    'right.ef.extra.ph': 'p. ej., fechas AAAA-MM-DD',
+
+    'right.xl.title': '5) Exportar a una tabla',
+    'right.xl.sheet': 'Nombre de hoja',
+    'right.xl.maxchars': 'Máx. caracteres por celda',
+    'right.xl.download': 'Descargar hoja de cálculo',
+
+    'opt.yes': 'Sí',
+    'opt.no': 'No',
+
+    'right.unsup.title': 'Modo no supervisado',
+    'right.unsup.run': 'Ejecutar pipeline (no supervisado)',
+
+    'right.med.title': 'Modo médico',
+    'right.med.run': 'Ejecutar pipeline (médico)',
+
+    'ind.title': 'Indicadores OECI',
+    'ind.first_contact': 'Fecha del primer contacto',
+    'ind.run': 'Calcular indicadores',
+    'ind.d1': 'Retraso 1 — contacto con el centro → primera cita (10 d)',
+    'ind.d2': 'Retraso 2 — primera cita → primera anatomía patológica (21 d si no hubo anapato antes de la primera cita)',
+    'ind.d3': 'Retraso 3 — primera cita o anapato si posterior → primera Comité de tumores (7 d)',
+    'ind.d4': 'Retraso 4 — primera Comité de tumores → primer tratamiento (10 d)',
+    'ind.value_days': 'Valor (d)',
+    'ind.row': 'Fila de hoja de cálculo',
+    'ind.organ': 'Órgano',
+
+    'qa.title': 'Pregunta → Respuesta (sobre la tabla)',
+    'qa.q': 'Pregunta',
+    'qa.q.ph': 'Ej.: SELECT * FROM sheet_feuil1 LIMIT 10',
+    'qa.run': 'Hacer la pregunta',
+    'qa.hint': 'Usa automáticamente la última tabla del trabajo.',
+    'qa.a': 'Respuesta',
+
+    'modal.cluster.title': 'Validación del clustering',
+    'modal.close': 'Cerrar',
+    'modal.cluster.imgAlt': 'Vista previa del clustering',
+    'modal.cluster.placeholder': 'No se encontró imagen de clustering',
+    'modal.cluster.rename.title': 'Renombrar clústeres',
+    'modal.cluster.rename.apply': 'Aplicar los cambios de nombre',
+    'modal.cluster.docs.title': 'Corregir categorías documento por documento',
+    'modal.cluster.docs.save': 'Guardar correcciones de documentos',
+    'modal.validate_close': 'Validar y cerrar',
+
+    'modal.catalog.title': 'Validación del catálogo de campos',
+    'modal.catalog.text': 'Modifica los nombres de campos por categoría. Las <b>casillas vacías</b> se <b>ignorarán</b> al guardar.',
+    'modal.catalog.save': 'Guardar cambios'
+  });
+
+  Object.assign(I18N.it, {
+    'right.supervised.title': 'Modalità supervisionata (una finestra per codice)',
+    'right.shared.params': 'Parametri condivisi LLM',
+    'right.shared.model': 'Model',
+    'right.shared.api_key': 'API Key',
+    'right.shared.api_key.ph': 'MISTRAL_API_KEY se vuoto',
+    'right.shared.seed': 'Seed',
+
+    'right.ec.title': '1) Estrazione contenuto → JSON',
+    'right.ec.out': 'Cartella di output',
+    'right.ec.out.ph': 'auto: runs/<job>/work/json_from_files',
+
+    'right.cl.title': '2) Clustering + nome categoria',
+    'right.cl.embedder': 'Embedder',
+    'right.cl.k': 'k (opzionale)',
+    'right.cl.k.ph': 'auto',
+    'right.cl.mink': 'min-k',
+    'right.cl.maxk': 'max-k',
+    'right.cl.name_extra': 'name-extra',
+    'right.cl.name_extra.ph': 'contesto per il naming',
+    'right.cl.naming': 'naming-sample-size',
+    'right.cl.write_back': 'write-back',
+
+    'right.cf.title': '3) Selezione campi (catalogo)',
+    'right.cf.extra': 'choose-fields-extra',
+    'right.cf.extra.ph': 'frase aggiuntiva',
+
+    'right.ef.title': '4) Estrazione campi via catalogo',
+    'right.ef.extra': 'extraction-extra',
+    'right.ef.extra.ph': 'es.: date AAAA-MM-GG',
+
+    'right.xl.title': '5) Esporta in tabella',
+    'right.xl.sheet': 'Nome foglio',
+    'right.xl.maxchars': 'Caratteri max per cella',
+    'right.xl.download': 'Scarica la tabella',
+
+    'opt.yes': 'Sì',
+    'opt.no': 'No',
+
+    'right.unsup.title': 'Modalità non supervisionata',
+    'right.unsup.run': 'Esegui pipeline (non supervisionata)',
+
+    'right.med.title': 'Modalità medica',
+    'right.med.run': 'Esegui pipeline (medica)',
+
+    'ind.title': 'Indicatori OECI',
+    'ind.first_contact': 'Data primo contatto',
+    'ind.run': 'Calcolo indicatori',
+    'ind.d1': 'Ritardo 1 — contatto centro → primo appuntamento (10 g)',
+    'ind.d2': 'Ritardo 2 — primo appuntamento → prima anatomia patologica (21 g se non presente prima del primo appuntamento)',
+    'ind.d3': 'Ritardo 3 — primo appuntamento o anat. pat. se post → prima Tumor board (7 g)',
+    'ind.d4': 'Ritardo 4 — prima Tumor board → primo trattamento (10 g)',
+    'ind.value_days': 'Valore (g)',
+    'ind.row': 'Riga del foglio di calcolo',
+    'ind.organ': 'Organo',
+
+    'qa.title': 'Domanda → Risposta (sulla tabella)',
+    'qa.q': 'Domanda',
+    'qa.q.ph': 'Es.: SELECT * FROM sheet_feuil1 LIMIT 10',
+    'qa.run': 'Poni la domanda',
+    'qa.hint': 'Usa automaticamente l’ultima tabella del job.',
+    'qa.a': 'Risposta',
+
+    'modal.cluster.title': 'Validazione del clustering',
+    'modal.close': 'Chiudi',
+    'modal.cluster.imgAlt': 'Anteprima clustering',
+    'modal.cluster.placeholder': 'Nessuna immagine di clustering trovata',
+    'modal.cluster.rename.title': 'Rinomina i cluster',
+    'modal.cluster.rename.apply': 'Applica le rinomine',
+    'modal.cluster.docs.title': 'Correggi le categorie documento per documento',
+    'modal.cluster.docs.save': 'Salva correzioni documenti',
+    'modal.validate_close': 'Conferma e chiudi',
+
+    'modal.catalog.title': 'Validazione del catalogo dei campi',
+    'modal.catalog.text': 'Modifica i nomi dei campi per categoria. Le <b>celle vuote</b> verranno <b>ignorate</b> al salvataggio.',
+    'modal.catalog.save': 'Salva modifiche'
+  });
+
+  Object.assign(I18N.de, {
+    'right.supervised.title': 'Überwachter Modus (ein Fenster pro Code)',
+    'right.shared.params': 'Geteilte LLM-Parameter',
+    'right.shared.model': 'Model',
+    'right.shared.api_key': 'API Key',
+    'right.shared.api_key.ph': 'MISTRAL_API_KEY falls leer',
+    'right.shared.seed': 'Seed',
+
+    'right.ec.title': '1) Inhaltsextraktion → JSON',
+    'right.ec.out': 'Ausgabeverzeichnis',
+    'right.ec.out.ph': 'auto: runs/<job>/work/json_from_files',
+
+    'right.cl.title': '2) Clustering + Kategoriename',
+    'right.cl.embedder': 'Embedder',
+    'right.cl.k': 'k (optional)',
+    'right.cl.k.ph': 'auto',
+    'right.cl.mink': 'min-k',
+    'right.cl.maxk': 'max-k',
+    'right.cl.name_extra': 'name-extra',
+    'right.cl.name_extra.ph': 'Kontext fürs Benennen',
+    'right.cl.naming': 'naming-sample-size',
+    'right.cl.write_back': 'write-back',
+
+    'right.cf.title': '3) Feldauswahl (Katalog)',
+    'right.cf.extra': 'choose-fields-extra',
+    'right.cf.extra.ph': 'zusätzlicher Text',
+
+    'right.ef.title': '4) Feldextraktion über Katalog',
+    'right.ef.extra': 'extraction-extra',
+    'right.ef.extra.ph': 'z. B. Daten JJJJ-MM-TT',
+
+    'right.xl.title': '5) In eine Tabelle exportieren',
+    'right.xl.sheet': 'Blattname',
+    'right.xl.maxchars': 'Max. Zeichen pro Zelle',
+    'right.xl.download': 'Tabelle herunterladen',
+
+    'opt.yes': 'Ja',
+    'opt.no': 'Nein',
+
+    'right.unsup.title': 'Unüberwachter Modus',
+    'right.unsup.run': 'Pipeline ausführen (unüberwacht)',
+
+    'right.med.title': 'Medizinischer Modus',
+    'right.med.run': 'Pipeline ausführen (medizinisch)',
+
+    'ind.title': 'OECI-Indikatoren',
+    'ind.first_contact': 'Datum des ersten Kontakts',
+    'ind.run': 'Indikatoren berechnen',
+    'ind.d1': 'Verzug 1 — Zentrumskontakt → erster Termin (10 T)',
+    'ind.d2': 'Verzug 2 — erster Termin → erste Pathologie (21 T, falls keine vor dem ersten Termin)',
+    'ind.d3': 'Verzug 3 — erster Termin oder Pathologie falls danach → erste Tumorboard (7 T)',
+    'ind.d4': 'Verzug 4 — erste Tumorboard → erste Behandlung (10 T)',
+    'ind.value_days': 'Wert (T)',
+    'ind.row': 'Tabellenzeile',
+    'ind.organ': 'Organ',
+
+    'qa.title': 'Frage → Antwort (zur Tabelle)',
+    'qa.q': 'Frage',
+    'qa.q.ph': 'z. B.: SELECT * FROM sheet_feuil1 LIMIT 10',
+    'qa.run': 'Frage stellen',
+    'qa.hint': 'Verwendet automatisch die neueste Job-Tabelle.',
+    'qa.a': 'Antwort',
+
+    'modal.cluster.title': 'Clustering-Validierung',
+    'modal.close': 'Schließen',
+    'modal.cluster.imgAlt': 'Clustering-Vorschau',
+    'modal.cluster.placeholder': 'Keine Clustering-Grafik gefunden',
+    'modal.cluster.rename.title': 'Cluster umbenennen',
+    'modal.cluster.rename.apply': 'Umbenennungen anwenden',
+    'modal.cluster.docs.title': 'Kategorien dokumentweise korrigieren',
+    'modal.cluster.docs.save': 'Dokumentkorrekturen speichern',
+    'modal.validate_close': 'Bestätigen & schließen',
+
+    'modal.catalog.title': 'Feldkatalog-Validierung',
+    'modal.catalog.text': 'Bearbeite die Feldnamen pro Kategorie. <b>Leere Felder</b> werden beim Speichern <b>ignoriert</b>.',
+    'modal.catalog.save': 'Änderungen speichern'
+  });
+
+  // Boutons d'action réutilisables
+  Object.assign(I18N.fr, { 'btn.run': 'Exécuter', 'btn.next': 'Suivant' });
+  Object.assign(I18N.en, { 'btn.run': 'Run', 'btn.next': 'Next' });
+  Object.assign(I18N.es, { 'btn.run': 'Ejecutar', 'btn.next': 'Siguiente' });
+  Object.assign(I18N.it, { 'btn.run': 'Esegui', 'btn.next': 'Avanti' });
+  Object.assign(I18N.de, { 'btn.run': 'Ausführen', 'btn.next': 'Weiter' });
+
+  // Rafraîchit si déjà monté
+  if (typeof applyTranslations === 'function') applyTranslations();
+</script>
+<!-- À coller après la définition initiale de I18N -->
+<script>
+  Object.assign(I18N.fr, {
+    'err.choose_source': 'Choisis un dossier via glisser-déposer ou le sélecteur.',
+    'upload.failed': 'Upload échoué',
+    'left.drop.loaded': 'Dossier chargé',
+    'run.executing': 'Exécution en cours…',
+    'step.error_prefix': 'Erreur step: ',
+    'pipeline.running': 'Pipeline en cours…',
+    'pipeline.error_prefix': 'Erreur: ',
+    'pipeline.done': 'Terminé.',
+    'cluster.load_failed': 'Impossible de charger le clustering',
+    'cluster.th.id': 'Cluster ID',
+    'cluster.th.suggested': 'Nom proposé',
+    'cluster.th.rename': 'Renommer',
+    'cluster.th.docs': 'Docs',
+    'cluster.none': 'Aucun cluster détecté — vérifie le CSV d’assignation.',
+    'docs.th.file': 'Fichier',
+    'docs.th.proposed_category': 'Catégorie proposée',
+    'docs.th.fix': 'Corriger',
+    'docs.none': 'Aucun document listé — vérifie le CSV d’assignation.',
+    'renames.none': 'Aucun renommage.',
+    'renames.applying': 'Application des renommages…',
+    'renames.error': 'Erreur renommage',
+    'renames.ok_prefix': 'Renommage OK. JSON mis à jour:',
+    'docfix.none': 'Aucune correction document.',
+    'docfix.applying': 'Enregistrement corrections documents…',
+    'docfix.error': 'Erreur corrections documents',
+    'docfix.ok_prefix': 'Corrections OK. JSON mis à jour:',
+    'cluster.must_run_first': 'Tu dois d’abord exécuter l’étape Clustering avant de valider.',
+    'catalog.load_failed': 'Impossible de charger le catalogue',
+    'catalog.none': 'Aucune catégorie trouvée. Exécute d’abord l’étape Choose Fields.',
+    'cat.th.field': 'Champ',
+    'cat.th.action': 'Action',
+    'cat.btn.clear': 'Vider',
+    'cat.btn.add_field': 'Ajouter un champ',
+    'cat.saving': 'Enregistrement en cours…',
+    'cat.save.error': 'Erreur à l’enregistrement',
+    'cat.save.ok_prefix': 'Modifications enregistrées',
+    'cat.count.fields': 'champs',
+    'cat.save.catalog_label': 'catalogue',
+    'cat.save.mirror_label': 'copie source',
+    'cat.modal.open_error': 'Impossible d’ouvrir la validation des champs. Exécute d’abord l’étape Choose Fields.'
+  });
+
+  Object.assign(I18N.en, {
+    'err.choose_source': 'Choose a folder via drag & drop or the picker.',
+    'upload.failed': 'Upload failed',
+    'left.drop.loaded': 'Folder loaded',
+    'run.executing': 'Running…',
+    'step.error_prefix': 'Step error: ',
+    'pipeline.running': 'Pipeline running…',
+    'pipeline.error_prefix': 'Error: ',
+    'pipeline.done': 'Done.',
+    'cluster.load_failed': 'Unable to load clustering',
+    'cluster.th.id': 'Cluster ID',
+    'cluster.th.suggested': 'Suggested name',
+    'cluster.th.rename': 'Rename',
+    'cluster.th.docs': 'Docs',
+    'cluster.none': 'No cluster detected — check the assignment CSV.',
+    'docs.th.file': 'File',
+    'docs.th.proposed_category': 'Proposed category',
+    'docs.th.fix': 'Fix',
+    'docs.none': 'No documents listed — check the assignment CSV.',
+    'renames.none': 'No renames.',
+    'renames.applying': 'Applying renames…',
+    'renames.error': 'Rename error',
+    'renames.ok_prefix': 'Rename OK. JSON updated:',
+    'docfix.none': 'No document corrections.',
+    'docfix.applying': 'Saving document corrections…',
+    'docfix.error': 'Document corrections error',
+    'docfix.ok_prefix': 'Corrections OK. JSON updated:',
+    'cluster.must_run_first': 'You must run the Clustering step before validating.',
+    'catalog.load_failed': 'Unable to load the catalog',
+    'catalog.none': 'No category found. Run the Choose Fields step first.',
+    'cat.th.field': 'Field',
+    'cat.th.action': 'Action',
+    'cat.btn.clear': 'Clear',
+    'cat.btn.add_field': 'Add field',
+    'cat.saving': 'Saving…',
+    'cat.save.error': 'Save error',
+    'cat.save.ok_prefix': 'Changes saved',
+    'cat.count.fields': 'fields',
+    'cat.save.catalog_label': 'catalog',
+    'cat.save.mirror_label': 'source copy',
+    'cat.modal.open_error': 'Unable to open field validation. Run the Choose Fields step first.'
+  });
+
+  Object.assign(I18N.es, {
+    'err.choose_source': 'Elige una carpeta arrastrándola o con el selector.',
+    'upload.failed': 'Carga fallida',
+    'left.drop.loaded': 'Carpeta cargada',
+    'run.executing': 'Ejecutando…',
+    'step.error_prefix': 'Error de etapa: ',
+    'pipeline.running': 'Pipeline en ejecución…',
+    'pipeline.error_prefix': 'Error: ',
+    'pipeline.done': 'Terminado.',
+    'cluster.load_failed': 'No se puede cargar el clustering',
+    'cluster.th.id': 'ID de clúster',
+    'cluster.th.suggested': 'Nombre propuesto',
+    'cluster.th.rename': 'Renombrar',
+    'cluster.th.docs': 'Docs',
+    'cluster.none': 'No se detectó ningún clúster — revisa el CSV de asignación.',
+    'docs.th.file': 'Archivo',
+    'docs.th.proposed_category': 'Categoría propuesta',
+    'docs.th.fix': 'Corregir',
+    'docs.none': 'No hay documentos listados — revisa el CSV de asignación.',
+    'renames.none': 'Ningún cambio de nombre.',
+    'renames.applying': 'Aplicando cambios de nombre…',
+    'renames.error': 'Error al renombrar',
+    'renames.ok_prefix': 'Renombrado OK. JSON actualizado:',
+    'docfix.none': 'Ninguna corrección de documento.',
+    'docfix.applying': 'Guardando correcciones de documentos…',
+    'docfix.error': 'Error en correcciones de documentos',
+    'docfix.ok_prefix': 'Correcciones OK. JSON actualizado:',
+    'cluster.must_run_first': 'Debes ejecutar el paso de Clustering antes de validar.',
+    'catalog.load_failed': 'No se puede cargar el catálogo',
+    'catalog.none': 'No se encontró ninguna categoría. Ejecuta primero el paso Choose Fields.',
+    'cat.th.field': 'Campo',
+    'cat.th.action': 'Acción',
+    'cat.btn.clear': 'Vaciar',
+    'cat.btn.add_field': 'Añadir campo',
+    'cat.saving': 'Guardando…',
+    'cat.save.error': 'Error al guardar',
+    'cat.save.ok_prefix': 'Cambios guardados',
+    'cat.count.fields': 'campos',
+    'cat.save.catalog_label': 'catálogo',
+    'cat.save.mirror_label': 'copia de origen',
+    'cat.modal.open_error': 'No se puede abrir la validación de campos. Ejecuta primero el paso Choose Fields.'
+  });
+
+  Object.assign(I18N.it, {
+    'err.choose_source': 'Scegli una cartella tramite drag & drop o selettore.',
+    'upload.failed': 'Caricamento non riuscito',
+    'left.drop.loaded': 'Cartella caricata',
+    'run.executing': 'Esecuzione in corso…',
+    'step.error_prefix': 'Errore step: ',
+    'pipeline.running': 'Pipeline in esecuzione…',
+    'pipeline.error_prefix': 'Errore: ',
+    'pipeline.done': 'Completato.',
+    'cluster.load_failed': 'Impossibile caricare il clustering',
+    'cluster.th.id': 'ID cluster',
+    'cluster.th.suggested': 'Nome proposto',
+    'cluster.th.rename': 'Rinomina',
+    'cluster.th.docs': 'Documenti',
+    'cluster.none': 'Nessun cluster rilevato — verifica il CSV di assegnazione.',
+    'docs.th.file': 'File',
+    'docs.th.proposed_category': 'Categoria proposta',
+    'docs.th.fix': 'Correggi',
+    'docs.none': 'Nessun documento elencato — verifica il CSV di assegnazione.',
+    'renames.none': 'Nessuna rinomina.',
+    'renames.applying': 'Applicazione delle rinomine…',
+    'renames.error': 'Errore di rinomina',
+    'renames.ok_prefix': 'Rinomina OK. JSON aggiornato:',
+    'docfix.none': 'Nessuna correzione documento.',
+    'docfix.applying': 'Salvataggio correzioni documenti…',
+    'docfix.error': 'Errore correzioni documenti',
+    'docfix.ok_prefix': 'Correzioni OK. JSON aggiornato:',
+    'cluster.must_run_first': 'Devi eseguire lo step di Clustering prima di convalidare.',
+    'catalog.load_failed': 'Impossibile caricare il catalogo',
+    'catalog.none': 'Nessuna categoria trovata. Esegui prima lo step Choose Fields.',
+    'cat.th.field': 'Campo',
+    'cat.th.action': 'Azione',
+    'cat.btn.clear': 'Svuota',
+    'cat.btn.add_field': 'Aggiungi campo',
+    'cat.saving': 'Salvataggio in corso…',
+    'cat.save.error': 'Errore di salvataggio',
+    'cat.save.ok_prefix': 'Modifiche salvate',
+    'cat.count.fields': 'campi',
+    'cat.save.catalog_label': 'catalogo',
+    'cat.save.mirror_label': 'copia sorgente',
+    'cat.modal.open_error': 'Impossibile aprire la validazione dei campi. Esegui prima lo step Choose Fields.'
+  });
+
+  Object.assign(I18N.de, {
+    'err.choose_source': 'Wähle einen Ordner per Drag & Drop oder über den Auswahldialog.',
+    'upload.failed': 'Upload fehlgeschlagen',
+    'left.drop.loaded': 'Ordner geladen',
+    'run.executing': 'Wird ausgeführt…',
+    'step.error_prefix': 'Schrittfehler: ',
+    'pipeline.running': 'Pipeline läuft…',
+    'pipeline.error_prefix': 'Fehler: ',
+    'pipeline.done': 'Fertig.',
+    'cluster.load_failed': 'Clustering konnte nicht geladen werden',
+    'cluster.th.id': 'Cluster-ID',
+    'cluster.th.suggested': 'Vorgeschlagener Name',
+    'cluster.th.rename': 'Umbenennen',
+    'cluster.th.docs': 'Dokumente',
+    'cluster.none': 'Kein Cluster erkannt – prüfe die Zuordnungs-CSV.',
+    'docs.th.file': 'Datei',
+    'docs.th.proposed_category': 'Vorgeschlagene Kategorie',
+    'docs.th.fix': 'Korrigieren',
+    'docs.none': 'Keine Dokumente aufgelistet – prüfe die Zuordnungs-CSV.',
+    'renames.none': 'Keine Umbenennungen.',
+    'renames.applying': 'Benennungen werden angewendet…',
+    'renames.error': 'Fehler beim Umbenennen',
+    'renames.ok_prefix': 'Umbenennung OK. JSON aktualisiert:',
+    'docfix.none': 'Keine Dokumentkorrekturen.',
+    'docfix.applying': 'Dokumentkorrekturen werden gespeichert…',
+    'docfix.error': 'Fehler bei Dokumentkorrekturen',
+    'docfix.ok_prefix': 'Korrekturen OK. JSON aktualisiert:',
+    'cluster.must_run_first': 'Du musst den Clustering-Schritt ausführen, bevor du bestätigst.',
+    'catalog.load_failed': 'Katalog konnte nicht geladen werden',
+    'catalog.none': 'Keine Kategorie gefunden. Führe zuerst den Schritt Choose Fields aus.',
+    'cat.th.field': 'Feld',
+    'cat.th.action': 'Aktion',
+    'cat.btn.clear': 'Leeren',
+    'cat.btn.add_field': 'Feld hinzufügen',
+    'cat.saving': 'Speichern…',
+    'cat.save.error': 'Fehler beim Speichern',
+    'cat.save.ok_prefix': 'Änderungen gespeichert',
+    'cat.count.fields': 'Felder',
+    'cat.save.catalog_label': 'Katalog',
+    'cat.save.mirror_label': 'Quellkopie',
+    'cat.modal.open_error': 'Feldvalidierung kann nicht geöffnet werden. Führe zuerst den Schritt Choose Fields aus.'
+    
+  });
+  Object.assign(I18N.fr, { 'unit.days.short': 'j' });
+Object.assign(I18N.en, { 'unit.days.short': 'd' });
+Object.assign(I18N.es, { 'unit.days.short': 'd' });
+Object.assign(I18N.it, { 'unit.days.short': 'g' });
+Object.assign(I18N.de, { 'unit.days.short': 'T' });
+
+// --- OptiCAIre landing page ---
+// FR
+Object.assign(I18N.fr, {
+  'landing.lead': `En s’appuyant sur l’IA, OpticAIre vise à :\n
+1. Fluidifier l’intégration des données : collecter automatiquement des données depuis des sources diverses (dossiers patients, bases administratives, enquêtes patients).\n
+2. Renforcer l’analytique prédictive : utiliser des algorithmes d’apprentissage pour anticiper les points de vigilance des parcours et proposer des interventions proactives.\n
+3. Améliorer la décision : fournir aux professionnels de santé des recommandations actionnables issues d’analyses de données complètes.\n
+4. Assurer un suivi continu : permettre un monitorage en temps réel de la qualité et de la sécurité des soins, pour des ajustements et améliorations rapides.\n
+5. Impliquer et accompagner les patients : proposer des informations et ressources personnalisées, recueillir leurs retours instantanés et adapter les plans de soins aux besoins individuels.`,
+'landing.discover': "Découvrir l’outil"
+});
+
+// EN
+Object.assign(I18N.en, {
+  'landing.lead': `By leveraging AI, OpticAIre aims to:\n
+1. Streamline data integration: automatically gather data from diverse sources, including electronic health records, administrative databases, and patient surveys.\n
+2. Enhance predictive analytics: use machine learning algorithms to predict potential issues in care pathways and suggest proactive interventions.\n
+3. Improve decision-making: provide healthcare professionals with actionable insights and recommendations based on comprehensive data analysis.\n
+4. Ensure continuous monitoring: enable ongoing, real-time monitoring of care quality and safety, facilitating timely adjustments and improvements.\n
+5. Involve and help patients: use AI to provide personalized health information and resources, allow patients to give instant feedback, and adapt care plans to individual needs.`,
+  'landing.discover': "Discover tool"
+});
+
+// ES
+Object.assign(I18N.es, {
+  'landing.lead': `Al aprovechar la IA, OpticAIre pretende:\n
+1. Agilizar la integración de datos: recopilar automáticamente datos de fuentes diversas (historias clínicas electrónicas, bases administrativas y encuestas a pacientes).\n
+2. Potenciar la analítica predictiva: usar algoritmos de aprendizaje automático para prever problemas potenciales en los itinerarios de atención y sugerir intervenciones proactivas.\n
+3. Mejorar la toma de decisiones: ofrecer a los profesionales de la salud información accionable y recomendaciones basadas en un análisis integral de datos.\n
+4. Garantizar la monitorización continua: habilitar el seguimiento en tiempo real de la calidad y la seguridad asistencial, facilitando ajustes y mejoras oportunas.\n
+5. Implicar y ayudar a los pacientes: proporcionar información y recursos de salud personalizados con IA, permitir feedback instantáneo y adaptar los planes de cuidado a necesidades individuales.`,
+'landing.discover': "Descubrir la herramienta"
+});
+
+// IT
+Object.assign(I18N.it, {
+  'landing.lead': `Sfruttando l’IA, OpticAIre si propone di:\n
+1. Snellire l’integrazione dei dati: raccogliere automaticamente dati da fonti eterogenee (cartelle cliniche elettroniche, banche dati amministrative e sondaggi dei pazienti).\n
+2. Potenziare l’analisi predittiva: usare algoritmi di machine learning per prevedere criticità nei percorsi di cura e suggerire interventi proattivi.\n
+3. Migliorare il decision-making: fornire ai professionisti sanitari insight azionabili e raccomandazioni basate su un’analisi dati completa.\n
+4. Garantire il monitoraggio continuo: abilitare il controllo in tempo reale della qualità e sicurezza delle cure, facilitando aggiustamenti e miglioramenti tempestivi.\n
+5. Coinvolgere e supportare i pazienti: offrire informazioni e risorse personalizzate con l’IA, raccogliere feedback immediati e adattare i piani di cura ai bisogni individuali.`,
+'landing.discover': "Scopri lo strumento",
+});
+
+// DE
+Object.assign(I18N.de, {
+  'landing.lead': `Durch den Einsatz von KI verfolgt OpticAIre folgende Ziele:\n
+1. Datenintegration vereinfachen: Daten automatisch aus unterschiedlichen Quellen sammeln – u. a. elektronische Patientenakten, Verwaltungsdatenbanken und Patientenbefragungen.\n
+2. Prädiktive Analytik stärken: Machine-Learning-Algorithmen nutzen, um mögliche Probleme in Versorgungspfaden vorherzusagen und proaktive Maßnahmen vorzuschlagen.\n
+3. Entscheidungsfindung verbessern: Gesundheitsfachkräften umsetzbare Einblicke und Empfehlungen auf Basis umfassender Datenanalysen bereitstellen.\n
+4. Kontinuierliches Monitoring sicherstellen: Laufende Echtzeit-Überwachung von Versorgungsqualität und -sicherheit ermöglichen, um zeitnahe Anpassungen und Verbesserungen zu erleichtern.\n
+5. Patient:innen einbinden und unterstützen: Mit KI personalisierte Gesundheitsinformationen und Ressourcen bereitstellen, unmittelbares Feedback ermöglichen und Behandlungspläne an individuelle Bedürfnisse anpassen.`
+});
+
+// EN
+Object.assign(I18N.en, {
+  'landing.eu_text': `This tool is part of the <strong>GenAI4EU</strong> call for projects.\n\n
+<strong>Objectives of the call:</strong>\n
+Promoting the integration of generative AI in healthcare\n
+Support end-user-centric solutions\n
+Addressing clinical, ethical and regulatory challenges\n\n
+<strong>Expected:</strong>\n
+Improving the quality of care\n
+Strengthening the personalization of treatments\n
+Evidence of impact in real-world clinical settings`
+});
+
+// FR
+Object.assign(I18N.fr, {
+  'landing.eu_text': `Cet outil s’inscrit dans l’appel à projets <strong>GenAI4EU</strong>.\n\n
+<strong>Objectifs de l’appel :</strong>\n
+Promouvoir l’intégration de l’IA générative en santé\n
+Soutenir des solutions centrées sur les utilisateurs finaux\n
+Répondre aux enjeux cliniques, éthiques et réglementaires\n\n
+<strong>Attendus :</strong>\n
+Amélioration de la qualité des soins\n
+Renforcement de la personnalisation des traitements\n
+Preuves d’impact en conditions réelles de soins`
+});
+
+// ES
+Object.assign(I18N.es, {
+  'landing.eu_text': `Esta herramienta forma parte de la convocatoria <strong>GenAI4EU</strong>.\n\n
+<strong>Objetivos de la convocatoria:</strong>\n
+Promover la integración de la IA generativa en la salud\n
+Apoyar soluciones centradas en los usuarios finales\n
+Abordar retos clínicos, éticos y normativos\n\n
+<strong>Resultados esperados:</strong>\n
+Mejora de la calidad asistencial\n
+Refuerzo de la personalización de los tratamientos\n
+Evidencia de impacto en entornos clínicos reales`
+});
+
+// IT
+Object.assign(I18N.it, {
+  'landing.eu_text': `Questo strumento fa parte della call <strong>GenAI4EU</strong>.\n\n
+<strong>Obiettivi della call:</strong>\n
+Promuovere l’integrazione dell’IA generativa nella sanità\n
+Sostenere soluzioni centrate sugli utenti finali\n
+Affrontare sfide cliniche, etiche e regolatorie\n\n
+<strong>Risultati attesi:</strong>\n
+Miglioramento della qualità delle cure\n
+Rafforzamento della personalizzazione dei trattamenti\n
+Evidenze di impatto in contesti clinici reali`
+});
+
+// DE
+Object.assign(I18N.de, {
+  'landing.eu_text': `Dieses Tool ist Teil der Ausschreibung <strong>GenAI4EU</strong>.\n\n
+<strong>Ziele der Ausschreibung:</strong>\n
+Die Integration generativer KI im Gesundheitswesen vorantreiben\n
+Nutzerzentrierte Lösungen unterstützen\n
+Klinische, ethische und regulatorische Herausforderungen adressieren\n\n
+<strong>Erwartet:</strong>\n
+Verbesserung der Versorgungsqualität\n
+Stärkung der Personalisierung von Behandlungen\n
+Nachweise für Wirkung im klinischen Alltag`
+});
+Object.assign(I18N.fr, { 'mode.dashboard.title': 'Mode Dashboard' });
+Object.assign(I18N.en, { 'mode.dashboard.title': 'Dashboard mode' });
+Object.assign(I18N.es, { 'mode.dashboard.title': 'Modo Dashboard' });
+Object.assign(I18N.it, { 'mode.dashboard.title': 'Modalità Dashboard' });
+Object.assign(I18N.de, { 'mode.dashboard.title': 'Dashboard-Modus' });
+
+
+
+
+  if (typeof applyTranslations === 'function') applyTranslations();
+  
+</script>
+
+<script>
+  // === FICHE TUMEUR ===
+  
+  const fichePreview = document.getElementById('fichePreview');
+  const ficheEmpty   = document.getElementById('ficheEmpty');
+  const ficheIframe  = document.getElementById('ficheIframe');
+  const dlFiche      = document.getElementById('dlFiche');
+  const btnRegen     = document.getElementById('btnRegenFiche');
+  const ficheInfo    = document.getElementById('ficheInfo');
+  
+  function showFichePlaceholder() {
+    if (!ficheCard) return;
+    ficheCard.style.display = '';
+    ficheEmpty.style.display = '';
+    fichePreview.style.display = 'none';
+    ficheIframe.removeAttribute('src');
+    dlFiche.setAttribute('aria-disabled', 'true');
+    dlFiche.removeAttribute('href');
+    ficheInfo.textContent = t('fiche.info.placeholder');     // ← i18n
+  }
+  
+  function showFichePdf(url) {
+    ficheCard.style.display = '';
+    ficheEmpty.style.display = 'none';
+    fichePreview.style.display = '';
+    ficheIframe.src = url + `?t=${Date.now()}`;
+    dlFiche.href = url;
+    dlFiche.setAttribute('aria-disabled', 'false');
+    ficheInfo.textContent = t('fiche.info.generated');       // ← i18n
+  }
+  
+  async function refreshFiche() {
+    if (window.appMode !== 'medical') {
+      if (ficheCard) ficheCard.style.display = 'none';
+      return;
+    }
+    showFichePlaceholder();
+  
+    if (!jobId) return;                                      // ← important: pas window.jobId
+    try {
+      const r = await fetch(`/api/fiche?job_id=${encodeURIComponent(jobId)}`);
+      const js = await r.json();
+      if (!js.ok) throw new Error(js.error || "Erreur fiche");
+      if (js.exists && js.url) showFichePdf(js.url);
+      // sinon on garde l’état vide
+    } catch (e) {
+      ficheInfo.textContent = t('fiche.info.unavailable');   // ← i18n
+    }
+  }
+  
+  btnRegen?.addEventListener('click', async () => {
+    try {
+      ensureSourceChosen();
+      btnRegen.disabled = true;
+      ficheInfo.textContent = t('fiche.info.generating');    // ← i18n
+      await fetch('/api/fiche/generate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ job_id: jobId })
+      });
+      await refreshFiche();
+    } catch (e) {
+      alert(e.message || e);
+      ficheInfo.textContent = t('fiche.info.unavailable');   // ← i18n
+    } finally {
+      btnRegen.disabled = false;
+    }
+  });
+  
+  
+  </script>
+  <script>
+    // --- Helpers ---
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    let jobId = null;
+    let srcPath = null;
+
+    function setStatus() {
+      $("#jobId").textContent = jobId || "—";
+      $("#srcPath").textContent = srcPath || "—";
+    }
+
+    function sharedLLM() {
+      return {
+        model: $("#sh_model").value.trim(),
+        api_key: $("#sh_api_key").value.trim(),
+        seed: parseInt($("#sh_seed").value || "42", 10)
+      };
+    }
+
+    function ensureSourceChosen() {
+      if (!srcPath) throw new Error(t('err.choose_source'));
+    }
+    
+
+
+
+    // --- Source: dossier upload (webkitdirectory ou drop) ---
+    const dropZone = $("#dropZone");
+    const folderInput = $("#folderInput");
+    dropZone.addEventListener("click", () => folderInput.click());
+    dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("over"); });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("over"));
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault(); dropZone.classList.remove("over");
+      if (e.dataTransfer.items) {
+        folderInput.files = e.dataTransfer.files;
+        uploadFolder();
+        
+
+      }
+    });
+    folderInput.addEventListener("change", uploadFolder);
+
+    async function uploadFolder() {
+      const files = Array.from(folderInput.files || []);
+      if (!files.length) return;
+      const fd = new FormData();
+      for (const f of files) {
+        fd.append("files", f);
+      }
+      const r = await fetch("/api/source/upload", { method: "POST", body: fd });
+      const js = await r.json();
+      if (!js.ok) return alert(js.error || t('upload.failed'));
+      jobId = js.job_id; srcPath = js.src_path; setStatus();
+      dropZone.setAttribute('data-i18n', 'left.drop.loaded');
+      dropZone.textContent = t('left.drop.loaded') + " ✔︎";
+      await refreshTimeline();
+    }
+
+    // --- SUPERVISÉ : exécution step par step ---
+    for (const stepEl of $$(".step")) {
+      const execBtn = stepEl.querySelector(".exec");
+      const nextBtn = stepEl.querySelector(".next");
+      const logEl = stepEl.querySelector(".log");
+      execBtn.addEventListener("click", async () => {
+        try {
+          ensureSourceChosen();
+          const step = stepEl.dataset.step;
+
+          // options spécifiques par step
+          const opts = { ...sharedLLM() };
+          if (step === "cluster") {
+            opts.embedder = $("#cl_embedder").value.trim();
+            const k = $("#cl_k").value.trim();
+            if (k) opts.k = parseInt(k, 10);
+            opts.min_k = parseInt($("#cl_min_k").value||"3",10);
+            opts.max_k = parseInt($("#cl_max_k").value||"12",10);
+            opts.name_extra = $("#cl_name_extra").value.trim();
+            opts.naming_sample_size = parseInt($("#cl_naming").value||"5",10);
+            opts.write_back = ($("#cl_write_back").value === "true");
+          }
+          if (step === "choose_fields") {
+            opts.choose_fields_extra = $("#cf_extra").value.trim();
+            await refreshTimeline();
+          }
+          if (step === "extract_fields") {
+            opts.extraction_extra = $("#ef_extra").value.trim();
+          }
+          if (step === "json_to_excel") {
+            opts.sheet = $("#xl_sheet").value.trim();
+            opts.max_cell_chars = parseInt($("#xl_maxchars").value||"32760",10);
+          }
+
+          logEl.textContent = "⏳ " + t('run.executing');
+          const watching = (step === "extract_fields");
+          if (watching) startTimelineWatch(1500);   // ← démarrage live
+          const r = await fetch("/api/run_step", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ job_id: jobId, step, src_path: srcPath, opts, mode: (window.appMode || null) })
+          });
+          const js = await r.json();
+          logEl.textContent = (js.log || "").trim();
+          if (!js.ok) {
+            alert(t('step.error_prefix') + (js.returncode ?? ""))
+            return;
+          }
+          if (nextBtn) nextBtn.disabled = false;
+
+          // Excel ?
+          if (step === "json_to_excel" && js.artifact) {
+            $("#dlExcel").href = `/download/${js.job_id}/${js.artifact.split(`/runs/${js.job_id}/`).pop()}`;
+            $("#dlExcel").style.display = "inline-flex";
+          }
+          await refreshFiche();
+        } catch (e) {
+          alert(e.message || e);
+        } finally {
+          // stoppe le watch et force un dernier refresh
+          if (stepEl.dataset.step === "extract_fields") {
+          stopTimelineWatch();
+          await refreshTimeline();
+          }
+        }
+      });
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          // passe au panneau suivant
+          const steps = $$(".step");
+          const idx = steps.indexOf(stepEl);
+          if (idx >= 0 && idx < steps.length - 1) {
+            steps[idx + 1].scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      }
+    }
+
+    // --- NON SUPERVISÉ : run_all (unsup)
+document.getElementById('btnRunUnsup')?.addEventListener('click', async () => {
+  try {
+    ensureSourceChosen();
+    startTimelineWatch(1500);
+    const shared = {
+      model:  document.getElementById('uns_model').value.trim(),
+      api_key:document.getElementById('uns_api_key').value.trim(),
+      seed:   parseInt(document.getElementById('uns_seed').value || "42", 10)
+    };
+    document.getElementById('uns_result').textContent = "⏳ " + t('pipeline.running');
+    const r = await fetch("/api/run_all", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ job_id: jobId, src_path: srcPath, mode: "unsup", opts: { shared } })
+    });
+    const js = await r.json();
+    if (!js.ok) {
+      document.getElementById('uns_result').textContent = t('pipeline.error_prefix') + (js.where || "") + "\n" + (js.log || "");
+      return;
+    }
+    document.getElementById('uns_result').innerHTML = `✅ ${t('pipeline.done')} <a target="_blank" href="${js.excel}">${t('right.xl.download')}</a>`;
+  } catch(e) { alert(e.message || e); }
+  finally { stopTimelineWatch(); await refreshTimeline(); }
+});
+
+// --- MÉDICAL : run_all (medical)
+document.getElementById('btnRunMedical')?.addEventListener('click', async () => {
+  let stopObs = null;  // ← NEW: pour débrancher l’observer
+  let stopArt = null;  
+  try {
+    ensureSourceChosen();
+    startTimelineWatch(1500);
+
+    // ⬇️ NEW: afficher + init la checklist Medical
+    (document.getElementById('ns_progress')||{}).style.display = '';  // si tu la caches hors mode médical
+    if (typeof resetNSProgress === 'function') resetNSProgress();
+    if (typeof _nsSet === 'function') _nsSet('extract_content','doing','');
+    stopObs = installTimelineDrivenProgress(); // ← NEW: écoute la timeline pour cocher au fil de l’eau
+    stopArt = installArtifactWatcher();
+
+    const shared = {
+      model:  document.getElementById('med_model').value.trim(),
+      api_key:document.getElementById('med_api_key').value.trim(),
+      seed:   parseInt(document.getElementById('med_seed').value || "42", 10)
+    };
+    document.getElementById('med_result').textContent = "⏳ " + t('pipeline.running');
+    const r = await fetch("/api/run_all", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ job_id: jobId, src_path: srcPath, mode: "medical", opts: { shared } })
+    });
+    const js = await r.json();
+    if (!js.ok) {
+      setNSProgressFromError(js); 
+      // ⬇️ NEW: refléter l’étape fautive si fournie
+      if (typeof _nsSet === 'function') {
+        const meta = (js.log || js.error || '').split('\n')[0]?.slice(0,120) || '';
+        _nsSet(js.where || 'extract_fields', 'error', meta);
+      }
+      document.getElementById('med_result').textContent =
+        t('pipeline.error_prefix') + (js.where || "") + "\n" + (js.log || "");
+      return;
+    }
+
+    // ⬇️ NEW: succès => tout cocher
+    if (typeof markNSProgressAllDone === 'function') markNSProgressAllDone();
+    else ['extract_content','cluster','extract_fields','json_to_excel'].forEach(s => _nsSet?.(s,'done',''));
+
+    // lien de DL (robuste si tu as déjà linkFromRun, sinon garde js.excel)
+    const link = (typeof linkFromRun === 'function') ? linkFromRun(js) : (js.excel || '#');
+    document.getElementById('med_result').innerHTML =
+      `✅ ${t('pipeline.done')} <a target="_blank" href="${link}">${t('right.xl.download')}</a>`;
+    await refreshFiche();
+
+  } catch(e) { alert(e.message || e); }
+  finally {
+    try { stopObs?.(); } catch {}
+    try { stopArt?.(); } catch {} 
+    stopTimelineWatch();
+    await refreshTimeline();
+    await fetch('/api/fiche/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ job_id: jobId })
+    });
+    await refreshFiche();
+  }
+});
+
+  </script>
+  <script>
+    // ===== Validation Clustering Modal =====
+    const modal = $("#clusterReview");
+    const crClose = $("#cr_close");
+    const crImg = $("#cr_img");
+    const crPH = $("#cr_img_placeholder");
+    const crClusters = $("#cr_clusters");
+    const crDocs = $("#cr_docs");
+    const crApplyNames = $("#cr_apply_names");
+    const crApplyDocs = $("#cr_apply_docs");
+    const crValidate = $("#cr_validate");
+    const crStatus = $("#cr_status");
+  
+    let _crData = null; // { clusters:[{id,name,count}], docs:[{json_path,filename,cluster_id,category}], img_url, category_names }
+    let _crNextBtn = null; // bouton "Suivant" de l'étape cluster
+    let _crRenames = {};   // { cluster_id: new_name }
+    let _crDocEdits = {};  // { json_path: new_category }
+    // helper local
+    function normName(s){ return String(s||'').trim().toLowerCase(); }
+    function openClusterReview(nextBtnRef) {
+      _crNextBtn = nextBtnRef || null;
+      _crRenames = {};
+      _crDocEdits = {};
+      crStatus.textContent = "";
+      modal.classList.remove("hidden");
+      modal.setAttribute("aria-hidden","false");
+      document.body.classList.add("modal-open");     // ← AJOUT
+      const body = document.querySelector("#clusterReview .modal-body");
+      if (body) body.scrollTop = 0;
+    }
+    
+    function closeClusterReview() {
+      modal.classList.add("hidden");
+      modal.setAttribute("aria-hidden","true");
+      document.body.classList.remove("modal-open");  // ← AJOUT
+    }
+    
+    
+    
+    function escapeHTML(s){ return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return escapeHTML(s); }
+
+  async function loadClusterSummary() {
+    const r = await fetch(`/api/cluster/summary?job_id=${encodeURIComponent(jobId)}`);
+    const js = await r.json();
+    if (!js.ok) throw new Error(js.error || t('cluster.load_failed'));
+    _crData = js;
+
+    // --- Image
+    if (js.img_url) {
+      crImg.src = js.img_url;
+      crImg.style.display = "block";
+      crPH.style.display = "none";
+    } else {
+      crImg.style.display = "none";
+      crPH.style.display = "flex";
+    }
+
+    // --- Table CLUSTERS
+    crClusters.innerHTML = "";
+
+    if (Array.isArray(js.clusters) && js.clusters.length) {
+      // 1) Grouper par nom proposé (insensible à la casse/espaces)
+      const groupsMap = new Map(); // key -> {displayName, clusters:[], totalDocs}
+      js.clusters.forEach(c => {
+        const raw = c.name || "—";
+        const key = normName(raw) || "—";
+        const g = groupsMap.get(key) || { displayName: raw, clusters: [], totalDocs: 0 };
+        g.clusters.push(c);
+        g.totalDocs += (c.count || 0);
+        groupsMap.set(key, g);
+      });
+  
+      // 2) Ordonner les groupes par affichage
+      const groups = Array.from(groupsMap.values()).sort((a,b) =>
+        String(a.displayName||"").localeCompare(String(b.displayName||""))
+      );
+  
+      // 3) Rendu : un <details> par groupe + mini-table par groupe
+      groups.forEach(g => {
+        const details = document.createElement("details");
+        details.open = true;
+        details.className = "cluster-group";
+  
+        // Summary : nom + input de renommage de groupe + métriques
+        const sum = document.createElement("summary");
+        sum.className = "group-summary";
+        sum.innerHTML = `
+          <b>${escapeHTML(g.displayName || "—")}</b>
+          <input class="rename group-rename" title="${escapeAttr(t('cluster.th.rename'))} (groupe)"
+                 value="${escapeAttr(g.displayName || '')}" style="margin-left:.5rem; min-width:220px;">
+          <span class="muted" style="margin-left:.5rem;">
+            ${g.clusters.length} clusters • ${g.totalDocs} docs
+          </span>
+        `;
+        details.appendChild(sum);
+  
+        // Table du groupe
+        const table = document.createElement("div");
+        table.className = "table clusters";
+  
+        const head = document.createElement("div");
+        head.className = "tr head";
+        head.innerHTML = `
+          <div>${t('cluster.th.id')}</div>
+          <div>${t('cluster.th.suggested')}</div>
+          <div>${t('cluster.th.rename')}</div>
+          <div>${t('cluster.th.docs')}</div>`;
+        table.appendChild(head);
+  
+        g.clusters
+          .sort((a,b)=> String(a.id||"").localeCompare(String(b.id||"")))
+          .forEach(c => {
+            const tr = document.createElement("div");
+            tr.className = "tr";
+  
+            // ID
+            const tdId = document.createElement("div");
+            tdId.className = "td mono";
+            tdId.textContent = c.id || "—";
+  
+            // Nom proposé (tel que détecté)
+            const tdName = document.createElement("div");
+            tdName.className = "td";
+            tdName.textContent = c.name || "";
+  
+            // Input rename (par cluster)
+            const tdInp = document.createElement("div");
+            tdInp.className = "td";
+            const inp = document.createElement("input");
+            inp.className = "rename";
+            inp.dataset.cid = c.id;
+            inp.value = _crRenames[c.id] ?? (c.name || "");
+            inp.addEventListener("input", e => { _crRenames[c.id] = e.target.value; });
+            tdInp.appendChild(inp);
+  
+            // Docs count
+            const tdCnt = document.createElement("div");
+            tdCnt.className = "td";
+            tdCnt.textContent = String(c.count || 0);
+  
+            tr.append(tdId, tdName, tdInp, tdCnt);
+            table.appendChild(tr);
+          });
+  
+        details.appendChild(table);
+        crClusters.appendChild(details);
+  
+        // 4) Wire up : renommage de groupe → propage sur tous les inputs du groupe
+        const gInp = details.querySelector(".group-rename");
+        gInp.addEventListener("input", e => {
+          const v = e.target.value;
+          g.clusters.forEach(c => {
+            _crRenames[c.id] = v;
+            const child = details.querySelector(`input.rename[data-cid="${CSS.escape(String(c.id))}"]`);
+            if (child) child.value = v;
+          });
+        });
+      });
+    } else {
+      const tr = document.createElement("div");
+      tr.className = "tr info";
+      const td = document.createElement("div");
+      td.textContent = t('cluster.none');
+      tr.append(td);
+      crClusters.appendChild(tr);
+    }
+
+    // --- Table DOCS
+    crDocs.innerHTML = "";
+    const headD = document.createElement("div");
+    headD.className = "tr head";
+    headD.innerHTML = `<div>${t('docs.th.file')}</div><div>${t('docs.th.proposed_category')}</div><div>${t('docs.th.fix')}</div>`;
+    crDocs.appendChild(headD);
+
+    // datalist (auto-complétion)
+    const names = new Set(js.category_names || []);
+    (js.docs || []).forEach(d => { if (d.category) names.add(d.category); });
+    const dlId = `cr_known_categories_${jobId}`;
+    let dl = document.getElementById(dlId);
+    if (dl) dl.remove();
+    dl = document.createElement("datalist");
+    dl.id = dlId;
+    Array.from(names).sort().forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      dl.appendChild(opt);
+    });
+    document.body.appendChild(dl);
+
+    if (Array.isArray(js.docs) && js.docs.length) {
+      js.docs.forEach(d => {
+        const tr = document.createElement("div");
+        tr.className = "tr";
+        // Fichier
+        const tdF = document.createElement("div");
+        tdF.className = "td mono";
+        tdF.title = d.json_path || "";
+        tdF.textContent = d.filename || "";
+        // Catégorie proposée
+        const tdP = document.createElement("div");
+        tdP.className = "td";
+        tdP.textContent = d.category || "";
+        // Input correction
+        const tdC = document.createElement("div");
+        tdC.className = "td";
+        const inp = document.createElement("input");
+        inp.className = "doccat";
+        inp.setAttribute("list", dlId);
+        inp.value = d.category || "";
+        inp.dataset.json = d.json_path || "";
+        inp.addEventListener("change", e => { _crDocEdits[e.target.dataset.json] = e.target.value; });
+        tdC.appendChild(inp);
+
+        tr.append(tdF, tdP, tdC);
+        crDocs.appendChild(tr);
+      });
+    } else {
+      const tr = document.createElement("div");
+      tr.className = "tr info";
+      const td = document.createElement("div");
+      td.textContent = t('docs.none');
+      tr.append(td);
+      crDocs.appendChild(tr);
+    }
+  }
+  
+    async function applyRenames() {
+      if (!Object.keys(_crRenames).length) { crStatus.textContent = t('renames.none'); return; }
+      crStatus.textContent = t('renames.applying');
+      const r = await fetch("/api/cluster/apply_names", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ job_id: jobId, names: _crRenames })
+      });
+      const js = await r.json();
+      if (!js.ok) { alert(js.error || t('renames.error')); return; }
+      crStatus.textContent = `${t('renames.ok_prefix')} ${js.updated}.`;
+    }
+  
+    async function applyDocEdits() {
+      const updates = Object.entries(_crDocEdits).map(([json_path, category]) => ({ json_path, category }));
+      if (!updates.length) { crStatus.textContent = t('docfix.none'); return; }
+      crStatus.textContent = t('docfix.applying');
+      const r = await fetch("/api/cluster/update_docs", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ job_id: jobId, updates })
+      });
+      const js = await r.json();
+      if (!js.ok) { alert(js.error || t('docfix.error')); return; }
+      crStatus.textContent = `${t('docfix.ok_prefix')} ${js.updated}.`;
+    }
+  
+    crApplyNames.addEventListener("click", applyRenames);
+    crApplyDocs.addEventListener("click", applyDocEdits);
+    crValidate.addEventListener("click", async () => {
+      // Applique d'abord les actions en attente
+      if (Object.keys(_crRenames).length) { await applyRenames(); }
+      if (Object.keys(_crDocEdits).length) { await applyDocEdits(); }
+    
+      // Puis ferme la modal et passe à la suite
+      closeClusterReview();
+      if (_crAfterClose) _crAfterClose();
+    });    
+    crClose.addEventListener("click", closeClusterReview);
+  
+    function escapeHTML(s){ return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeAttr(s){ return escapeHTML(s); }
+  
+    // ===== Intégration: Ouvre la modal automatiquement quand le step "cluster" réussit =====
+    // ===== Ouvrir la validation au clic sur "Suivant" du step Clustering =====
+let _crAfterClose = null; // action à exécuter après validation/fermeture
+
+(function hookClusterNext() {
+  const steps = $$(".step");
+  const clusterStep = document.querySelector('.step[data-step="cluster"]');
+  if (!clusterStep) return;
+
+  // Bouton "Suivant" d'origine
+  const nextBtn = clusterStep.querySelector(".next");
+  if (!nextBtn) return;
+
+  // On remplace le bouton par un clone pour enlever les écouteurs "génériques" déjà attachés
+  const cloned = nextBtn.cloneNode(true);
+  nextBtn.parentNode.replaceChild(cloned, nextBtn);
+  
+  // ➜ Activer le nouveau bouton, on gère nous-mêmes la validation derrière :
+  cloned.disabled = false;              // <— AJOUT 1
+  cloned.style.pointerEvents = "auto";  // <— AJOUT 2 (par sûreté si style CSS le bloque)
+  
+  cloned.addEventListener("click", async (e) => {
+    e.preventDefault();
+    try {
+      ensureSourceChosen();
+
+      // Vérifie que l'étape clustering a bien tourné (et que les artefacts existent)
+      const sum = await fetch(`/api/cluster/summary?job_id=${encodeURIComponent(jobId)}`);
+      const js = await sum.json();
+      if (!js.ok) {
+        alert(t('cluster.must_run_first'));
+        return;
+      }
+
+      // Charge/affiche la modal de revue
+      await loadClusterSummary();
+
+      // Après validation, on scrolle vers l’étape suivante
+      const idx = steps.indexOf(clusterStep);
+      _crAfterClose = () => {
+        if (idx >= 0 && idx < steps.length - 1) {
+          steps[idx + 1].scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      };
+
+      openClusterReview(cloned);
+    } catch (err) {
+      alert(err.message || err);
+    }
+  });
+})();
+  </script>
+  <script>
+    // ===== Validation "Choose Fields" =====
+    const catModal = $("#catalogReview");
+    const catClose = $("#cat_close");
+    const catList  = $("#cat_list");
+    const catSave  = $("#cat_save");
+    const catValid = $("#cat_validate");
+    const catStatus= $("#cat_status");
+  
+    let _catData = null;     // { categories:[{name, fields:[]}] }
+    let _catAfterClose = null;
+  
+    function openCatalogReview() {
+      catStatus.textContent = "";
+      catModal.classList.remove("hidden");
+      catModal.setAttribute("aria-hidden","false");
+      document.body.classList.add("modal-open");     // ← AJOUT
+      const body = catModal.querySelector(".modal-body");
+      if (body) body.scrollTop = 0;
+    }
+    function closeCatalogReview() {
+      catModal.classList.add("hidden");
+      catModal.setAttribute("aria-hidden","true");
+      document.body.classList.remove("modal-open");  // ← AJOUT
+    }
+    
+  
+    async function loadCatalogSummary() {
+      const r = await fetch(`/api/catalog/summary?job_id=${encodeURIComponent(jobId)}`);
+      const js = await r.json();
+      if (!js.ok) throw new Error(js.error || t('catalog.load_failed'));
+      _catData = js;
+      renderCatalogEditor(js.categories || []);
+    }
+  // extrait un nom depuis une chaîne "{'name': 'xxx'}" / {"name":"xxx"} / "{name:'xxx'}"
+function _extractNameFromString(s){
+  if (!s) return null;
+  s = String(s).trim();
+
+  // 1) RegExp tolérante aux quotes simples/doubles + autres clés (label/field)
+  let m = s.match(/^\s*\{\s*['"]?(name|label|field)['"]?\s*:\s*['"]([^'"]+)['"]\s*(?:,.*)?\}\s*$/i);
+  if (m) return m[2];
+
+  // 2) Variante sans accolades:  name: 'xxx'
+  m = s.match(/^\s*['"]?name['"]?\s*[:=]\s*['"]([^'"]+)['"]\s*$/i);
+  if (m) return m[1];
+
+  // 3) Tentative JSON si c'est du vrai JSON (garde les quotes doubles)
+  if (s.startsWith('{') && s.endsWith('}')) {
+    try {
+      // mini normalisation: remplace quotes simples par doubles SI la chaîne ressemble à un dict python
+      const looksPy = /'[^']*'\s*:/.test(s);
+      const jsonish = looksPy ? s.replace(/'/g, '"') : s;
+      const obj = JSON.parse(jsonish);
+      const val = obj.name ?? obj.label ?? obj.field;
+      if (typeof val === 'string' && val.trim()) return val.trim();
+    } catch(_) {}
+  }
+
+  return null;
+}
+
+// Affiche "beau" → { text, shape }
+function _fieldToDisplayShape(f){
+  // cas string
+  if (typeof f === 'string') {
+    const name = _extractNameFromString(f);
+    if (name) return { text: name, shape: 'object' }; // on traitera comme un objet {name:...}
+    return { text: f, shape: 'string' };
+  }
+  // cas objet
+  if (f && typeof f === 'object') {
+    let text = f.name ?? f.label ?? f.field ?? '';
+    // parfois le champ embarque encore une chaîne "{'name': 'xxx'}"
+    if (typeof text === 'string') {
+      const parsed = _extractNameFromString(text);
+      if (parsed) text = parsed;
+    }
+    return { text, shape: 'object' };
+  }
+  // fallback
+  return { text: String(f ?? ''), shape: 'string' };
+}
+
+// Reconstruit l’objet attendu depuis un texte
+function _displayToField(txt, shape){
+  return (shape === 'object') ? { name: txt } : txt;
+}
+    function renderCatalogEditor(categories) {
+      catList.innerHTML = "";
+      if (!categories.length) {
+        const p = document.createElement("p");
+        p.className = "muted";
+        p.textContent = t('catalog.none');
+        catList.appendChild(p);
+        return;
+      }
+      categories.forEach(cat => {
+        const details = document.createElement("details");
+        details.open = true;
+        const summary = document.createElement("summary");
+        summary.innerHTML = `<b>${escapeHTML(cat.name)}</b> <span class="muted">(${(cat.fields||[]).length} champs)</span>`;
+        details.appendChild(summary);
+  
+        const wrap = document.createElement("div");
+        wrap.className = "fields-wrap";
+  
+        // Table des champs (inputs)
+        const table = document.createElement("div");
+        table.className = "table fields";
+        const head = document.createElement("div");
+        head.className = "tr head";
+        head.innerHTML = `<div>${t('cat.th.field')}</div><div>${t('cat.th.action')}</div>`;
+        table.appendChild(head);
+  
+        const addRow = (val = "", shape = "object") => {
+          const tr = document.createElement("div");
+          tr.className = "tr";
+          tr.style.gridTemplateColumns = "1fr auto";
+  
+          const tdInput = document.createElement("div");
+          tdInput.className = "td";
+          const inp = document.createElement("input");
+          inp.className = "field-input";
+          inp.dataset.shape = shape;   // "string" ou "object"
+          inp.value = val;
+          tdInput.appendChild(inp);
+  
+          const tdAct = document.createElement("div");
+          tdAct.className = "td";
+          const btnDel = document.createElement("button");
+          btnDel.className = "button danger mini";
+          btnDel.type = "button";
+          btnDel.textContent = t('cat.btn.clear');
+          btnDel.addEventListener("click", () => { inp.value = ""; });
+          tdAct.appendChild(btnDel);
+  
+          tr.append(tdInput, tdAct);
+          table.appendChild(tr);
+        };
+  
+        // existants
+        (cat.fields || []).forEach(f => {
+          const { text, shape } = _fieldToDisplayShape(f);
+          addRow(text, shape);
+        });
+        // 3 vides pour ajout — en objet par défaut
+        addRow("", "object"); addRow("", "object"); addRow("", "object");
+  
+        wrap.appendChild(table);
+  
+        // Bouton "Ajouter un champ"
+        const addBtnRow = document.createElement("div");
+        addBtnRow.className = "actions";
+        const addBtn = document.createElement("button");
+        addBtn.className = "secondary";
+        addBtn.type = "button";
+        addBtn.textContent = t('cat.btn.add_field');
+        addBtn.addEventListener("click", () => addRow("", "object"));
+        addBtnRow.appendChild(addBtn);
+        wrap.appendChild(addBtnRow);
+  
+        // Marqueur de catégorie (pour relecture)
+        wrap.dataset.category = cat.name;
+  
+        details.appendChild(wrap);
+        catList.appendChild(details);
+      });
+    }
+  
+    function gatherCatalogEdits() {
+      const edits = [];
+      catList.querySelectorAll(".fields-wrap").forEach(wrap => {
+        const catName = wrap.dataset.category || "";
+        const inputs = Array.from(wrap.querySelectorAll("input.field-input"));
+        const rows = inputs
+          .map(i => ({ txt: (i.value || "").trim(), shape: i.dataset.shape || "string" }))
+          .filter(r => r.txt.length > 0);
+        
+        // dé-duplique sur le texte affiché
+        const seen = new Set(); const uniq = [];
+        rows.forEach(r => { if (!seen.has(r.txt)) { seen.add(r.txt); uniq.push(r); }});
+        
+        // reconstruit la forme attendue par le backend
+        const fields = uniq.map(r => _displayToField(r.txt, r.shape));
+        edits.push({ name: catName, fields });
+        
+      });
+      return edits;
+    }
+  
+    async function saveCatalogEdits() {
+      const categories = gatherCatalogEdits();
+      catStatus.textContent = t('cat.saving');
+      const r = await fetch("/api/catalog/update", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ job_id: jobId, categories })
+      });
+      const js = await r.json();
+      if (!js.ok) { alert(js.error || t('cat.save.error')); return false; }
+      // ⬇️ Montre où le fichier a été écrit
+      const parts = [];
+      if (js.saved_url)  parts.push(`${t('cat.save.catalog_label')}: <a target="_blank" href="${js.saved_url}">${js.saved_path.split('/work/').pop()}</a>`);
+      if (js.mirror_url) parts.push(`${t('cat.save.mirror_label')}: <a target="_blank" href="${js.mirror_url}">${js.mirror_path.split('/work/').pop()}</a>`);
+      catStatus.innerHTML = `${t('cat.save.ok_prefix')} (${js.total_fields} ${t('cat.count.fields')}). ${parts.join(" — ")}`;
+      return true;
+    }
+  
+    catSave.addEventListener("click", saveCatalogEdits);
+    catValid.addEventListener("click", async () => {
+      await saveCatalogEdits();
+      closeCatalogReview();
+      if (_catAfterClose) _catAfterClose();
+    });
+    catClose.addEventListener("click", () => {
+      // Pas d’enregistrement automatique à la fermeture (on reste strict)
+      closeCatalogReview();
+    });
+  
+    // ===== Hook "Suivant" sur l'étape Choose Fields =====
+    (function hookChooseFieldsNext() {
+      const step = document.querySelector('.step[data-step="choose_fields"]');
+      if (!step) return;
+      const nextBtn = step.querySelector(".next");
+      if (!nextBtn) return;
+  
+      // Remplacer par un clone propre (au cas où d'autres handlers existent)
+      const cloned = nextBtn.cloneNode(true);
+      nextBtn.parentNode.replaceChild(cloned, nextBtn);
+      // Si ton flux active/désactive dynamiquement "next", assure-toi qu'il cible .step .next courant
+      cloned.disabled = false; 
+      cloned.style.pointerEvents = "auto";
+  
+      const steps = $$(".step");
+      cloned.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          ensureSourceChosen();
+          await loadCatalogSummary();
+          // après validation -> scroll vers l’extraction
+          const idx = steps.indexOf(step);
+          _catAfterClose = () => {
+            if (idx >= 0 && idx < steps.length - 1) {
+              steps[idx + 1].scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          };
+          openCatalogReview();
+        } catch (err) {
+          alert((err && err.message) || t('cat.modal.open_error'));
+        }
+      });
+    })();
+  
+    // utilitaires déjà présents (rappel)
+    function escapeHTML(s){ return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  </script>
+  
+  <!-- MODAL DE VALIDATION CATALOGUE DES CHAMPS -->
+
+  <script>
+    // Déplacer les modales sous <body> une fois que tout est là (robuste)
+    window.addEventListener('load', function () {
+      ['clusterReview','catalogReview'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && el.parentElement !== document.body) {
+          document.body.appendChild(el);
+        }
+      });
+    });
+  </script>
+  
+ 
+  <script>
+    // --- Frise ---
+    const timelineEl = document.getElementById("timeline");
+    const TL_HYDRATED = new Set();
+    const tlTip = document.getElementById("tl_tip");
+    let _tlItems = [];
+    let _tlPoll = null;
+  
+    function startTimelineWatch(interval = 1500) {
+      stopTimelineWatch();
+      refreshTimeline();
+      _tlPoll = setInterval(refreshTimeline, interval);
+    }
+    function stopTimelineWatch() {
+      if (_tlPoll) { clearInterval(_tlPoll); _tlPoll = null; }
+    }
+  
+    async function refreshTimeline() {
+      try {
+        if (!jobId) return; // rien à faire si pas de job
+        const r = await fetch(`/api/timeline?job_id=${encodeURIComponent(jobId)}`);
+        const js = await r.json();
+        if (!js.ok) return;
+        _tlItems = js.items || [];
+        renderTimeline(_tlItems);
+      } catch (e) {
+        // silent
+      }
+    }
+    function toTime(s) {
+      if (!s) return Number.POSITIVE_INFINITY;      // pousse les inconnues en bas
+      s = String(s).trim();
+    
+      // ISO / ISO-like: YYYY-MM-DD[ hh:mm[:ss]]
+      let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+      if (m) { const [,Y,M,D,h='0',mi='0',se='0'] = m; return new Date(+Y,+M-1,+D,+h,+mi,+se).getTime(); }
+    
+      // FR: DD/MM/YYYY ou DD-MM-YYYY
+      m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+      if (m) { const [,D,M,Y] = m; return new Date(+Y,+M-1,+D).getTime(); }
+    
+      // YYYYMMDD
+      m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+      if (m) { const [,Y,M,D] = m; return new Date(+Y,+M-1,+D).getTime(); }
+    
+      // MM/YYYY
+      m = s.match(/^(\d{1,2})[\/\-\.](\d{4})$/);
+      if (m) { const [,M,Y] = m; return new Date(+Y,+M-1,1).getTime(); }
+    
+      // YYYY
+      m = s.match(/^(\d{4})$/);
+      if (m) { const [,Y] = m; return new Date(+Y,0,1).getTime(); }
+    
+      const t = Date.parse(s);
+      return isNaN(t) ? Number.POSITIVE_INFINITY : t;
+    }
+    
+    let _tlResortTimer = null;
+    function queueTimelineResort() {
+      if (_tlResortTimer) return;
+      _tlResortTimer = setTimeout(() => { _tlResortTimer = null; renderTimeline(_tlItems); }, 120);
+    }
+    
+    function renderTimeline(items) {
+      items.forEach(it => { it._ts = toTime(it.date_doc); });
+      items.sort((a,b) => {
+        if (a._ts !== b._ts) return a._ts - b._ts; // plus ancien → plus récent
+        // tie-breaker stable
+        return String(a.filename||a.json_path||"").localeCompare(String(b.filename||b.json_path||""));
+      });
+      timelineEl.innerHTML = "";
+      items.forEach(it => {
+        const div = document.createElement("div");
+        div.className = "tl-item";
+        if (it.json_path) div.dataset.jsonPath = it.json_path;
+    
+        const cat = it.category ? `<span class="tl-cat">${escapeHTML(String(it.category))}</span>` : "";
+        div.innerHTML = `
+          <div class="tl-row">
+            ${cat}
+            <span class="tl-date">${escapeHTML(String(it.date_doc || ""))}</span>
+          </div>
+        `;
+    
+        // Tooltip (inchangé)
+        const show = async (e) => {
+          await maybeRefreshItemFields(it, div);
+          const fields = it.fields || {};
+          const rows = Object.entries(fields).slice(0, 60).map(([k,v]) => {
+            const val = (v==null) ? "" : (typeof v === "object" ? JSON.stringify(v) : String(v));
+            return `<div><b>${escapeHTML(k)}:</b><span>${escapeHTML(val)}</span></div>`;
+          }).join("");
+          const dateDoc = it.date_doc ? String(it.date_doc) : "";
+          tlTip.innerHTML = `
+            <div class="tl-tip-header">
+              <span class="tl-tip-cat">${escapeHTML(String(it.category || ""))}</span>
+              <span class="tl-tip-date">${escapeHTML(dateDoc)}</span>
+            </div>
+            <div class="kv">${rows || "<div><i>Aucun champ</i></div>"}</div>
+          `;
+          tlTip.style.display = "block";
+          tlTip.style.left = (e.clientX + 16) + "px";
+          tlTip.style.top  = (e.clientY - 10) + "px";
+        };
+        const move = (e) => { tlTip.style.left = (e.clientX + 16) + "px"; tlTip.style.top  = (e.clientY - 10) + "px"; };
+        const hide = () => { tlTip.style.display = "none"; };
+        div.addEventListener("mouseenter", show);
+        div.addEventListener("mousemove", move);
+        div.addEventListener("mouseleave", hide);
+    
+        timelineEl.appendChild(div);
+    
+        // 👇 Précharge la date si elle n’est pas au top-level (existe souvent dans fields)
+         if (!it.date_doc && it.json_path && !TL_HYDRATED.has(it.json_path)) {
+             TL_HYDRATED.add(it.json_path);
+             maybeRefreshItemFields(it, div);
+           }
+      });
+    }
+  
+    async function maybeRefreshItemFields(it, mountEl) {
+      const jp = mountEl?.dataset?.jsonPath || it.json_path;
+      if (!jobId || !jp) return;
+      try {
+        const r = await fetch(`/api/timeline/fields?job_id=${encodeURIComponent(jobId)}&json_path=${encodeURIComponent(jp)}`);
+        const js = await r.json();
+        if (!js || !js.ok) return;
+    
+        const f = js.fields ?? {};
+        it.fields = f;
+    
+        // --- Helpers robustes ---
+        const takeVal = (v) => {
+          if (v == null) return "";
+          if (typeof v === "string" || typeof v === "number") return String(v);
+          if (Array.isArray(v)) return takeVal(v[0]) || "";
+          if (typeof v === "object") return v.value ?? v.text ?? v.date ?? v.start ?? v.end ?? v.val ?? "";
+          return "";
+        };
+        const norm = (s) => String(s||"")
+          .trim()
+          .replace(/^name\s*[:=]\s*/i, "")        // enlève "name:" éventuel
+          .replace(/[{}"']/g, "")                 // nettoie { ' ' }
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/[-_]+/g, "");
+    
+        // --- Cherche une "date_doc" partout ---
+        let d =
+          js.date_doc ??
+          it.date_doc ?? "";
+    
+        // 1) Si fields est un objet {clé: valeur}
+        if (!d && f && !Array.isArray(f) && typeof f === "object") {
+          for (const [k, v] of Object.entries(f)) {
+            const nk = norm(k);
+            // clés possibles: date_doc, datedoc, name:date_doc, etc.
+            if (nk === "datedoc" || nk === "datedocument" || nk.endsWith("datedoc") || nk.includes("name:datedoc") || nk.includes("name=datedoc")) {
+              d = takeVal(v);
+              if (d) break;
+            }
+            // valeur de type {name:..., value:...}
+            if (!d && v && typeof v === "object") {
+              const vn = norm(v.name || v.field || "");
+              if (vn === "datedoc") { d = takeVal(v); if (d) break; }
+            }
+          }
+        }
+    
+        // 2) Si fields est un tableau [{name,value}, ...]
+        if (!d && Array.isArray(f)) {
+          for (const item of f) {
+            const vn = norm(item?.name || item?.field || item?.key || "");
+            if (vn === "datedoc") { d = takeVal(item); if (d) break; }
+          }
+        }
+    
+        // fallback ultra défensif
+        if (!d && typeof f === "object" && f) {
+          // parfois la clé brute ressemble exactement à "{'name': 'date_doc'}"
+          const hit = Object.entries(f).find(([k]) => norm(k).includes("name:datedoc"));
+          if (hit) d = takeVal(hit[1]);
+        }
+    
+        it.date_doc = String(d || "");
+        it._ts = toTime(it.date_doc);
+    
+        // MAJ de la vignette dans la frise
+        const dateEl = mountEl.querySelector(".tl-date");
+        if (dateEl) dateEl.textContent = it.date_doc || "";
+           if (it._ts !== prevTs) {        // ← uniquement si ça a changé
+               queueTimelineResort();
+             }
+      } catch {
+        /* ignore */
+      }
+    }
+  </script>
+  <script>
+  // Sélecteurs d’éléments
+  const picker   = document.getElementById('modePicker');
+  const switcher = document.getElementById('modeSwitcher');
+
+  // Références aux cartes (droite)
+  const cardSupervise = document.getElementById('cardSupervise');
+  const cardUnsup     = document.getElementById('cardUnsup');
+  const cardMedical   = document.getElementById('cardMedical');
+  const cardQA        = document.getElementById('qa_card');
+  const cardIndicators = document.getElementById('cardIndicators');
+  const ficheCard = document.getElementById('ficheCard');   // ← AJOUT
+
+  (() => {
+    const picker = document.getElementById('modePicker');
+    if (!picker) return;
+  
+    const cards = picker.querySelectorAll('.mode-card');
+    const modeOf = (el) =>
+      el.dataset.mode ||
+      (el.classList.contains('mode-medical') ? 'medical' :
+       el.classList.contains('mode-unsup')   ? 'unsup'   : 'dev');
+  
+    cards.forEach(card => {
+      const mode = modeOf(card);
+  
+      card.addEventListener('mouseenter', () => {
+        picker.setAttribute('data-hover', mode);
+      });
+      card.addEventListener('mouseleave', () => {
+        picker.removeAttribute('data-hover');
+      });
+      card.addEventListener('mousemove', (e) => {
+        const r = picker.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * 100;
+        const y = ((e.clientY - r.top)  / r.height) * 100;
+        picker.style.setProperty('--gx', `${x.toFixed(1)}%`);
+        picker.style.setProperty('--gy', `${y.toFixed(1)}%`);
+      });
+    });
+  })();
+  function setThemeClass(mode) {
+    document.body.classList.remove('theme-beige-blue', 'theme-beige-red', 'theme-beige-green');
+    if (mode === 'dev')      document.body.classList.add('theme-beige-blue');
+    if (mode === 'unsup')    document.body.classList.add('theme-beige-red');
+    if (mode === 'medical')  document.body.classList.add('theme-beige-green');
+  }
+  function clearIndicators() {
+    const ul = document.getElementById('indicators_list');
+    if (ul) ul.innerHTML = '';
+    const log = document.getElementById('indicators_log');
+    if (log) log.textContent = '';
+  }
+  
+  function renderIndicators(items) {
+    const ul = document.getElementById('indicators_list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    (items || []).forEach(it => {
+      const li = document.createElement('li');
+      li.className = 'indicator-item';
+  
+      const sw = document.createElement('span');
+      sw.className = 'swatch ' + (it.status || 'orange'); // 'green' | 'orange' | 'red'
+  
+      const label = document.createElement('span');
+      label.textContent = it.name + (it.value ? ` : ${it.value}` : '');
+  
+      li.append(sw, label);
+      ul.appendChild(li);
+    });
+  }
+  
+  function applyMode(mode) {
+    // 1) Thème (inchangé)
+    setThemeClass(mode);
+  
+    // 2) Visibilité des cartes
+    const show = el => el && (el.style.display = '');
+    const hide = el => el && (el.style.display = 'none');
+    if (mode === 'medical') {
+      show(cardMedical); show(cardIndicators); show(cardQA);
+      hide(cardUnsup); hide(cardSupervise);
+    } else if (mode === 'unsup') {
+      show(cardUnsup); show(cardIndicators);
+      hide(cardMedical); hide(cardSupervise); hide(cardQA);
+    } else { // dev
+      show(cardSupervise); show(cardIndicators);
+      hide(cardMedical); hide(cardUnsup); hide(cardQA);
+    }
+    const prog = document.getElementById('ns_progress');
+    if (mode === 'medical') show(prog); else hide(prog);
+    // 3) Cacher Fiche tumeur + Indicateurs en DEV et en NON SUPERVISÉ
+    const hideFicheAndInd = (mode === 'dev' || mode === 'unsup');
+    if (ficheCard)      ficheCard.style.display      = hideFicheAndInd ? 'none' : '';
+    if (cardIndicators) cardIndicators.style.display = hideFicheAndInd ? 'none' : '';
+  
+    
+    // 3) Titre (i18n)
+    const titles = { dev: t('title.dev'), unsup: t('title.unsup'), medical: t('title.medical') };
+    document.title = titles[mode] || t('title.main');
+
+  
+    // 4) UI sélecteur
+    picker.style.display = 'none';
+    switcher.style.display = 'inline-flex';
+  
+    // 5) Mémo
+    localStorage.setItem('app_mode', mode);
+    window.appMode = mode; // <- utile pour /api/run_all plus bas
+    updateLangColors();
+    
+  }
+  
+
+  // Ouverture du sélecteur au clic sur le bouton flottant
+  switcher.addEventListener('click', () => {
+    picker.style.display = 'grid';
+  });
+
+  // Clic sur une carte de mode
+  picker.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mode]');
+    if (!btn) return;
+    const mode = btn.getAttribute('data-mode');
+    applyMode(mode);
+    
+  });
+
+  // Init au chargement
+  (function initMode() {
+    const saved = localStorage.getItem('app_mode');
+    if (saved) {
+      applyMode(saved);
+    } else {
+      // Par défaut, on montre le picker, et le thème de base reste ton thème sombre
+      document.body.classList.add('theme-beige-blue');
+      picker.style.display = 'grid';
+    }
+  })();
+  
+  
+</script>
+<script>
+  (function wireQA(){
+    const qInp   = document.getElementById('qa_q');
+    const runBtn = document.getElementById('qa_run');
+    const logEl  = document.getElementById('qa_log');
+    const respEl = document.getElementById('qa_resp');
+  
+    async function ask() {
+      try {
+        ensureSourceChosen();
+        const question = (qInp.value || "").trim();
+        if (!question) { alert("Écris une question."); return; }
+  
+        // Choix du mode courant (dev => on fait la Q/R en 'unsup')
+        const currentMode = (window.appMode || localStorage.getItem('app_mode') || 'unsup');
+        const effectiveMode = (currentMode === 'dev') ? 'unsup' : currentMode;
+  
+        // On lit les champs LLM du panneau correspondant (uns_* ou med_*), sinon fallback sur sh_*
+        const prefix = (effectiveMode === 'medical') ? 'med' : 'uns';
+        const shared = {
+          model:  (document.getElementById(`${prefix}_model`)?.value
+                || document.getElementById('sh_model')?.value || "").trim(),
+          api_key:(document.getElementById(`${prefix}_api_key`)?.value
+                || document.getElementById('sh_api_key')?.value || "").trim(),
+          seed:   parseInt(
+                    (document.getElementById(`${prefix}_seed`)?.value
+                  || document.getElementById('sh_seed')?.value || "42"),
+                    10
+                  )
+        };
+  
+        logEl.textContent = "⏳";
+        respEl.value = "";
+        const r = await fetch("/api/ask_excel", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+            job_id: jobId,
+            question: question,
+            src_path: srcPath,
+            mode: effectiveMode,
+            opts: { shared }
+          })
+        });
+        const js = await r.json();
+        logEl.textContent = (js.log || js.error || "").trim();
+        respEl.value = (js.response || "").trim();
+        if (!js.ok) alert(js.error || "Erreur pendant la Q/R");
+      } catch (e) {
+        alert(e.message || e);
+      }
+    }
+  
+    runBtn?.addEventListener('click', (e) => { e.preventDefault(); ask(); });
+  })();
+  
+</script>
+<script>
+  function statusFrom(valueDays, targetDays) {
+    if (Number.isNaN(valueDays) || valueDays === null) return 'neutral';
+    if (valueDays <= targetDays) return 'green';
+    if (valueDays <= targetDays + 5) return 'orange';
+    return 'red'; // >= target + 6
+  }
+  
+  function updateIndicatorRow(li) {
+    const target = parseInt(li.dataset.target, 10);
+    const valInp = li.querySelector('.indicator-value');
+    const rowInp = li.querySelector('.indicator-row');
+    const swatch = li.querySelector('.swatch');
+  
+    const value = parseInt(valInp?.value || '', 10);
+    const status = statusFrom(value, target);
+  
+    swatch.className = 'swatch ' + status;
+    li.dataset.status = status;
+  
+    return {
+      id: li.dataset.id,
+      name: li.querySelector('.indicator-label')?.textContent?.trim() || li.dataset.id,
+      target_days: target,
+      value_days: Number.isNaN(value) ? null : value,
+      row: rowInp?.value ? parseInt(rowInp.value, 10) : null,
+      status
+    };
+  }
+  
+  function readIndicators() {
+    const ul = document.getElementById('indicators_list');
+    const items = [];
+    ul?.querySelectorAll('.indicator-item').forEach(li => {
+      items.push(updateIndicatorRow(li));
+    });
+    return items;
+  }
+  function setNeutralIndicatorsUI(items) {
+    // items optionnels depuis le backend (déjà 'neutral') ou fallback local
+    const all = items && items.length ? items : [
+      {id:'delai1',status:'neutral'},{id:'delai2',status:'neutral'},
+      {id:'delai3',status:'neutral'},{id:'delai4',status:'neutral'}
+    ];
+    all.forEach(it => {
+      const li = document.querySelector(`#indicators_list .indicator-item[data-id="${it.id}"]`);
+      if (!li) return;
+      const sw = li.querySelector('.swatch');
+      if (sw) sw.className = 'swatch neutral';
+      // NE PAS écraser les saisies de l'utilisateur en cas d'erreur
+      // (si tu veux les vider quand ça échoue, dé-commente les 2 lignes suivantes)
+      // li.querySelector('.indicator-value').value = "";
+      // li.querySelector('.indicator-row').value = "";
+    });
+  }
+  document.getElementById('firstContactDate')?.addEventListener('change', (e) => {
+    const el = e.currentTarget;
+    if (el.valueAsDate instanceof Date) {
+      const y = el.valueAsDate.getFullYear();
+      const m = String(el.valueAsDate.getMonth()+1).padStart(2,'0');
+      const d = String(el.valueAsDate.getDate()).padStart(2,'0');
+      el.value = `${y}-${m}-${d}`;
+    }
+  });
+  
+  document.getElementById('btnIndicators')?.addEventListener('click', async () => {
+    try {
+      ensureSourceChosen();
+      const logEl = document.getElementById('indicators_log');
+      // --- normalise en YYYY-MM-DD (DD/MM/YYYY ou DD-MM-YYYY -> YYYY-MM-DD) ---
+    const raw = (document.getElementById('firstContactDate')?.value || '').trim();
+    const firstContact = (() => {
+      if (!raw) return null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw; // déjà ISO
+      const m = raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/); // DD/MM/YYYY ou DD-MM-YYYY
+      if (m) {
+        const [, dd, mm, yyyy] = m;
+        return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+      }
+      // dernier recours: parse et reformate
+      const t = Date.parse(raw);
+      if (!isNaN(t)) {
+        const d = new Date(t);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+      return null;
+    })();
+        
+      logEl.textContent = '⏳ Calcul des indicateurs…';
+  
+      const r = await fetch('/api/indicators', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: jobId, src_path: srcPath, mode: 'medical', first_contact_date: firstContact })
+      });
+      const js = await r.json();
+  
+      if (!js.ok) {
+        // Échec ou Excel manquant -> carrés en gris (neutre), log visible
+        setNeutralIndicatorsUI(js.items);
+        logEl.textContent = (js.log || 'Indicateurs indisponibles');
+        return;
+      }
+  
+      // Succès -> MAJ UI: valeurs, lignes, couleurs
+      // Succès -> MAJ UI: valeurs, lignes, couleurs (+ support texte)
+      (js.items || []).forEach(it => {
+        const li = document.querySelector(`#indicators_list .indicator-item[data-id="${it.id}"]`);
+        if (!li) return;
+        const valInp = li.querySelector('.indicator-value');    // délais (jours)
+        const textEl = li.querySelector('.indicator-text');     // organe (texte)  ← AJOUT
+        const rowInp = li.querySelector('.indicator-row');
+        const sw     = li.querySelector('.swatch');
+
+        if (valInp) valInp.value = (it.value_days ?? "");
+        if (textEl) textEl.textContent = (it.value ?? "");      // ← AJOUT
+        if (rowInp) rowInp.value = (it.row ?? "");
+        if (sw)     sw.className = 'swatch ' + (it.status || 'neutral');
+        const flag  = li.querySelector('.ind-flag');
+        const remEl = li.querySelector('.ind-flag .rem');
+
+        if (flag) {
+          const flag  = li.querySelector('.ind-flag');
+          const remEl = li.querySelector('.ind-flag .rem');
+
+          // ✅ considère l’état RÉEL de la case input (vide ou pas)
+          const hasLocalValue = !!valInp && String(valInp.value).trim() !== "";
+
+          // on affiche le compte à rebours si la case est vide ET qu'on a remaining_days
+          const hasCountdown = !hasLocalValue && (typeof it.remaining_days === 'number');
+
+          // (optionnel) stocke pour l'écouteur ci-dessous
+          li.dataset.remainingDays   = (typeof it.remaining_days === 'number') ? String(it.remaining_days) : "";
+          li.dataset.remainingStatus = it.status || "";
+
+          if (flag) {
+            if (hasCountdown) {
+              const n = Number(it.remaining_days) || 0;
+              const disp = -n;
+              remEl.textContent = (disp > 0 ? '+' : '') + String(disp);
+              flag.className = 'ind-flag ' + (it.status || 'yellow');
+              flag.hidden = false;
+              flag.setAttribute('aria-hidden', 'false');
+            } else {
+              flag.hidden = true;
+              flag.setAttribute('aria-hidden', 'true');
+            }
+          }
+
+        }
+
+      });
+
+  
+      logEl.textContent = (js.log || '✓ Indicateurs mis à jour');
+    } catch (e) {
+      // Erreur réseau/JS -> griser quand même
+      setNeutralIndicatorsUI();
+      document.getElementById('indicators_log').textContent = 'Indicateurs indisponibles';
+    }
+  });
+  
+  document.addEventListener('input', (e) => {
+    if (!e.target.classList.contains('indicator-value')) return;
+    const li   = e.target.closest('.indicator-item');
+    const flag = li?.querySelector('.ind-flag');
+    const rem  = li?.dataset?.remainingDays || "";
+    const st   = li?.dataset?.remainingStatus || "yellow";
+    if (!flag) return;
+  
+    const hasVal = String(e.target.value).trim() !== "";
+    if (hasVal) {
+      flag.hidden = true;
+      flag.setAttribute('aria-hidden', 'true');
+    } else if (rem !== "") {
+      const remEl = flag.querySelector('.rem');
+      remEl.textContent = (parseInt(rem, 10) > 0 ? '+' : '') + rem;
+      flag.className = 'ind-flag ' + st;
+      flag.hidden = false;
+      flag.setAttribute('aria-hidden', 'false');
+    }
+  });
+  
+  
+</script>
+
+
+<script>
+  // ==== Progress Run All (NS) ====
+  const NS_STEPS_ORDER = ['extract_content','cluster','extract_fields','json_to_excel'];
+
+  function _nsStepEl(id){ return document.querySelector(`#ns_progress .pstep[data-id="${id}"]`); }
+  function _nsSet(id, state, meta=""){
+    const el = _nsStepEl(id); if (!el) return;
+    el.classList.remove('todo','doing','done','error');
+    el.classList.add(state);
+    const m = el.querySelector('.meta'); if (m) m.textContent = meta;
+  }
+  function resetNSProgress(){
+    NS_STEPS_ORDER.forEach(id => _nsSet(id, 'todo', ''));
+  }
+  function markNSProgressAllDone(){
+    NS_STEPS_ORDER.forEach(id => _nsSet(id, 'done', ''));
+  }
+  function setNSProgressFromError(js){
+    const where = String(js?.where || '').toLowerCase();
+    const idx = NS_STEPS_ORDER.indexOf(where);
+    NS_STEPS_ORDER.forEach((id, i) => {
+      if (idx === -1) { _nsSet(id, 'todo'); return; }
+      _nsSet(id, i < idx ? 'done' : (i === idx ? 'error' : 'todo'));
+    });
+    const cur = _nsStepEl(where);
+    if (cur) {
+      const firstLine = String(js?.error || js?.log || '').trim().split('\n')[0] || '';
+      const meta = firstLine.slice(0, 120);
+      const m = cur.querySelector('.meta'); if (m) m.textContent = meta;
+    }
+  }
+</script>
+  <script>
+    // Suivi des étapes à partir des messages de la timeline
+    function installTimelineDrivenProgress() {
+      const root = document.getElementById('timeline') 
+                || document.getElementById('timelineList') 
+                || document.querySelector('.timeline');
+      if (!root) return () => {};
+    
+      // RegEx repérables dans tes logs/événements de timeline
+      const RX = {
+        extract_content: /extraction.+contenu|content extracted|extracted content|parse.*pdf|ocr/i,
+        cluster:         /\bcluster(?:ing)?\b|regroupement|clusters? (ok|done|fini|termin)/i,
+        extract_fields:  /extraction.+champs|extract(ing)? fields|fields (ok|done|termin)/i,
+        json_to_excel:   /(json.?to.?excel|excel (écrit|créé|saved|written)|xlsx)/i
+      };
+    
+      // Aide: bascule l'état en respectant l'ordre
+      const ORDER = ['extract_content','cluster','extract_fields','json_to_excel'];
+      function setDoneAndStartNext(doneStep) {
+        if (typeof _nsSet !== 'function') return;
+        _nsSet(doneStep, 'done', '');
+        const i = ORDER.indexOf(doneStep);
+        const next = ORDER[i+1];
+        if (next) _nsSet(next, 'doing', '');
+      }
+    
+      const seen = new WeakSet();
+      const mo = new MutationObserver(() => {
+        const items = root.querySelectorAll(
+          '[data-evt], .timeline-item, .evt, .item, .tl-item, .tl-row'
+        );
+        items.forEach(node => {
+          if (seen.has(node)) return;
+          seen.add(node);
+          const txt = (node.textContent || '').trim();
+          if (!txt) return;
+    
+          if      (RX.extract_content.test(txt)) setDoneAndStartNext('extract_content');
+          else if (RX.cluster.test(txt))         setDoneAndStartNext('cluster');
+          else if (RX.extract_fields.test(txt))  setDoneAndStartNext('extract_fields');
+          else if (RX.json_to_excel.test(txt))   setDoneAndStartNext('json_to_excel');
+        });
+      });
+      mo.observe(root, { childList: true, subtree: true });
+      return () => mo.disconnect();
+    }
+
+    function installArtifactWatcher(){
+      let st = { cluster:false, catalog:false, fields:false };
+      const enc = encodeURIComponent;
+    
+      async function checkCluster(){
+        try {
+          const r = await fetch(`/api/cluster/summary?job_id=${enc(jobId)}`);
+          const js = await r.json();
+          if (js && js.ok) {
+            if (!_nsSet) return;
+            st.cluster = true;
+            _nsSet('extract_content','done','');
+            _nsSet('cluster','done','');
+            _nsSet('extract_fields','doing','');
+          }
+        } catch {}
+      }
+      async function checkCatalog(){
+        try {
+          if (!st.cluster) return;
+          const r = await fetch(`/api/catalog/summary?job_id=${enc(jobId)}`);
+          const js = await r.json();
+          if (js && js.ok) st.catalog = true; // étape silencieuse: pas de case visible
+        } catch {}
+      }
+      async function checkTimelineHasItems(){
+        try {
+          if (st.fields) return;
+          const r = await fetch(`/api/timeline?job_id=${enc(jobId)}`);
+          const js = await r.json();
+          if (js && js.ok && Array.isArray(js.items) && js.items.length > 0) {
+            st.fields = true;
+            _nsSet?.('extract_fields','done','');
+            _nsSet?.('json_to_excel','doing','');
+          }
+        } catch {}
+      }
+    
+      const timer = setInterval(async () => {
+        if (!jobId) return;
+        await checkCluster();
+        await checkCatalog();
+        await checkTimelineHasItems();
+      }, 1500);
+    
+      return () => clearInterval(timer);
+    }
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        /* === i18n du contenu d'accueil === */
+        Object.assign(I18N.fr, {
+          'home.title': 'OpticAIre — Extraction & Analyse de documents',
+          'home.lead': `Cet outil a été construit dans le cadre du projet OpticAIre.\n\n
+      Il exploite l’IA générative afin d’améliorer significativement la structuration de données au sein des hôpitaux.\n\n
+      Le mode Pathway Analyser permet de transformer des données médicales non structurées sous divers formats en données structurées, avec différents outils de visualisation pour un patient.\n\n
+      Le mode Dashboard permet de transformer des données médicales non structurées sous divers formats en données structurées, avec différents outils de visualisation pour un ensemble de patients.\n\n
+      Le mode non supervisé permet de transformer des données non structurées de tout domaine en données structurées à l’aide des capacités génératives des LLMs.\n\n
+      Le mode dev permet de modifier chaque étape de cette structuration automatique.`,
+          'home.body':  '<b>Pipeline :</b> 1) Extraction du contenu → JSON, 2) Clustering + nommage, 3) Choix de champs, 4) Extraction, 5) Export tableur.'
+        });
+        Object.assign(I18N.en, {
+          'home.title': 'OpticAIre — Document Extraction & Analysis',
+          'home.lead': `This tool was built as part of the OpticAIre project.\n\n
+      It leverages generative AI to significantly improve data structuring within hospitals.\n\n
+      The Pathway Analyser transforms unstructured medical data in various formats into structured data, with multiple visualization tools.\n\n
+      The Dashboard mode makes it possible to transform unstructured medical data in various formats into structured data, with different visualization tools for a set of patients.\n\n
+      The Unsupervised mode transforms unstructured data from any domain into structured data using the generative capabilities of LLMs.\n\n
+      The Dev mode lets you modify every step of this automatic structuring pipeline.`,
+          'home.body':  '<b>Pipeline:</b> 1) Content → JSON, 2) Clustering & naming, 3) Field selection, 4) Extraction, 5) Spreadsheet export.'
+        });
+        Object.assign(I18N.es, {
+          'home.title': 'OpticAIre — Extracción y análisis de documentos',
+          'home.lead': `Esta herramienta se creó en el marco del proyecto OpticAIre.\n\n
+      Aprovecha la IA generativa para mejorar de forma significativa la estructuración de datos en los hospitales.\n\n
+      El modo Médico transforma datos médicos no estructurados en diversos formatos en datos estructurados, con distintas herramientas de visualización.\n\n
+      El modo Dashboard permite transformar datos médicos no estructurados en varios formatos en datos estructurados, con diferentes herramientas de visualización para un conjunto de pacientes.\n\n
+      El modo No supervisado transforma datos no estructurados de cualquier dominio en datos estructurados utilizando las capacidades generativas de los LLM.\n\n
+      El modo Dev permite modificar cada etapa de esta estructuración automática.`,
+          'home.body':  '<b>Flujo:</b> 1) Contenido → JSON, 2) Clustering y nombres, 3) Selección de campos, 4) Extracción, 5) Exportar a hoja de cálculo.'
+        });
+        Object.assign(I18N.it, {
+          'home.title': 'OpticAIre — Estrazione e analisi documenti',
+          'home.lead': `Questo strumento è stato sviluppato nell’ambito del progetto OpticAIre.\n\n
+      Sfrutta l’IA generativa per migliorare in modo significativo la strutturazione dei dati negli ospedali.\n\n
+      La modalità Medica consente di trasformare dati medici non strutturati in vari formati in dati strutturati, con diversi strumenti di visualizzazione.\n\n
+      La modalità Dashboard consente di trasformare dati medici non strutturati in vari formati in dati strutturati, con diversi strumenti di visualizzazione per un insieme di pazienti.\n\n
+      La modalità Non supervisionata consente di trasformare dati non strutturati di qualunque dominio in dati strutturati utilizzando le capacità generative dei LLM.\n\n
+      La modalità Dev consente di modificare ogni fase di questa strutturazione automatica.`,
+          'home.body':  '<b>Pipeline:</b> 1) Contenuto → JSON, 2) Clustering e naming, 3) Scelta campi, 4) Estrazione, 5) Export foglio di calcolo.'
+        });
+        Object.assign(I18N.de, {
+          'home.title': 'OpticAIre — Dokument-Extraktion & Analyse',
+          'home.lead': `Dieses Tool wurde im Rahmen des Projekts OpticAIre entwickelt.\n\n
+      Es nutzt Generative KI, um die Datenstrukturierung in Krankenhäusern deutlich zu verbessern.\n\n
+      Der Modus „Medical“ wandelt unstrukturierte medizinische Daten in verschiedenen Formaten in strukturierte Daten um und stellt verschiedene Visualisierungswerkzeuge bereit.\n\n
+      Der Dashboard-Modus ermöglicht es, unstrukturierte medizinische Daten in verschiedenen Formaten in strukturierte Daten umzuwandeln, mit verschiedenen Visualisierungstools für eine Gruppe von Patienten.\n\n
+      Der Modus „Unsupervised“ ermöglicht die Umwandlung unstrukturierte Daten aus beliebigen Domänen in strukturierte Daten mithilfe der generativen Fähigkeiten von LLMs.\n\n
+      Der Modus „Dev“ erlaubt es, jeden Schritt dieser automatischen Strukturierung anzupassen.`,
+          'home.body':  '<b>Ablauf:</b> 1) Inhalt → JSON, 2) Clustering & Benennung, 3) Feldauswahl, 4) Extraktion, 5) Tabellen-Export.'
+        });
+      
+        if (typeof applyTranslations === 'function') applyTranslations();
+      
+
+
+
+      });
+      </script>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const landing = document.getElementById('landingIntro');
+          const home    = document.getElementById('homeIntro');
+          const layout  = document.querySelector('.layout');
+          const picker  = document.getElementById('modePicker');
+        
+          // État initial
+          if (landing) landing.style.display = '';
+          if (home)   { home.hidden = true; home.style.display = 'none'; }
+          if (layout)  layout.style.display = 'none';
+          if (picker)  picker.style.display = 'none';
+        
+          document.getElementById('btnDiscover')?.addEventListener('click', () => {
+            if (home) { home.hidden = false; home.style.display = ''; }
+            landing.classList.add('swipe-out');
+            landing.addEventListener('transitionend', () => {
+              landing.style.display = 'none';
+              requestAnimationFrame(() => {
+                (window.scrollTo ? window.scrollTo({ top: 10000, left: 0, behavior: 'smooth' }) : window.scrollTo(0,0));
+              });
+            }, { once: true });
+          });
+        
+          // --- Home → Mode (Layout) : afficher Layout (derrière), puis swiper Home
+          home?.addEventListener('click', (e) => {
+            const linkBtn = e.target.closest('[data-link]');
+            if (linkBtn) {
+              window.location.href = linkBtn.getAttribute('data-link');
+              return;
+            }
+            const btn = e.target.closest('[data-mode]');
+            if (!btn) return;
+            const mode = btn.getAttribute('data-mode');
+        
+            applyMode(mode);                       // configure la page du mode
+            if (layout) layout.style.display = ''; // vue entrante derrière
+            home.classList.add('swipe-out');       // swipe-out de l'accueil
+            home.addEventListener('transitionend', () => {
+              home.style.display = 'none';
+            }, { once: true });
+          });
+        });
+        </script>
+        
+        
+        <script>
+          (function () {
+            const landing = document.getElementById('landingIntro');
+            const home    = document.getElementById('homeIntro');
+            const btn     = document.getElementById('btnDiscover');
+            const layout  = document.querySelector('.layout');
+            const bg      = document.getElementById('swipeBg');
+          
+            if (!landing || !home || !btn) return;
+          
+            btn.addEventListener('click', () => {
+              // 1) montrer Home en dessous
+              home.hidden = false;
+              home.style.display = '';
+              home.classList.add('as-bg');        // passe sous le landing pendant l’anim
+          
+              // 2) swipe-out du landing + fond de transition
+              landing.classList.add('swipe-out');
+              bg && bg.classList.add('show');
+          
+              const finish = () => {
+                landing.style.display = 'none';
+                landing.classList.remove('swipe-out');
+                home.classList.remove('as-bg');
+                bg && bg.classList.remove('show');
+          
+                // 3) remonter tout en haut (container scrollable ou window)
+                (layout || window).scrollTo({ top: -10000000, left: 100000000, behavior: 'auto' });
+              };
+          
+              // Sécurité si la transition ne part pas (ex : CSS non chargé)
+              let done = false;
+              const t = setTimeout(() => { if (!done) finish(); }, 600);
+              landing.addEventListener('transitionend', () => { done = true; clearTimeout(t); finish(); }, { once: true });
+            });
+          })();
+
+
+          </script>
+          
+          <script>
+            document.getElementById('btnHome')?.addEventListener('click', () => {
+              // On recharge index.html avec un flag
+              window.location.href = '/?autoDiscover=1';
+            });
+            document.addEventListener('DOMContentLoaded', () => {
+              const url = new URL(window.location.href);
+              if (url.searchParams.get("autoDiscover") === "1") {
+                // Simule le clic sur Découvrir l’outil
+                document.getElementById('btnDiscover')?.click();
+              }
+            });
+          </script>   
+          
+</body>
+
+</html>

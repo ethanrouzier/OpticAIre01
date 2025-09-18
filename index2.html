@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pipeline – Mode médical (page 2)</title>
+  <!-- On réutilise le style global + nos ajustements locaux -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+  <style>
+    /* 🔒 Hard-kill all full-screen overlays for this page (dashboard) */
+    #modePicker, .mode-picker,
+    #landingIntro, .landing-intro,
+    #homeIntro, .home-intro,
+    .modal, .swipe-bg {
+      display: none !important;
+      pointer-events: none !important;
+    }
+  
+    /* 🛡️ Make sure the language bubble itself doesn't create a giant click shield */
+    .lang-switcher { 
+      position: fixed; 
+      top: 12px; right: 12px; 
+      z-index: 10; 
+      pointer-events: none;           /* container ignores clicks... */
+    }
+    .lang-switcher .lang-toggle,
+    .lang-switcher .lang-menu {
+      pointer-events: auto;           /* ...but its button/menu still clickable */
+    }
+  
+    /* 🧱 Ensure main UI sits above any stray backgrounds */
+    main.layout-2 { position: relative; z-index: 5; }
+    .progress-steps { position: relative; z-index: 0; }
+  </style>
+  
+</head>
+
+
+<body class="theme-beige-green">
+
+    <!-- Sélecteur de langue -->
+    <div class="lang-switcher" role="navigation" aria-label="Language menu">
+      <button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false" title="Language">
+        <span id="langFlag">🇫🇷</span>
+      </button>
+      <div class="lang-menu" id="langMenu" role="menu" hidden>
+        <button class="lang-btn" data-lang="fr" role="menuitem" aria-label="Français">🇫🇷</button>
+        <button class="lang-btn" data-lang="en" role="menuitem" aria-label="English">🇬🇧</button>
+        <button class="lang-btn" data-lang="es" role="menuitem" aria-label="Español">🇪🇸</button>
+        <button class="lang-btn" data-lang="it" role="menuitem" aria-label="Italiano">🇮🇹</button>
+        <button class="lang-btn" data-lang="de" role="menuitem" aria-label="Deutsch">🇩🇪</button>
+      </div>
+    </div>
+    <section style="text-align:center; margin: 12px 0;">
+      <h1 class="home-title landing-title" style="margin:0;">Patient Pathway Dashboard</h1>
+    </section>
+  <main class="layout-2">
+    
+
+    <section class="top-left card" aria-labelledby="upl-title">
+      <h2 id="upl-title" data-i18n="upl.title">Source des documents</h2>
+    
+      <div class="card">
+        <h3 data-i18n="upl.drop">Glisser-déposer / Sélectionner un dossier</h3>
+        <div id="dropZone2" class="dropzone" aria-live="polite" data-i18n="upl.dropzone">
+          Glisser un dossier ici ou cliquer pour sélectionner
+        </div>
+        
+        <input id="folderInput2" type="file" webkitdirectory directory multiple hidden />
+        <p class="hint" data-i18n="upl.hint">
+          Le dossier sera téléversé côté serveur dans un espace de travail.
+          Formats acceptés : pdf, doc, png, txt, docx
+        </p>
+        <div class="card">
+          <h3 data-i18n="upl.base_xlsx_title">Ajouter un tableur existant (optionnel)</h3>
+          <input id="baseXlsxInput2" type="file" accept=".xlsx" />
+          <p class="hint" data-i18n="upl.base_xlsx_hint">
+            Les lignes seront ajoutées aux timelines (séparées par la colonne <code>id</code>), puis fusionnées avec les nouveaux résultats.
+          </p>
+          <div class="status"><span data-i18n="upl.base_xlsx_status">Tableur:</span> <code id="baseXlsx2">—</code></div>
+        </div>
+      </div>
+    
+      <div class="status">
+        <div><span data-i18n="upl.job">Job ID :</span> <code id="jobId2">—</code></div>
+        <div><span data-i18n="upl.src">Source :</span> <code id="srcPath2">—</code></div>
+      </div>
+    </section>
+    
+    <section class="top-right card" id="cardMedical" aria-labelledby="med-title">
+      <h2 id="med-title" data-i18n="med.title">Mode médical</h2>    <!-- Visuel (image_3 + indicateurs) -->
+      <span class="med-visual">
+        <img src="/static/images/image_3.png" alt="" class="med-img med-img-key" loading="lazy"></span>
+      
+      <div class="grid">
+        <label>
+          <span data-i18n="med.model">Model</span>
+          <input id="med_model2" value="mistral-medium-2508">
+        </label>
+        <label>
+          <span data-i18n="med.apikey">API Key</span>
+          <input id="med_api_key2" placeholder="MISTRAL_API_KEY si vide">
+        </label>
+        <label><div id="ns_progress" class="progress-steps compact" aria-label="Progression du pipeline (Run All)">
+          <div class="pstep todo" data-id="extract_content" title="Extraction contenu">
+            <span class="box" aria-hidden="true"></span>
+            <span class="label" data-i18n="step.extract">Extraction contenu</span><span class="meta"></span>
+          </div>
+          <div class="pstep todo" data-id="cluster" title="Clustering">
+            <span class="box" aria-hidden="true"></span>
+            <span class="label" data-i18n="step.cluster">Clustering</span><span class="meta"></span>
+          </div>
+          <div class="pstep todo" data-id="extract_fields" title="Extraction de champs">
+            <span class="box" aria-hidden="true"></span>
+            <span class="label" data-i18n="step.fields">Extraction de champs</span><span class="meta"></span>
+          </div>
+          <div class="pstep todo" data-id="json_to_excel" title="Export tableur">
+            <span class="box" aria-hidden="true"></span>
+            <span class="label" data-i18n="step.excel">Export tableur</span><span class="meta"></span>
+          </div>
+        </div></label>
+        <input id="med_seed2" type="hidden" value="42">
+      </div>
+          <!-- Progress steps -->
+  
+      <div class="med-run-row">
+        <button id="btnRunMedical2" data-i18n="med.run">Lancer le pipeline (médical)</button>
+        <span class="med-run-img">
+          <img src="/static/images/image_8.png" alt="" class="med-img med-img-run" loading="lazy">
+        </span>
+      </div>
+
+      <div id="med_result2" class="ns-result" role="status" aria-live="polite"></div>
+      <div class="med-context">
+        <label>
+          <span data-i18n="med.ctx_label">Contexte (IDs / mapping) — optionnel</span> 
+          <textarea
+          id="med_ctx2"
+          rows="3"
+          data-i18n="med.ctx_ph"
+          data-i18n-attr="placeholder"
+          placeholder="ex. Utiliser le NIP pour l'id"
+          autocomplete="off"></textarea>       
+      </label>
+        <p class="hint" data-i18n="med.ctx_hint">Ce texte sera passé au LLM comme contexte supplémentaire pour l’étape d’extraction de champs.</p>
+      </div>
+
+    </section>
+
+    
+
+    
+
+<!-- Bas de page : frises multiples horizontales -->
+<section class="bottom card" aria-labelledby="frises-title">
+  <h2 id="frises-title" data-i18n="tl.title">Frises chronologiques</h2>
+  <p class="hint" data-i18n="tl.hint">Espace prévu pour plusieurs frises (scroll horizontal).</p>
+  <div class="tl-toolbar" id="tlToolbar" style="display:flex;justify-content:flex-end;gap:.5rem;align-items:center;margin:8px 0;">
+    <input id="kwFilter" type="search"
+       data-i18n="tl.search.ph" data-i18n-attr="placeholder"
+       placeholder="mot à rechercher" />
+
+  </div>
+  <div id="frisesStrip" class="frises-strip"></div>
+</section>
+
+
+  </main>
+  <footer class="site-footer" role="contentinfo" aria-label="Partenaires">
+    <section class="footer-gallery">
+      <a class="img-link" href="https://www.unicancer.fr/fr/" target="_blank" rel="noopener" title="Unicancer">
+        <img src="/static/images/image_1.png" alt="Unicancer" loading="lazy">
+      </a>
+      <a class="img-link" href="https://www.oeci.eu" target="_blank" rel="noopener" title="OECI">
+        <img src="/static/images/image_2.png" alt="OECI" loading="lazy">
+      </a>
+      <a class="img-link" href="https://mistral.ai" target="_blank" rel="noopener" title="Mistral AI">
+        <img src="/static/images/image_3.png" alt="Mistral AI" loading="lazy">
+      </a>
+      <a class="img-link" href="https://loamics.com" target="_blank" rel="noopener" title="Loamics">
+        <img src="/static/images/image_4.png" alt="Loamics" loading="lazy">
+      </a>
+      <a class="img-link" href="https://www.istitutotumori.mi.it/come-contattarci" target="_blank" rel="noopener" title="Fondazione IRCCS INT">
+        <img src="/static/images/image_7.png" alt="Fondazione IRCCS Istituto Nazionale dei Tumori" loading="lazy">
+      </a>
+      <a class="img-link" href="https://www.semeia.io" target="_blank" rel="noopener" title="semeia">
+        <img src="/static/images/image_9.png" alt="semeia" loading="lazy">
+      </a>  
+      <a class="img-link" href="https://www.edhec.edu/fr" target="_blank" rel="noopener" title="EDHEC">
+        <img src="/static/images/image_10.png" alt="EDHEC" loading="lazy">
+      </a>
+      <a class="img-link" href="https://www.unl.pt/en/" target="_blank" rel="noopener" title="NOVAo">
+        <img src="/static/images/image_11.png" alt="NOVA" loading="lazy">
+      </a>
+    </section>
+  </footer>
+  <button id="btnHome" class="home-fab home-fab--icon" aria-label="Accueil" title="Retour à l’accueil"></button>
+
+  
+  <script>
+    /** Dictionnaire des traductions */
+    const I18N = {
+      fr: {
+        "home.title": "Patient Pathway Dashboard",
+    
+        "upl.title": "Source des documents",
+        "upl.drop": "Glisser-déposer / Sélectionner un dossier",
+        "upl.dropzone": "Glisser un dossier ici ou cliquer pour sélectionner",
+        "upl.hint": "Le dossier sera téléversé côté serveur dans un espace de travail. Formats acceptés : pdf, doc, png, txt, docx",
+        "upl.job": "Job ID :",
+        "upl.src": "Source :",
+    
+        "med.title": "Mode médical",
+        "med.model": "Modèle",
+        "med.apikey": "Clé API",
+        "med.run": "Lancer le pipeline (médical)",
+    
+        "step.extract": "Extraction contenu",
+        "step.cluster": "Clustering",
+        "step.fields": "Extraction de champs",
+        "step.excel": "Export tableur",
+    
+        "tl.title": "Frises chronologiques",
+        "tl.hint": "Espace prévu pour plusieurs frises (scroll horizontal).",
+    
+        "ind.title": "Indicateurs OECI",
+        "ind.first_contact": "Date 1er contact",
+        "ind.run": "Calcul d'indicateurs",
+        "ind.d1": "Délai 1 — contact centre → 1er RV (10 j)",
+        "ind.d2": "Délai 2 — 1er RV → 1ère anapath (21 j si pas d’anapath avant le 1er RV)",
+        "ind.d3": "Délai 3 — (1er RV ou anapath si post-RV) → 1ère UCP/RCP (7 j)",
+        "ind.d4": "Délai 4 — 1ère UCP/RCP → 1er traitement (10 j)",
+        "ind.value_days": "Valeur (j)",
+        "unit.days.short": "j"
+      },
+    
+      en: {
+        "home.title": "Patient Pathway Dashboard",
+    
+        "upl.title": "Document source",
+        "upl.drop": "Drag & drop / Select a folder",
+        "upl.dropzone": "Drop a folder here or click to select",
+        "upl.hint": "The folder will be uploaded to the server workspace. Accepted formats: pdf, doc, png, txt, docx",
+        "upl.job": "Job ID:",
+        "upl.src": "Source:",
+    
+        "med.title": "Medical mode",
+        "med.model": "Model",
+        "med.apikey": "API Key",
+        "med.run": "Run medical pipeline",
+    
+        "step.extract": "Content extraction",
+        "step.cluster": "Clustering",
+        "step.fields": "Field extraction",
+        "step.excel": "Spreadsheet export",
+    
+        "tl.title": "Timelines",
+        "tl.hint": "Area reserved for multiple timelines (horizontal scroll).",
+    
+        "ind.title": "OECI indicators",
+        "ind.first_contact": "First contact date",
+        "ind.run": "Compute indicators",
+        "ind.d1": "Delay 1 — first contact → first appointment (10 d)",
+        "ind.d2": "Delay 2 — first appointment → first pathology (21 d if none before appointment)",
+        "ind.d3": "Delay 3 — (first appt or post-appt pathology) → first MDT (7 d)",
+        "ind.d4": "Delay 4 — first MDT → first treatment (10 d)",
+        "ind.value_days": "Value (d)",
+        "unit.days.short": "d"
+      },
+    
+      es: {
+        "home.title": "Panel de recorridos del paciente",
+    
+        "upl.title": "Origen de documentos",
+        "upl.drop": "Arrastrar y soltar / Seleccionar carpeta",
+        "upl.dropzone": "Suelta una carpeta aquí o haz clic para seleccionar",
+        "upl.hint": "La carpeta se cargará al espacio de trabajo del servidor. Formatos aceptados: pdf, doc, png, txt, docx",
+        "upl.job": "ID de trabajo:",
+        "upl.src": "Origen:",
+    
+        "med.title": "Modo médico",
+        "med.model": "Modelo",
+        "med.apikey": "Clave API",
+        "med.run": "Ejecutar pipeline médico",
+    
+        "step.extract": "Extracción de contenido",
+        "step.cluster": "Clustering",
+        "step.fields": "Extracción de campos",
+        "step.excel": "Exportación a Tabla",
+    
+        "tl.title": "Frisos cronológicos",
+        "tl.hint": "Espacio previsto para varios frisos (scroll horizontal).",
+    
+        "ind.title": "Indicadores OECI",
+        "ind.first_contact": "Fecha del primer contacto",
+        "ind.run": "Calcular indicadores",
+        "ind.d1": "Demora 1 — contacto → primera cita (10 d)",
+        "ind.d2": "Demora 2 — primera cita → primera anatomía patológica (21 d si no hubo antes)",
+        "ind.d3": "Demora 3 — (1ª cita o anato post-cita) → 1ª RCP/MDT (7 d)",
+        "ind.d4": "Demora 4 — 1ª RCP/MDT → 1º tratamiento (10 d)",
+        "ind.value_days": "Valor (d)",
+        "unit.days.short": "d"
+      },
+    
+      it: {
+        "home.title": "Dashboard percorso paziente",
+    
+        "upl.title": "Sorgente documenti",
+        "upl.drop": "Trascina e rilascia / Seleziona cartella",
+        "upl.dropzone": "Rilascia una cartella qui o clicca per selezionare",
+        "upl.hint": "La cartella sarà caricata nello spazio di lavoro del server. Formati accettati: pdf, doc, png, txt, docx",
+        "upl.job": "ID job:",
+        "upl.src": "Sorgente:",
+    
+        "med.title": "Modalità medica",
+        "med.model": "Modello",
+        "med.apikey": "Chiave API",
+        "med.run": "Esegui pipeline medica",
+    
+        "step.extract": "Estrazione contenuti",
+        "step.cluster": "Clustering",
+        "step.fields": "Estrazione campi",
+        "step.excel": "Export tabella",
+    
+        "tl.title": "Timeline",
+        "tl.hint": "Spazio per più timeline (scroll orizzontale).",
+    
+        "ind.title": "Indicatori OECI",
+        "ind.first_contact": "Data del primo contatto",
+        "ind.run": "Calcola indicatori",
+        "ind.d1": "Ritardo 1 — contatto → primo appuntamento (10 g)",
+        "ind.d2": "Ritardo 2 — primo appuntamento → prima anapato (21 g se non precedente)",
+        "ind.d3": "Ritardo 3 — (1° app. o anapato post-app.) → 1ª RCP/MDT (7 g)",
+        "ind.d4": "Ritardo 4 — 1ª RCP/MDT → 1° trattamento (10 g)",
+        "ind.value_days": "Valore (g)",
+        "unit.days.short": "g"
+      },
+    
+      de: {
+        "home.title": "Patientenpfad-Dashboard",
+    
+        "upl.title": "Dokumentenquelle",
+        "upl.drop": "Drag & Drop / Ordner auswählen",
+        "upl.dropzone": "Ordner hier ablegen oder zum Auswählen klicken",
+        "upl.hint": "Der Ordner wird in den Server-Arbeitsbereich hochgeladen. Akzeptierte Formate: pdf, doc, png, txt, docx",
+        "upl.job": "Job-ID:",
+        "upl.src": "Quelle:",
+    
+        "med.title": "Medizinischer Modus",
+        "med.model": "Modell",
+        "med.apikey": "API-Schlüssel",
+        "med.run": "Medizinische Pipeline starten",
+    
+        "step.extract": "Inhaltsextraktion",
+        "step.cluster": "Clustering",
+        "step.fields": "Felder extrahieren",
+        "step.excel": "Tabellenkalkulationsprogramm-Export",
+    
+        "tl.title": "Zeitachsen",
+        "tl.hint": "Bereich für mehrere Zeitachsen (horizontales Scrollen).",
+    
+        "ind.title": "OECI-Indikatoren",
+        "ind.first_contact": "Datum des Erstkontakts",
+        "ind.run": "Indikatoren berechnen",
+        "ind.d1": "Verzug 1 — Kontakt → erster Termin (10 T)",
+        "ind.d2": "Verzug 2 — erster Termin → erste Pathologie (21 T, falls nicht vorher)",
+        "ind.d3": "Verzug 3 — (1. Termin oder post-Termin-Pathologie) → 1. Tumorboard (7 T)",
+        "ind.d4": "Verzug 4 — 1. Tumorboard → erste Therapie (10 T)",
+        "ind.value_days": "Wert (T)",
+        "unit.days.short": "T"
+      }
+      
+    };
+
+    Object.assign(I18N.fr, { "tl.search.label":"Mot à rechercher", "tl.search.ph":"ex. tumorectomie", "tl.search.go":"Rechercher" });
+    Object.assign(I18N.en, { "tl.search.label":"Search term",      "tl.search.ph":"e.g. tumorectomy", "tl.search.go":"Search" });
+    Object.assign(I18N.es, { "tl.search.label":"Término a buscar", "tl.search.ph":"p. ej. tumorectomía", "tl.search.go":"Buscar" });
+    Object.assign(I18N.it, { "tl.search.label":"Termine da cercare","tl.search.ph":"es. tumorectomia", "tl.search.go":"Cerca" });
+    Object.assign(I18N.de, { "tl.search.label":"Suchbegriff",      "tl.search.ph":"z. B. Tumorektomie", "tl.search.go":"Suchen" });
+    
+    // FR
+Object.assign(I18N.fr, {
+  "upl.base_xlsx_title":  "Ajouter un tableur existant (optionnel)",
+  "upl.base_xlsx_hint":   "Les lignes seront ajoutées aux frises (séparées par la colonne <code>id</code>), puis fusionnées avec les nouveaux résultats.",
+  "upl.base_xlsx_status": "Tableur:"
+});
+
+// EN
+Object.assign(I18N.en, {
+  "upl.base_xlsx_title":  "Add an existing Spreadsheet file (optional)",
+  "upl.base_xlsx_hint":   "Rows will be added to the timelines (separated by the <code>id</code> column), then merged with the new results.",
+  "upl.base_xlsx_status": "Spreadsheet:"
+});
+
+// ES
+Object.assign(I18N.es, {
+  "upl.base_xlsx_title":  "Añadir un archivo de Tabla existente (opcional)",
+  "upl.base_xlsx_hint":   "Las filas se añadirán a las líneas de tiempo (separadas por la columna <code>id</code>) y luego se fusionarán con los nuevos resultados.",
+  "upl.base_xlsx_status": "Tabla:"
+});
+
+// IT
+Object.assign(I18N.it, {
+  "upl.base_xlsx_title":  "Aggiungi un file Tabella esistente (opzionale)",
+  "upl.base_xlsx_hint":   "Le righe verranno aggiunte alle timeline (separate dalla colonna <code>id</code>), quindi unite con i nuovi risultati.",
+  "upl.base_xlsx_status": "Tabella:"
+});
+
+// DE
+Object.assign(I18N.de, {
+  "upl.base_xlsx_title":  "Vorhandene Tabellenkalkulationsprogramm-Datei hinzufügen (optional)",
+  "upl.base_xlsx_hint":   "Die Zeilen werden den Zeitachsen hinzugefügt (getrennt nach der Spalte <code>id</code>) und anschließend mit den neuen Ergebnissen zusammengeführt.",
+  "upl.base_xlsx_status": "Tabellenkalkulationsprogramm:"
+});
+    // FR
+Object.assign(I18N.fr, {
+  "tl.title": "Frises chronologiques",
+  "tl.hint": "Espace prévu pour plusieurs frises (scroll horizontal).",
+  "tl.slotA": "Frise A",
+  "tl.slotB": "Frise B",
+  "tl.slotC": "Frise C",
+  "tl.placeholder": "exemple",
+  "tl.patient": "Patient"
+});
+
+// EN
+Object.assign(I18N.en, {
+  "tl.title": "Timelines",
+  "tl.hint": "Area reserved for multiple timelines (horizontal scroll).",
+  "tl.slotA": "Timeline A",
+  "tl.slotB": "Timeline B",
+  "tl.slotC": "Timeline C",
+  "tl.placeholder": "placeholder",
+  "tl.patient": "Patient"
+});
+
+// ES
+Object.assign(I18N.es, {
+  "tl.title": "Frisos cronológicos",
+  "tl.hint": "Espacio previsto para varios frisos (desplazamiento horizontal).",
+  "tl.slotA": "Friso A",
+  "tl.slotB": "Friso B",
+  "tl.slotC": "Friso C",
+  "tl.placeholder": "ejemplo",
+  "tl.patient": "Paciente"
+});
+
+// IT
+Object.assign(I18N.it, {
+  "tl.title": "Timeline",
+  "tl.hint": "Spazio previsto per più timeline (scroll orizzontale).",
+  "tl.slotA": "Timeline A",
+  "tl.slotB": "Timeline B",
+  "tl.slotC": "Timeline C",
+  "tl.placeholder": "esempio",
+  "tl.patient": "Paziente"
+});
+
+// DE
+Object.assign(I18N.de, {
+  "tl.title": "Zeitachsen",
+  "tl.hint": "Bereich für mehrere Zeitachsen (horizontales Scrollen).",
+  "tl.slotA": "Zeitachse A",
+  "tl.slotB": "Zeitachse B",
+  "tl.slotC": "Zeitachse C",
+  "tl.placeholder": "Beispiel",
+  "tl.patient": "Patient"
+});
+
+Object.assign(I18N.fr, { "med.ctx_label":"Contexte (IDs / mapping) — optionnel",
+                         "med.ctx_hint":"Passé au LLM pour l’extraction de champs." });
+Object.assign(I18N.en, { "med.ctx_label":"Context (IDs / mapping) — optional",
+                         "med.ctx_hint":"Sent to the LLM for the field-extraction step." });
+Object.assign(I18N.es, { "med.ctx_label":"Contexto (IDs / mapeo) — opcional",
+                         "med.ctx_hint":"Se envía al LLM para la extracción de campos." });
+Object.assign(I18N.it, { "med.ctx_label":"Contesto (ID / mapping) — opzionale",
+                         "med.ctx_hint":"Inviato al LLM per l’estrazione dei campi." });
+Object.assign(I18N.de, { "med.ctx_label":"Kontext (IDs / Mapping) — optional",
+                         "med.ctx_hint":"Wird dem LLM für die Felderextraktion übergeben." });
+
+
+    /** Applique une langue aux éléments [data-i18n] */
+    function applyLang(lang){
+      const dict = I18N[lang] || I18N.fr;
+      document.documentElement.setAttribute('lang', lang);
+    
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key  = el.getAttribute('data-i18n');
+        const attr = el.getAttribute('data-i18n-attr'); // ex. "placeholder"
+        const val  = (dict && dict[key]) || key;
+    
+        if (attr) {
+          // Cas attribut (placeholder, title, aria-label, …)
+          el.setAttribute(attr, val);
+    
+          // Si c'est un champ de saisie et qu'on n'a pas d'entrée utilisateur, on garde vide
+          if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && !el.dataset.userTouched) {
+            el.value = ''; // pour afficher le placeholder gris
+          }
+        } else {
+          // Pas d’attribut ciblé → on ne manipule pas la valeur des champs de saisie
+          if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return;
+          el.textContent = val;
+        }
+      });
+      // adapter les placeholders si besoin :
+      const apiKey = document.getElementById('med_api_key2');
+      if (apiKey){
+        apiKey.placeholder = (lang === 'fr')
+          ? "MISTRAL_API_KEY si vide"
+          : (lang === 'en')
+            ? "MISTRAL_API_KEY if empty"
+            : (lang === 'es')
+              ? "MISTRAL_API_KEY si está vacío"
+              : (lang === 'it')
+                ? "MISTRAL_API_KEY se vuoto"
+                : "MISTRAL_API_KEY falls leer";
+      }
+    }
+    </script>
+    <script>
+      // --- i18n JS helpers (utilise localStorage.lang ou FR par défaut)
+      window.getLang = function () {
+        const l = localStorage.getItem('lang') || navigator.language || 'fr';
+        return l.slice(0,2); // fr, en, es, it, de
+      };
+    
+      // Dictionnaire des messages "dynamiques" gérés en JS
+      // (ne duplique pas tes data-i18n du HTML; ceci est uniquement pour les messages JS)
+      window.I18N_JS = {
+        fr: {
+          upl_no_files: "Aucun fichier sélectionné.",
+          upl_choose_first: "Choisis d'abord un dossier source.",
+          upl_failed: "Upload échoué",
+          run_running: "⏳ Pipeline en cours…",
+          run_error:   "Erreur",
+          run_done:    "✅ Terminé.",
+          run_dl_excel_label: "Télécharger le tableur",
+          frise_none: "Aucun élément",
+          frise_doc:  "(document)",
+          frise_name_n: (n) => `Frise ${n}`,
+          frise_auto: "auto",
+          frise_patient: (id) => `Patient ${id}`,
+          tooltip_no_fields: "Aucun champ",
+          ind_calc: "⏳ Calcul des indicateurs…",
+          ind_unavailable: "Indicateurs indisponibles",
+          ind_updated: "✓ Indicateurs mis à jour",
+          avg_title: "Indicateurs moyens",
+          avg_meta_none: "Aucune valeur disponible",
+          avg_meta_some: (n) => `Moyenne calculée sur ${n} valeur(s)`
+        },
+        en: {
+          upl_no_files: "No files selected.",
+          upl_choose_first: "Pick a source folder first.",
+          upl_failed: "Upload failed",
+          run_running: "⏳ Pipeline running…",
+          run_error:   "Error",
+          run_done:    "✅ Done.",
+          run_dl_excel_label: "Download spreadsheet",
+          frise_none: "No items",
+          frise_doc:  "(document)",
+          frise_name_n: (n) => `Timeline ${n}`,
+          frise_auto: "auto",
+          frise_patient: (id) => `Patient ${id}`,
+          tooltip_no_fields: "No fields",
+          ind_calc: "⏳ Computing indicators…",
+          ind_unavailable: "Indicators unavailable",
+          ind_updated: "✓ Indicators updated",
+          avg_title: "Average indicators",
+          avg_meta_none: "No values available",
+          avg_meta_some: (n) => `Average computed on ${n} value(s)`
+        },
+        es: {
+          upl_no_files: "No se seleccionaron archivos.",
+          upl_choose_first: "Elige primero una carpeta fuente.",
+          upl_failed: "Error al subir",
+          run_running: "⏳ Canalización en curso…",
+          run_error:   "Error",
+          run_done:    "✅ Terminado.",
+          run_dl_excel_label: "Descargar Tabla",
+          frise_none: "Sin elementos",
+          frise_doc:  "(documento)",
+          frise_name_n: (n) => `Cronología ${n}`,
+          frise_auto: "auto",
+          frise_patient: (id) => `Paciente ${id}`,
+          tooltip_no_fields: "Sin campos",
+          ind_calc: "⏳ Calculando indicadores…",
+          ind_unavailable: "Indicadores no disponibles",
+          ind_updated: "✓ Indicadores actualizados",
+          avg_title: "Indicadores medios",
+          avg_meta_none: "No hay valores disponibles",
+          avg_meta_some: (n) => `Media calculada sobre ${n} valor(es)`
+        },
+        it: {
+          upl_no_files: "Nessun file selezionato.",
+          upl_choose_first: "Seleziona prima una cartella sorgente.",
+          upl_failed: "Caricamento non riuscito",
+          run_running: "⏳ Pipeline in esecuzione…",
+          run_error:   "Errore",
+          run_done:    "✅ Completato.",
+          run_dl_excel_label: "Scarica tabella",
+          frise_none: "Nessun elemento",
+          frise_doc:  "(documento)",
+          frise_name_n: (n) => `Cronologia ${n}`,
+          frise_auto: "auto",
+          frise_patient: (id) => `Paziente ${id}`,
+          tooltip_no_fields: "Nessun campo",
+          ind_calc: "⏳ Calcolo indicatori…",
+          ind_unavailable: "Indicatori non disponibili",
+          ind_updated: "✓ Indicatori aggiornati",
+          avg_title: "Indicatori medi",
+          avg_meta_none: "Nessun valore disponibile",
+          avg_meta_some: (n) => `Media calcolata su ${n} valore/i`
+        },
+        de: {
+          upl_no_files: "Keine Dateien ausgewählt.",
+          upl_choose_first: "Wähle zuerst einen Quellordner.",
+          upl_failed: "Upload fehlgeschlagen",
+          run_running: "⏳ Pipeline läuft…",
+          run_error:   "Fehler",
+          run_done:    "✅ Fertig.",
+          run_dl_excel_label: "Tabellenkalkulationsprogramm herunterladen",
+          frise_none: "Keine Einträge",
+          frise_doc:  "(Dokument)",
+          frise_name_n: (n) => `Zeitleiste ${n}`,
+          frise_auto: "auto",
+          frise_patient: (id) => `Patient ${id}`,
+          tooltip_no_fields: "Keine Felder",
+          ind_calc: "⏳ Indikatoren werden berechnet…",
+          ind_unavailable: "Indikatoren nicht verfügbar",
+          ind_updated: "✓ Indikatoren aktualisiert",
+          avg_title: "Durchschnittliche Indikatoren",
+          avg_meta_none: "Keine Werte verfügbar",
+          avg_meta_some: (n) => `Durchschnitt aus ${n} Wert(en) berechnet`
+        }
+      };
+      Object.assign(I18N_JS.fr, {
+        avg_title: "Indicateurs moyens",
+        value_label: "Valeur",
+        day_short: "j",
+      
+        delay1_label: "Délai 1 — contact → 1er RV",
+        delay2_label: "Délai 2 — 1er RV → 1ère anapath",
+        delay3_label: "Délai 3 — (1er RV ou anapath post-RV) → 1ère UCP/RCP",
+        delay4_label: "Délai 4 — 1ère UCP/RCP → 1er traitement"
+      });
+      
+      Object.assign(I18N_JS.en, {
+        avg_title: "Average indicators",
+        value_label: "Value",
+        day_short: "d",
+      
+        delay1_label: "Delay 1 — contact → first appointment",
+        delay2_label: "Delay 2 — first appointment → first histopathology",
+        delay3_label: "Delay 3 — (first appointment or post-visit histopathology) → first MTB/Tumor board",
+        delay4_label: "Delay 4 — first MTB/Tumor board → first treatment"
+      });
+      
+      Object.assign(I18N_JS.es, {
+        avg_title: "Indicadores promedio",
+        value_label: "Valor",
+        day_short: "d",
+      
+        delay1_label: "Plazo 1 — contacto → 1ª cita",
+        delay2_label: "Plazo 2 — 1ª cita → 1ª anatomía patológica",
+        delay3_label: "Plazo 3 — (1ª cita o anatomía patológica post-cita) → 1ª UMT/Comité",
+        delay4_label: "Plazo 4 — 1ª UMT/Comité → 1º tratamiento"
+      });
+      
+      Object.assign(I18N_JS.it, {
+        avg_title: "Indicatori medi",
+        value_label: "Valore",
+        day_short: "gg",
+      
+        delay1_label: "Ritardo 1 — contatto → prima visita",
+        delay2_label: "Ritardo 2 — prima visita → prima anatomia patologica",
+        delay3_label: "Ritardo 3 — (prima visita o anat. pat. post-visita) → primo UCP/MTB",
+        delay4_label: "Ritardo 4 — primo UCP/MTB → primo trattamento"
+      });
+      
+      Object.assign(I18N_JS.de, {
+        avg_title: "Durchschnittliche Indikatoren",
+        value_label: "Wert",
+        day_short: "T",
+      
+        delay1_label: "Frist 1 — Kontakt → erster Termin",
+        delay2_label: "Frist 2 — erster Termin → erste Histopathologie",
+        delay3_label: "Frist 3 — (erster Termin oder post-Termin-Histopathologie) → erstes Tumorboard",
+        delay4_label: "Frist 4 — erstes Tumorboard → erste Behandlung"
+      });
+      Object.assign(I18N_JS.fr, {
+        "ind.title": "Indicateurs OECI",
+        "ind.first_contact": "Date 1er contact",
+        "ind.run": "Calcul d'indicateurs"
+      });
+      
+      Object.assign(I18N_JS.en, {
+        "ind.title": "OECI indicators",
+        "ind.first_contact": "First contact date",
+        "ind.run": "Calculate indicators"
+      });
+      
+      Object.assign(I18N_JS.es, {
+        "ind.title": "Indicadores OECI",
+        "ind.first_contact": "Fecha del primer contacto",
+        "ind.run": "Calcular indicadores"
+      });
+      
+      Object.assign(I18N_JS.it, {
+        "ind.title": "Indicatori OECI",
+        "ind.first_contact": "Data del primo contatto",
+        "ind.run": "Calcola indicatori"
+      });
+      
+      Object.assign(I18N_JS.de, {
+        "ind.title": "OECI-Indikatoren",
+        "ind.first_contact": "Datum des ersten Kontakts",
+        "ind.run": "Indikatoren berechnen"
+      });
+      Object.assign(I18N_JS.fr, {
+        catshare_title: "Répartition par catégorie",
+        catshare_cat: "Catégorie",
+        catshare_share: "Part",
+        catshare_count: "N",
+        catshare_empty: "Aucune catégorie."
+      });
+      Object.assign(I18N_JS.en, {
+        catshare_title: "Category breakdown",
+        catshare_cat: "Category",
+        catshare_share: "Share",
+        catshare_count: "N",
+        catshare_empty: "No categories yet."
+      });
+      Object.assign(I18N_JS.es, {
+        catshare_title: "Distribución por categoría",
+        catshare_cat: "Categoría",
+        catshare_share: "Proporción",
+        catshare_count: "N",
+        catshare_empty: "Sin categorías aún."
+      });
+      Object.assign(I18N_JS.it, {
+        catshare_title: "Ripartizione per categoria",
+        catshare_cat: "Categoria",
+        catshare_share: "Quota",
+        catshare_count: "N",
+        catshare_empty: "Nessuna categoria."
+      });
+      Object.assign(I18N_JS.de, {
+        catshare_title: "Aufschlüsselung nach Kategorie",
+        catshare_cat: "Kategorie",
+        catshare_share: "Anteil",
+        catshare_count: "N",
+        catshare_empty: "Noch keine Kategorien."
+      });
+
+      Object.assign(I18N.fr, {
+        "med.ctx_ph": "ex. Utiliser le NIP pour l'id"
+      });
+      Object.assign(I18N.en, {
+        "med.ctx_ph": "e.g. Use the NIP for the ID"
+      });
+      Object.assign(I18N.es, {
+        "med.ctx_ph": "p. ej., Usar el NIP para el ID"
+      });
+      Object.assign(I18N.it, {
+        "med.ctx_ph": "es. Usare il NIP per l'ID"
+      });
+      Object.assign(I18N.de, {
+        "med.ctx_ph": "z. B. NIP für die ID verwenden"
+      });
+      
+      // t(key, ...params) → renvoie la chaîne traduite
+      window.t = function (key, ...args) {
+        const lang = getLang();
+        const dict = (window.I18N_JS && window.I18N_JS[lang]) || window.I18N_JS.fr;
+        const val = dict[key] ?? key;
+        try {
+          return (typeof val === 'function') ? val(...args) : String(val);
+        } catch { return String(val); }
+      };
+    </script>
+    <script>
+      (() => {
+        const origFetch = window.fetch;
+        window.fetch = function(input, init = {}) {
+          const lang = (window.appLang || localStorage.getItem('app_lang') || localStorage.getItem('lang') || 'fr').slice(0,2);
+      
+          // 1) en-tête
+          init = init || {};
+          init.headers = Object.assign({}, init.headers, { 'X-App-Lang': lang });
+      
+          // 2) injecter {lang} si body JSON
+          try {
+            const ct = (init.headers['Content-Type'] || init.headers['content-type'] || '').toLowerCase();
+            if (ct.includes('application/json') && typeof init.body === 'string' && init.body.trim().startsWith('{')) {
+              const json = JSON.parse(init.body);
+              if (!('lang' in json)) json.lang = lang;
+              init.body = JSON.stringify(json);
+            }
+          } catch {}
+      
+          // 3) ajouter ?lang=... sur les URLs /api/
+          try {
+            let url = (typeof input === 'string') ? input : input.url;
+            if (url.startsWith('/api/')) {
+              const u = new URL(url, location.origin);
+              if (!u.searchParams.has('lang')) u.searchParams.set('lang', lang);
+              url = u.toString();
+              input = (typeof input === 'string') ? url : new Request(url, input);
+            }
+          } catch {}
+      
+          return origFetch(input, init);
+        };
+      })();
+      </script>
+      
+  <script>
+    // ===== Helpers locaux =====
+    const $2  = (s) => document.querySelector(s);
+    const $$2 = (s) => Array.from(document.querySelectorAll(s));
+    let jobId2  = null;
+    let srcPath2 = null;
+
+    function setStatus2(){
+      $2("#jobId2").textContent  = jobId2 || "—";
+      $2("#srcPath2").textContent = srcPath2 || "—";
+    }
+    function ensureSource2(){
+      if (!srcPath2) throw new Error(t('upl_choose_first'));
+    }
+    let baseExcelPath2 = null;
+
+async function uploadBaseExcel2(){
+  try {
+    if (!jobId2) { alert(t('upl_choose_first')); return; } // besoin du job existant
+    const inp = document.getElementById('baseXlsxInput2');
+    const f = inp?.files?.[0];
+    if (!f) { alert(t('upl_no_files')); return; }
+
+    const fd = new FormData();
+    fd.append('excel', f, f.name);
+    fd.append('job_id', jobId2);
+
+    const r = await fetch('/api/base/upload_excel', {
+      method: 'POST',
+      body: fd,
+      headers: { 'X-Lang': getLang() }
+    });
+    const js = await r.json();
+    if (!js.ok) throw new Error(js.error || 'Upload failed');
+
+    baseExcelPath2 = js.xlsx_path; // mémorise le chemin côté serveur
+    document.getElementById('baseXlsx2').textContent = (js.filename || f.name);
+
+    // seed immédiat des timelines avec les items Excel
+    await loadDashboardTimelines(jobId2);
+  } catch(e){
+    alert(e.message || e);
+  }
+}
+
+document.getElementById('baseXlsxInput2')?.addEventListener('change', uploadBaseExcel2);
+
+    // ===== Upload dossier (webkitdirectory / drag&drop) =====
+    async function uploadFolder2(){
+      const input = $2("#folderInput2");
+      const files = Array.from(input.files || []);
+      if (!files.length){ alert(t('upl_no_files')); return; }
+
+      const fd = new FormData();
+      for (const f of files) fd.append("files", f, f.webkitRelativePath || f.name);
+
+      try {
+        const r = await fetch("/api/source/upload", { method: "POST", headers: { "X-Lang": getLang() }, body: fd });
+        const js = await r.json();
+        if (!js.ok) throw new Error(js.error || t('upl_failed'));
+        jobId2  = js.job_id;
+        srcPath2 = js.src_path || "(upload)";
+        setStatus2();
+        dropZone2.setAttribute('data-i18n', 'upl.loaded');
+        dropZone2.textContent =  ' ✔︎';
+      } catch(e){
+        alert(e.message || e);
+      }
+    }
+
+    const dropZone2   = $2("#dropZone2");
+    const folderInput2= $2("#folderInput2");
+
+    dropZone2.addEventListener("click", () => folderInput2.click());
+    dropZone2.addEventListener("dragover", (e) => { e.preventDefault(); dropZone2.classList.add("over"); });
+    dropZone2.addEventListener("dragleave", () => dropZone2.classList.remove("over"));
+    dropZone2.addEventListener("drop", (e) => {
+      e.preventDefault(); dropZone2.classList.remove("over");
+      if (e.dataTransfer.items) {
+        folderInput2.files = e.dataTransfer.files;
+        uploadFolder2();
+      }
+    });
+    folderInput2.addEventListener("change", uploadFolder2);
+
+    // ===== Run médical (appel /api/run_all) =====
+    function setStep2(id, state){
+      const el = $2('#ns_progress .pstep[data-id="'+id+'"]');
+      if (!el) return;
+      el.classList.remove("todo","doing","done","error");
+      el.classList.add(state);
+    }
+    function markAllDone2(){
+      $$2('#ns_progress .pstep').forEach(el => {
+        el.classList.remove("todo","doing","error");
+        el.classList.add("done");
+      });
+    }
+
+    $2('#btnRunMedical2')?.addEventListener('click', async () => {
+      try {
+        ensureSource2();
+        const ctx = ($2('#med_ctx2')?.value || '').trim();
+
+
+
+        // reset progression
+        $$2('#ns_progress .pstep').forEach(el => el.classList.remove("doing","done","error","todo"));
+        $$2('#ns_progress .pstep').forEach(el => el.classList.add("todo"));
+        setStep2('extract_content','doing');
+    
+        const shared = {
+          model:  ($2('#med_model2').value || '').trim(),
+          api_key:($2('#med_api_key2').value || '').trim(),
+          seed:   parseInt($2('#med_seed2').value || "42", 10)
+        };
+        $2('#med_result2').textContent = t('run_running');
+    
+        // ⬇️ Live updates pendant le run
+        startDashboardWatch(1500);
+    
+        const r = await fetch("/api/run_all", {
+          method: "POST",
+          headers: { "Content-Type":"application/json", "X-Lang": getLang() },
+          body: JSON.stringify({ job_id: jobId2, src_path: srcPath2, mode: "medical", opts: { shared, base_excel_path: baseExcelPath2 || null, extra: { fields_context: ctx || null }  } })
+        });
+        const js = await r.json();
+        if (!js.ok) {
+          setStep2(js.where || 'extract_fields', 'error');
+          $2('#med_result2').textContent = t('run_error') + (js.where || "") + "\n" + (js.log || "");
+          return;
+        }
+    
+        // succès
+        markAllDone2();
+        let html = `${t('run_done')} <a target="_blank" href="${js.excel}">Télécharger le tableur</a>`;
+        if (Array.isArray(js.excels_by_id) && js.excels_by_id.length){
+          html += "<br><strong>Exports par patient :</strong><ul>";
+          for (const e of js.excels_by_id){
+            const label = `export_${(e.id || "unknown")}.xlsx`;
+            html += `<li><a target="_blank" href="${e.url}">${label}</a> <small>(${e.rows || 0} lignes)</small></li>`;
+          }
+          html += "</ul>";
+        }
+        $2('#med_result2').innerHTML = html;
+      } catch (e){
+        alert(e.message || e);
+      } finally {
+        // ⬇️ Stopper le live + dernier refresh
+        stopDashboardWatch();
+        if (jobId2) await loadDashboardTimelines(jobId2);
+      }
+    });
+  </script>
+
+  <script>
+    // ===== Multi-frises par patient =====
+  
+
+    function ensureSlot(idx, title){
+      const strip = document.querySelector("#frisesStrip");
+      // s'il n'y a pas assez de slots, on en ajoute dynamiquement
+      while (strip.children.length <= idx){
+        const n = strip.children.length + 1;
+        const slot = document.createElement("article");
+        slot.className = "frise-slot";
+        slot.innerHTML = `
+          <header class="frise-head">
+            <strong>Frise ${n}</strong>
+            <small class="frise-sub">${t('frise_auto')}</small>
+          </header>
+          <div class="timeline" id="timeline_${n}"></div>
+        `;
+        strip.appendChild(slot);
+        PLACEHOLDER_IDS.push(`timeline_${n}`);
+      }
+
+        // mettre le titre + (ré)ajouter le badge
+        const slot = strip.children[idx];
+        const strong = slot.querySelector(".frise-head strong");
+        strong.textContent = title || t('frise_name_n', idx+1);
+        // le textContent ci-dessus efface les enfants → on (ré)ajoute le badge
+        const flag = document.createElement('span');
+        flag.className = 'pid-flag hidden';
+        flag.setAttribute('aria-hidden','true');
+        flag.textContent = '!';
+        strong.appendChild(flag);
+        
+    }
+  
+    // Rend une timeline minimaliste si aucune fonction globale n'est dispo
+    function renderTimelineFallback(container, items){
+      container.innerHTML = "";
+      if (!items || !items.length){
+        container.innerHTML = `<em>${t('frise_none')}</em>`;
+        return;
+      }
+      const ul = document.createElement("ul");
+      ul.style.margin = "0"; ul.style.paddingLeft = "18px";
+      for (const it of items){
+        const li = document.createElement("li");
+        const d = it.date_doc || "—";
+        const fn = it.filename || it.title || t('frise_doc');
+        li.textContent = `${d} — ${fn}`;
+        ul.appendChild(li);
+      }
+      container.appendChild(ul);
+    }
+    // --- Gestion dynamique des frises par patient ---
+const TL_SLOTS = new Map(); // pid -> { slot: <article>, container: <div.timeline> }
+
+  function sanitizeId(s){ return String(s).replace(/[^a-z0-9_-]/gi,'_'); }
+  
+  function getOrCreateSlotForPid(pid, title){
+    let rec = TL_SLOTS.get(pid);
+    if (rec) {
+      // MAJ du titre si besoin
+      const strong = rec.slot.querySelector('.frise-head strong');
+      if (strong && strong.firstChild) strong.firstChild.nodeValue = title;
+      return rec.container;
+    }
+  
+    const strip = document.getElementById('frisesStrip');
+    const slot  = document.createElement('article');
+    slot.className = 'frise-slot appear';
+  
+    const safeId = 'timeline_' + sanitizeId(pid);
+    slot.innerHTML = `
+      <header class="frise-head">
+        <strong>${t('frise_patient', pid)}<span class="pid-flag hidden" aria-hidden="true">!</span></strong>
+        <small class="frise-sub">${t('frise_auto')}</small>
+      </header>
+      <div class="timeline" id="${safeId}" data-pid="${String(pid)}"></div>
+    `;
+    strip.appendChild(slot);
+  
+    const container = slot.querySelector('#' + safeId);
+    TL_SLOTS.set(pid, { slot, container });
+  
+    // Panneau indicateurs sous la frise
+    insertIndicatorsUnder(container, pid);
+  
+    return container;
+  }
+  
+  async function loadDashboardTimelines(jobId){
+    const r = await fetch(`/api/timeline_dashboard?job_id=${encodeURIComponent(jobId)}`, {
+      headers: { "X-Lang": getLang() }
+    });
+    const js = await r.json();
+    if (!js.ok) { console.warn(js); return; }
+  
+    (js.groups || []).forEach((g) => {
+      const el = getOrCreateSlotForPid(g.id, t('frise_patient', g.id));
+      if (!el) return;
+  
+      // Rendu de la timeline
+      renderTimelineStyled(el, g.items);
+  
+      // Indicateurs : badge de sévérité / moyenne globale
+      insertIndicatorsUnder(el, g.id);
+      const card = el.closest('.frise-slot')?.querySelector('.indicators-card');
+      if (card) updatePatientFlagFromCountdown(card);
+  
+      ensureAvgIndicatorsPanel();
+      updateAvgIndicatorsPanel();
+      updateCategorySharesPanel();
+    });
+  }
+  
+      // --- Renderer frise (même look que la page 1), paramétré sur un conteneur ---
+  const tlTip2 = document.getElementById("tl_tip2");
+
+  function renderTimelineStyled(container, items){
+    const getDate = it => String(it.date_doc || "");
+    items = (items || []).slice().sort((a,b) => getDate(a) < getDate(b) ? -1 : 1);
+
+    container.innerHTML = "";
+    for (const it of items){
+      const div = document.createElement("div");
+      div.className = "tl-item";
+      if (it.json_path) div.dataset.jsonPath = it.json_path;
+      div._itemData = it;
+      div.dataset.search = _normStr(String(it?.content || ''));
+      const cat = it.category ? `<span class="tl-cat">${escapeHTML(String(it.category))}</span>` : "";
+      div.innerHTML = `
+        <div class="tl-row">
+          ${cat}
+          <span class="tl-date">${escapeHTML(getDate(it))}</span>
+        </div>
+      `;
+
+      // tooltip comme sur index.html
+      const show = async (e) => {
+        await maybeRefreshItemFields2(it, div);
+        const fields = it.fields || {};
+        const rows = Object.entries(fields).slice(0, 60).map(([k,v]) => {
+          const val = (v==null) ? "" : (typeof v === "object" ? JSON.stringify(v) : String(v));
+          return `<div><b>${escapeHTML(k)}:</b><span>${escapeHTML(val)}</span></div>`;
+        }).join("");
+        const dateDoc = it.date_doc ? String(it.date_doc) : "";
+        tlTip2.innerHTML = `
+          <div class="tl-tip-header">
+            <span class="tl-tip-cat">${escapeHTML(String(it.category || ""))}</span>
+            <span class="tl-tip-date">${escapeHTML(dateDoc)}</span>
+          </div>
+          <div class="kv">${rows || "<div><i>${t('tooltip_no_fields')}</i></div>"}</div>
+        `;
+        tlTip2.style.display = "block";
+        tlTip2.style.left = (e.clientX + 16) + "px";
+        tlTip2.style.top  = (e.clientY - 10) + "px";
+      };
+      const move = (e) => { tlTip2.style.left = (e.clientX + 16) + "px"; tlTip2.style.top  = (e.clientY - 10) + "px"; };
+      const hide = () => { tlTip2.style.display = "none"; };
+      div.addEventListener("mouseenter", show);
+      div.addEventListener("mousemove", move);
+      div.addEventListener("mouseleave", hide);
+
+      container.appendChild(div);
+      markTumorectomieIfNeeded(it, div);
+
+      // précharge date_doc si absente
+      if (!it.date_doc && it.json_path) { maybeRefreshItemFields2(it, div); }
+    }
+  }
+  // Mémo : json_path -> true (déjà tenté) / true dans NO_DATE si aucune date_doc trouvée
+const _fieldsTried2 = new Set();
+const _noDateDoc2   = new Set();
+// Anti-parallèle
+const _inFlight2    = new Map();
+
+  // même logique que maybeRefreshItemFields de la page 1
+  function escapeHTML(s){ return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  async function maybeRefreshItemFields2(it, mountEl){
+      const jp = mountEl?.dataset?.jsonPath || it.json_path;
+      if (!jobId2 || !jp) return;
+      if (_noDateDoc2.has(jp)) return;           // on sait qu'il n'y a pas de date → stop
+      if (_inFlight2.has(jp)) return;            // un fetch déjà en cours
+      if (_fieldsTried2.has(jp) && it.date_doc) return; // déjà effectué et on a la date
+      _inFlight2.set(jp, true);
+      try {
+      const r = await fetch(`/api/timeline/fields?job_id=${encodeURIComponent(jobId2)}&json_path=${encodeURIComponent(jp)}`, {
+        headers: { "X-Lang": getLang() }  // ← AJOUT
+      });
+      const js = await r.json();
+      if (!js || !js.ok) return;
+
+      const f = js.fields ?? {};
+      it.fields = f;
+      if (!it.content) {
+        const c = _getFieldCI(f, 'content');      // déjà défini plus bas
+        if (c) {
+          it.content = String(c);
+          if (mountEl) mountEl.dataset.search = _normStr(it.content);
+        }
+      }
+      // re-test visuel
+      markTumorectomieIfNeeded(it, mountEl);
+
+      const takeVal = (v) => {
+        if (v == null) return "";
+        if (typeof v === "string" || typeof v === "number") return String(v);
+        if (Array.isArray(v)) return takeVal(v[0]) || "";
+        if (typeof v === "object") return v.value ?? v.text ?? v.date ?? v.start ?? v.end ?? v.val ?? "";
+        return "";
+      };
+      const norm = (s) => String(s||"").trim().replace(/^name\s*[:=]\s*/i, "")
+        .replace(/[{}"']/g,"").toLowerCase().replace(/\s+/g,"").replace(/[-_]+/g,"");
+
+      let d = js.date_doc ?? it.date_doc ?? "";
+      if (!d && f && !Array.isArray(f) && typeof f === "object"){
+        for (const [k,v] of Object.entries(f)){
+          const nk = norm(k);
+          if (nk === "datedoc" || nk === "datedocument" || nk.endsWith("datedoc") || nk.includes("name:datedoc") || nk.includes("name=datedoc")){
+            d = takeVal(v); if (d) break;
+          }
+          if (!d && v && typeof v === "object"){
+            const vn = norm(v.name || v.field || "");
+            if (vn === "datedoc"){ d = takeVal(v); if (d) break; }
+          }
+        }
+      }
+      if (!d && Array.isArray(f)){
+        for (const item of f){
+          const vn = norm(item?.name || item?.field || item?.key || "");
+          if (vn === "datedoc"){ d = takeVal(item); if (d) break; }
+        }
+      }
+      if (!d && typeof f === "object" && f){
+        const hit = Object.entries(f).find(([k]) => norm(k).includes("name:datedoc"));
+        if (hit) d = takeVal(hit[1]);
+      }
+      it.date_doc = String(d || "");
+      if (!it.date_doc) {
+        _noDateDoc2.add(jp);     // 🔒 on ne réessaie plus automatiquement
+      }
+      _fieldsTried2.add(jp);
+      const dateEl = mountEl.querySelector(".tl-date");
+      if (dateEl) dateEl.textContent = it.date_doc || "";
+    } finally {
+      _inFlight2.delete(jp);
+    }
+      const dateEl = mountEl.querySelector(".tl-date");
+      if (dateEl) dateEl.textContent = it.date_doc || "";
+      markTumorectomieIfNeeded(it, mountEl);
+    } 
+
+  // on remplace l’appel au fallback par le renderer stylé
+  async function loadDashboardTimelines(jobId){
+    const r = await fetch(`/api/timeline_dashboard?job_id=${encodeURIComponent(jobId)}`, {
+      headers: { "X-Lang": getLang() }
+    });
+    const js = await r.json();
+    if (!js.ok) { console.warn(js); return; }
+  
+    (js.groups || []).forEach((g) => {
+      const el = getOrCreateSlotForPid(g.id, t('frise_patient', g.id));
+      if (!el) return;
+  
+      // Rendu de la timeline
+      renderTimelineStyled(el, g.items);
+  
+      // Indicateurs : badge de sévérité / moyenne globale
+      insertIndicatorsUnder(el, g.id);
+      const card = el.closest('.frise-slot')?.querySelector('.indicators-card');
+      if (card) updatePatientFlagFromCountdown(card);
+  
+      ensureAvgIndicatorsPanel();
+      updateAvgIndicatorsPanel();
+      updateCategorySharesPanel();
+    });
+  }
+  
+    // Appels existants
+    const _orig_setStatus2 = setStatus2;
+    setStatus2 = function(){
+      _orig_setStatus2();
+      if (jobId2) loadDashboardTimelines(jobId2);
+    };
+  
+    // Après run_all : on affiche la liste d'exports par patient
+    const _orig_markAllDone2 = markAllDone2;
+    markAllDone2 = function(){
+      _orig_markAllDone2();
+      // le fetch est fait dans l'écouteur du bouton; on lit la dernière réponse via med_result2
+      // => on gère ça directement dans le handler du bouton (voir plus bas)
+    };
+  
+    // Patch du handler pour afficher les liens par patient
+    const _oldRun = $2('#btnRunMedical2')?.onclick;
+    $2('#btnRunMedical2')?.addEventListener('click', async (ev) => {
+      // (Le handler existant est déjà défini plus haut; on le garde et on étend juste l'affichage en succès)
+      // Rien ici; le vrai patch est en-dessous dans la réponse fetch (on remplace le bloc succès).
+    });
+  </script>
+  <div id="tl_tip2" class="tl-tooltip" role="dialog" aria-hidden="true"></div>
+  <script>
+    let _dashPoll = null;
+    function startDashboardWatch(interval = 1500){
+      stopDashboardWatch();
+      if (!jobId2) return;
+      loadDashboardTimelines(jobId2);                 // 1er refresh immédiat
+      _dashPoll = setInterval(() => {
+        if (jobId2) loadDashboardTimelines(jobId2);   // refresh périodique
+      }, interval);
+    }
+    function stopDashboardWatch(){
+      if (_dashPoll){ clearInterval(_dashPoll); _dashPoll = null; }
+    }
+  </script>
+
+  <script>
+    // Même defs que pour le panneau "moyenne"
+    const INDICATORS_DEF = [
+      { id: "delai1", target: 10, labelKey: "delay1_label" },
+      { id: "delai2", target: 21, labelKey: "delay2_label" },
+      { id: "delai3", target: 7,  labelKey: "delay3_label"  },
+      { id: "delai4", target: 10, labelKey: "delay4_label" },
+    ];
+    
+    function renderIndicatorsPanel(pid){
+      const unit = t('day_short');
+      const valueLabel = `${t('value_label')} (${unit})`;
+    
+      const itemsHtml = INDICATORS_DEF.map(def => `
+        <li class="indicator-item" data-id="${def.id}" data-target="${def.target}" data-label-key="${def.labelKey}">
+          <span class="swatch neutral"></span>
+          <span class="indicator-label">${t(def.labelKey)} (${def.target} ${unit})</span>
+          <span class="ind-flag" hidden aria-hidden="true">
+            <span class="bang">!</span><span class="rem">0</span>
+            <span class="unit">${unit}</span>
+          </span>
+          <div class="grow"></div>
+          <label class="mini">
+            <span>${valueLabel}</span>
+            <input type="number" min="0" step="1" class="indicator-value" />
+          </label>
+        </li>
+      `).join('');
+    
+      return `
+      <div class="card indicators-card" data-pid="${pid}">
+        <div class="row" style="justify-content:space-between;align-items:center;gap:.75rem;">
+          <h3 style="margin:0;">${t('ind.title')}</h3>
+          <label class="row" style="gap:.5rem;align-items:center;">
+            <span>${t('ind.first_contact')}</span>
+            <input type="date" class="ind-first-date" lang="en-CA" />
+          </label>
+        </div>
+    
+        <div class="row" style="gap:.5rem;align-items:center;margin-top:.5rem;">
+          <button class="btn-ind-run">${t('ind.run')}</button>
+          <span class="ind-log muted"></span>
+        </div>
+    
+        <ul class="indicators">${itemsHtml}</ul>
+      </div>`;
+    }
+    </script>
+    <script>
+      function translateIndicatorsPanels(){
+        const unit = t('day_short');
+        const valueText = `${t('value_label')} (${unit})`;
+      
+        document.querySelectorAll('.indicators-card[data-pid]').forEach(card => {
+          // Titre
+          const h3 = card.querySelector('h3');
+          if (h3) h3.textContent = t('ind.title');
+      
+          // Libellé "Date 1er contact"
+          const fcSpan = card.querySelector('label .ind-first-date')?.closest('label')?.querySelector('span');
+          if (fcSpan) fcSpan.textContent = t('ind.first_contact');
+      
+          // Bouton
+          const btn = card.querySelector('.btn-ind-run');
+          if (btn) btn.textContent = t('ind.run');
+      
+          // Indicateurs
+          card.querySelectorAll('li.indicator-item').forEach(li => {
+            const labelKey = li.getAttribute('data-label-key');
+            const target = li.getAttribute('data-target') || '';
+            const lab = li.querySelector('.indicator-label');
+            if (lab && labelKey) lab.textContent = `${t(labelKey)} (${target} ${unit})`;
+      
+            // Unités dans les petits drapeaux
+            li.querySelectorAll('.unit').forEach(u => u.textContent = unit);
+      
+            // Libellé "Valeur (…)"
+            const vspan = li.querySelector('label.mini > span');
+            if (vspan) vspan.textContent = valueText;
+          });
+        });
+      }
+      </script>
+      
+    <script>
+      function statusFrom(valueDays, targetDays) {
+        if (Number.isNaN(valueDays) || valueDays === null) return 'neutral';
+        if (valueDays <= targetDays) return 'green';
+        if (valueDays <= targetDays + 5) return 'orange';
+        return 'red';
+      }
+      
+      function updateIndicatorRowIn(root, li){
+        const target = parseInt(li.dataset.target, 10);
+        const valInp = li.querySelector('.indicator-value');
+        const swatch = li.querySelector('.swatch');
+        const value  = parseInt(valInp?.value || '', 10);
+        const status = statusFrom(value, target);
+        swatch.className = 'swatch ' + status;
+        li.dataset.status = status;
+        return {
+          id: li.dataset.id,
+          name: li.querySelector('.indicator-label')?.textContent?.trim() || li.dataset.id,
+          target_days: target,
+          value_days: Number.isNaN(value) ? null : value,
+          status
+        };
+      }
+      
+      function setNeutralIndicatorsUIIn(root, items){
+        const all = items && items.length ? items : [
+          {id:'delai1',status:'neutral'},{id:'delai2',status:'neutral'},
+          {id:'delai3',status:'neutral'},{id:'delai4',status:'neutral'}
+        ];
+        all.forEach(it => {
+          const li = root.querySelector(`.indicator-item[data-id="${it.id}"]`);
+          if (!li) return;
+          const sw = li.querySelector('.swatch');
+          if (sw) sw.className = 'swatch neutral';
+        });
+      }
+      </script>
+      <script>
+        // Normalisation de la date, scoper à chaque carte
+        document.getElementById('frisesStrip')?.addEventListener('change', (e) => {
+          const inp = e.target.closest('.ind-first-date');
+          if (!inp) return;
+          if (inp.valueAsDate instanceof Date) {
+            const y = inp.valueAsDate.getFullYear();
+            const m = String(inp.valueAsDate.getMonth()+1).padStart(2,'0');
+            const d = String(inp.valueAsDate.getDate()).padStart(2,'0');
+            inp.value = `${y}-${m}-${d}`;
+          }
+        });
+        
+        // Lancer le calcul pour la carte concernée
+        document.getElementById('frisesStrip')?.addEventListener('click', async (e) => {
+          const btn = e.target.closest('.btn-ind-run');
+          if (!btn) return;
+        
+          const card = btn.closest('.indicators-card');
+          const pid  = card?.dataset?.pid;
+          if (!pid) return;
+        
+          const logEl = card.querySelector('.ind-log');
+          const dateEl = card.querySelector('.ind-first-date');
+          const raw = (dateEl?.value || '').trim();
+        
+          // normalise YYYY-MM-DD
+          const firstContact = (() => {
+            if (!raw) return null;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+            const m = raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+            if (m) {
+              const [, dd, mm, yyyy] = m;
+              return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            }
+            const t = Date.parse(raw);
+            if (!isNaN(t)) {
+              const d = new Date(t);
+              return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            }
+            return null;
+          })();
+        
+          logEl.textContent = t('ind_calc');
+        
+          // Si tu as un mapping "excel par patient" (ex: récupéré après /api/run_all),
+          // tu peux envoyer xlsx_path ici. Sinon, n’envoie que patient_id (backend ci-dessus).
+          const payload = {
+            job_id: jobId2,
+            patient_id: pid,              // ← utilisera l’export patient si dispo (cf. backend)
+            first_contact_date: firstContact
+            // xlsx_path: window._excelsById2?.[pid] || undefined
+          };
+        
+          try{
+            const r = await fetch('/api/indicators', {
+              method: 'POST',
+              headers: { 'Content-Type':'application/json', 'X-Lang': getLang() }, // ← AJOUT
+              body: JSON.stringify(payload)
+            });
+            const js = await r.json();
+        
+            if (!js.ok){
+              setNeutralIndicatorsUIIn(card, js.items);
+              logEl.textContent = (js.log || t('ind_unavailable'));
+              return;
+            }
+        
+            // Mise à jour UI carte par carte
+            (js.items || []).forEach(it => {
+              const li = card.querySelector(`.indicator-item[data-id="${it.id}"]`);
+              if (!li) return;
+              const valInp = li.querySelector('.indicator-value');
+              const sw     = li.querySelector('.swatch');
+              const flag   = li.querySelector('.ind-flag');
+              const remEl  = li.querySelector('.ind-flag .rem');
+        
+              if (valInp) valInp.value = (it.value_days ?? "");
+              if (sw)     sw.className = 'swatch ' + (it.status || 'neutral');
+        
+              // Gestion du “compte à rebours” si pas de valeur locale
+              const hasLocalValue = !!valInp && String(valInp.value).trim() !== "";
+              const hasCountdown  = !hasLocalValue && (typeof it.remaining_days === 'number');
+              li.dataset.remainingDays   = (typeof it.remaining_days === 'number') ? String(it.remaining_days) : "";
+              li.dataset.remainingStatus = it.status || "";
+        
+              if (flag){
+                if (hasCountdown){
+                  const n = Number(it.remaining_days) || 0;
+                  const disp = -n; // signe inversé (ton réglage actuel)
+                  remEl.textContent = (disp > 0 ? '+' : '') + String(disp);
+                  flag.className = 'ind-flag ' + (it.status || 'yellow');
+                  flag.hidden = false;
+                  flag.setAttribute('aria-hidden','false');
+                } else {
+                  flag.hidden = true;
+                  flag.setAttribute('aria-hidden','true');
+                }
+              }
+            });
+        
+            updatePatientFlagFromCountdown(card);
+            logEl.textContent = (js.log || t('ind_updated'));
+            updateAvgIndicatorsPanel();
+            updateCategorySharesPanel();
+          } catch(err){
+            setNeutralIndicatorsUIIn(card);
+            logEl.textContent = 'Indicateurs indisponibles';
+          }
+        });
+        
+        // Masquer/afficher le badge quand l’utilisateur tape une valeur
+        document.getElementById('frisesStrip')?.addEventListener('input', (e) => {
+          const inp = e.target.closest('.indicator-value');
+          if (!inp) return;
+          const li   = inp.closest('.indicator-item');
+          const card = inp.closest('.indicators-card');
+          const flag = li?.querySelector('.ind-flag');
+          if (!flag) return;
+        
+          const rem = li?.dataset?.remainingDays || "";
+          const st  = li?.dataset?.remainingStatus || "yellow";
+        
+          const hasVal = String(inp.value).trim() !== "";
+          if (hasVal){
+            flag.hidden = true;
+            flag.setAttribute('aria-hidden','true');
+          } else if (rem !== ""){
+            const remEl = flag.querySelector('.rem');
+            const n = parseInt(rem, 10) || 0;
+            remEl.textContent = (n > 0 ? '+' : '') + String(n);
+            flag.className = 'ind-flag ' + st;
+            flag.hidden = false;
+            flag.setAttribute('aria-hidden','false');
+          }
+        });
+        </script>
+        <script>
+          function insertIndicatorsUnder(containerEl, pid){
+            const slot = containerEl.closest('.frise-slot');
+            if (!slot) return;
+            // s’il n’existe pas, on l’insère ; sinon on met à jour l’id patient
+            let card = slot.querySelector('.indicators-card')
+            if (!card){
+              slot.insertAdjacentHTML('beforeend', renderIndicatorsPanel(pid || '—'));
+              card = slot.querySelector('.indicators-card');
+            }
+            if (pid) card.dataset.pid = pid;
+          }
+          </script>
+          <script>
+            function worstStatus(items){
+              const order = { neutral:0, green:1, orange:2, red:3 };
+              let w = 'neutral';
+              (items || []).forEach(it => {
+                const st = it?.status || 'neutral';
+                if (order[st] > order[w]) w = st;
+              });
+              return w;
+            }
+            function updatePatientFlagFromItems(cardEl, items){
+              const slot = cardEl.closest('.frise-slot');
+              if (!slot) return;
+              const flag = slot.querySelector('.pid-flag');
+              if (!flag) return;
+              const st = worstStatus(items);
+              flag.classList.remove('green','orange','red','hidden');
+              if (st === 'neutral'){ flag.classList.add('hidden'); return; }
+              flag.classList.add(st); // green/orange/red
+            }
+            </script>
+            <script>
+              function worstCountdownStatusInCard(cardEl){
+                // map "yellow" -> "orange" si jamais le backend renvoie "yellow"
+                const rank = { neutral:0, green:1, orange:2, red:3, yellow:2 };
+                let worst = 'neutral';
+                cardEl.querySelectorAll('.indicator-item').forEach(li => {
+                  const valInp = li.querySelector('.indicator-value');
+                  const hasLocalValue = !!valInp && String(valInp.value).trim() !== "";
+                  const rem = li.dataset.remainingDays ?? "";
+                  if (!hasLocalValue && rem !== "") {
+                    const st = (li.dataset.remainingStatus || 'neutral');
+                    if ((rank[st] ?? 0) > (rank[worst] ?? 0)) worst = st;
+                  }
+                });
+                // normalise "yellow" en "orange" pour la classe CSS
+                return worst === 'yellow' ? 'orange' : worst;
+              }
+              
+              function updatePatientFlagFromCountdown(cardEl){
+                const slot = cardEl.closest('.frise-slot');
+                if (!slot) return;
+                const flag = slot.querySelector('.pid-flag');
+                if (!flag) return;
+              
+                const st = worstCountdownStatusInCard(cardEl);
+                flag.classList.remove('green','orange','red','hidden');
+                if (st === 'neutral') { flag.classList.add('hidden'); return; }
+                flag.classList.add(st); // green / orange / red
+              }
+              </script>
+              <script>
+
+                function renderAvgIndicatorsPanel(){
+                  const unit = t('day_short');                  // j / d / días / gg / T, etc.
+                  const valueLabel = `${t('value_label')} (${unit})`;
+                
+                  const itemsHtml = INDICATORS_DEF.map(def => `
+                    <li class="indicator-item" data-id="${def.id}" data-target="${def.target}">
+                      <span class="swatch neutral"></span>
+                      <span class="indicator-label">${t(def.labelKey)} (${def.target} ${unit})</span>
+                      <div class="grow"></div>
+                      <label class="mini">
+                        <span>${valueLabel}</span>
+                        <input class="indicator-value" type="number" disabled />
+                      </label>
+                    </li>
+                  `).join('');
+                
+                  return `
+                  <section class="card indicators-card avg" id="avgIndicators">
+                    <div class="row" style="justify-content:space-between;align-items:center;gap:.75rem;">
+                      <h3 style="margin:0;">${t('avg_title')}</h3>
+                      <span class="muted" id="avg_meta"></span>
+                    </div>
+                    <ul class="indicators">${itemsHtml}</ul>
+                  </section>`;
+                }
+                
+                
+                function ensureAvgIndicatorsPanel(){
+                  const bottomSec = document.querySelector('section.bottom.card');
+                  if (!bottomSec) return;
+                  if (!document.getElementById('avgIndicators')){
+                    bottomSec.insertAdjacentHTML('afterend', renderAvgIndicatorsPanel());
+                  }
+                }
+                
+                // À appeler après un changement de langue pour re-traduire le panneau
+                function rerenderAvgIndicatorsPanel(){
+                  const p = document.getElementById('avgIndicators');
+                  if (p) p.remove();
+                  ensureAvgIndicatorsPanel();
+                }
+                
+                </script>
+                <script>
+                  // Récupère toutes les valeurs des encarts patients (#frisesStrip)
+                  function collectIndicatorValuesAcrossPatients(){
+                    // { delai1: [12, 9, ...], delai2: [ ... ], ... }
+                    const map = {};
+                    document.querySelectorAll('#frisesStrip .indicators-card:not(.avg) .indicator-item')
+                      .forEach(li => {
+                        const id = li.dataset.id;
+                        const v = parseInt(li.querySelector('.indicator-value')?.value || '', 10);
+                        if (!Number.isFinite(v)) return;
+                        if (!map[id]) map[id] = [];
+                        map[id].push(v);
+                      });
+                    return map;
+                  }
+                  
+                  function updateAvgIndicatorsPanel(){
+                    const avgCard = document.getElementById('avgIndicators');
+                    if (!avgCard) return;
+                  
+                    const valuesMap = collectIndicatorValuesAcrossPatients();
+                  
+                    // Optionnel: combien de valeurs au total (pour le petit meta)
+                    const totalVals = Object.values(valuesMap).reduce((s, arr) => s + arr.length, 0);
+
+                  
+                    avgCard.querySelectorAll('.indicator-item').forEach(li => {
+                      const id = li.dataset.id;
+                      const target = parseInt(li.dataset.target || '0', 10);
+                      const arr = valuesMap[id] || [];
+                      let mean = null;
+                  
+                      if (arr.length){
+                        const sum = arr.reduce((a,b) => a+b, 0);
+                        mean = Math.round(sum / arr.length); // entier (jours)
+                      }
+                  
+                      // MAJ valeur affichée
+                      const inp = li.querySelector('.indicator-value');
+                      if (inp) inp.value = (mean ?? '');
+                  
+                      // Couleur (pas de délai / pas de ind-flag ici)
+                      const sw = li.querySelector('.swatch');
+                      const st = statusFrom(mean, target);
+                      if (sw) sw.className = 'swatch ' + st;
+                    });
+                  }
+                  </script>
+                  <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                      ensureAvgIndicatorsPanel();
+                      updateAvgIndicatorsPanel();
+                      updateCategorySharesPanel();
+                    });
+                    </script>
+
+                    <script>
+                      const langToggle = document.getElementById('langToggle');
+                      const langMenu   = document.getElementById('langMenu');
+                      const langFlag   = document.getElementById('langFlag');
+                    
+                      langToggle?.addEventListener('click', () => {
+                        const expanded = langToggle.getAttribute('aria-expanded') === 'true';
+                        langToggle.setAttribute('aria-expanded', String(!expanded));
+                        langMenu.hidden = expanded;
+                      });
+                    
+                      document.querySelectorAll('.lang-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                          const lang = btn.dataset.lang;
+                          // change le drapeau
+                          langFlag.textContent = btn.textContent;
+                          // stocke la langue
+                          localStorage.setItem('lang', lang);
+                          localStorage.setItem('app_lang', lang);
+                          window.appLang = lang;
+                          // recharge les textes i18n existants
+                          if (typeof applyLang === 'function') applyLang(lang);
+                          rerenderAvgIndicatorsPanel();
+                          translateIndicatorsPanels();
+                          // ferme le menu
+                          langMenu.hidden = true;
+                          langToggle.setAttribute('aria-expanded', 'false');
+                        });
+                      });
+                    
+                      // au chargement : restaure la langue
+                      document.addEventListener('DOMContentLoaded', () => {
+                        const lang = localStorage.getItem('lang') || 'fr';
+                        const btn  = document.querySelector(`.lang-btn[data-lang="${lang}"]`);
+                        if (btn) btn.click();
+                      });
+                    </script>
+                    <script>
+                      document.addEventListener('click', (e) => {
+                        const inside = e.target.closest('.lang-switcher');
+                        if (!inside) {
+                          const t = document.getElementById('langToggle');
+                          const m = document.getElementById('langMenu');
+                          if (m && !m.hidden) {
+                            m.hidden = true;
+                            t?.setAttribute('aria-expanded','false');
+                          }
+                        }
+                      });
+                    </script>
+                    <script>
+                      function _normStr(s){
+                        return (s || '')
+                          .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+                          .toLowerCase()
+                          .replace(/[-_/]+/g,' ')     // optionnel: neutraliser les tirets
+                          .trim();
+                      }
+                      
+                      function _flatVal(v){
+                        if (v == null) return "";
+                        if (typeof v === "string" || typeof v === "number") return String(v);
+                        if (Array.isArray(v)) return v.map(_flatVal).join(" ");
+                        if (typeof v === "object") return v.value ?? v.text ?? v.date ?? v.name ?? "";
+                        return "";
+                      }
+                      
+
+                      function _getFieldCI(fields, wanted){
+                        if (!fields || typeof fields !== 'object') return "";
+                        const wn = _normStr(wanted);
+                        for (const [k,v] of Object.entries(fields)){
+                          if (_normStr(k) === wn) return _flatVal(v);  // <— au lieu de String(v)
+                        }
+                        return "";
+                      }
+                      
+                      function markTumorectomieIfNeeded(item, mountEl){
+                        if (!mountEl) return false;
+                      
+                        // mot saisi par l’utilisateur
+                        const kw = _normStr(document.getElementById('kwFilter')?.value || '');
+                        if (!kw) { mountEl.classList.remove('tumo-red'); return false; }
+                      
+                        const has = (s) => _normStr(s).includes(kw);
+                      
+                        // on construit un "haystack" (contenu à fouiller)
+                        let hay = '';
+                      
+                        // 1) prioriser un champ "content" si présent
+                        
+                        if (item?.fields) {
+                          const content = _getFieldCI(item.fields, 'content'); // case/accents insensible
+                          if (content) {
+                            hay += ' ' + content;
+                          } else {
+                            // sinon: concat des valeurs lisibles
+                            if (Array.isArray(item.fields)) {
+                              for (const o of item.fields) {
+                                const v = o?.value ?? o?.text ?? o?.date ?? o?.name ?? '';
+                                if (v) hay += ' ' + String(v);
+                              }
+                            } else if (typeof item.fields === 'object') {
+                              for (const v of Object.values(item.fields)) {
+                                const val = (v && typeof v === 'object')
+                                  ? (v.value ?? v.text ?? v.date ?? v.name ?? '')
+                                  : v;
+                                if (val != null) hay += ' ' + String(val);
+                              }
+                            }
+                          }
+                        }
+                        if (item?.content) { hay += ' ' + String(item.content); }  
+
+                        // 2) méta rapides
+                        hay += ' ' + (item.title || '') + ' ' + (item.filename || '') + ' ' + (item.category || '');
+                      
+                        const hit = has(hay);
+                        mountEl.classList.toggle('tumo-red', hit);
+                        return hit;
+                      }
+                      function rescanTimelinesBySearch(){
+                        // Re-teste toutes les pastilles avec le mot courant
+                        document.querySelectorAll('.timeline .tl-item').forEach(el => {
+                          const it = el._itemData;
+                          if (it) markTumorectomieIfNeeded(it, el);
+                        });
+                      }
+                      
+                      document.addEventListener('DOMContentLoaded', () => {
+                        const btn = document.getElementById('kwGo');
+                        const inp = document.getElementById('kwFilter');
+                      
+                        // Clic sur le bouton "Rechercher"
+                        btn?.addEventListener('click', rescanTimelinesBySearch);
+                      
+                        // Touche Enter dans le champ
+                        inp?.addEventListener('keydown', (e) => {
+                          if (e.key === 'Enter') rescanTimelinesBySearch();
+                        });
+                      
+                        // (optionnel) mise à jour en live pendant la saisie
+                        let t = null;
+                        inp?.addEventListener('input', () => {
+                          clearTimeout(t);
+                          t = setTimeout(rescanTimelinesBySearch, 150);
+                        });
+                      });
+                      
+                      
+                      </script>
+                      <script>
+                        function renderCategorySharesPanel(){
+                          return `
+                            <div class="cat-shares-card">
+                              <h3 style="margin:0 0 8px 0;">${t('catshare_title')}</h3>
+                              <table class="cat-share-table">
+                                <thead>
+                                  <tr>
+                                    <th>${t('catshare_cat')}</th>
+                                    <th>${t('catshare_share')}</th>
+                                    <th>${t('catshare_count')}</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="catSharesBody">
+                                  <tr><td colspan="3" class="muted">${t('catshare_empty')}</td></tr>
+                                </tbody>
+                              </table>
+                            </div>`;
+                        }
+                      
+                        function renderAvgIndicatorsPanel(){
+                          const unit = t('day_short');                  // j / d / días / gg / T, etc.
+                          const valueLabel = `${t('value_label')} (${unit})`;
+                      
+                          const itemsHtml = INDICATORS_DEF.map(def => `
+                            <li class="indicator-item" data-id="${def.id}" data-target="${def.target}">
+                              <span class="swatch neutral"></span>
+                              <span class="indicator-label">${t(def.labelKey)} (${def.target} ${unit})</span>
+                              <div class="grow"></div>
+                              <label class="mini">
+                                <span>${valueLabel}</span>
+                                <input class="indicator-value" type="number" disabled />
+                              </label>
+                            </li>
+                          `).join('');
+                      
+                          return `
+                            <section class="card indicators-card avg" id="avgIndicators">
+                              <div class="row" style="justify-content:space-between;align-items:center;gap:.75rem;">
+                                <h3 style="margin:0;">${t('avg_title')}</h3>
+                                <span class="muted" id="avg_meta"></span>
+                              </div>
+                              <div class="avg-grid">
+                                <ul class="indicators">${itemsHtml}</ul>
+                                ${renderCategorySharesPanel()}
+                              </div>
+                            </section>`;
+                        }
+                      
+                        // === Cat. shares: calcul sur toutes les frises chargées (#frisesStrip)
+                        function collectCategoryCounts(){
+                          const counts = new Map();
+                          document.querySelectorAll('#frisesStrip .timeline .tl-item').forEach(div => {
+                            const it  = div._itemData;
+                            const cat = (it && it.category ? String(it.category) : (div.querySelector('.tl-cat')?.textContent || '')).trim();
+                            if (!cat) return;
+                            counts.set(cat, (counts.get(cat) || 0) + 1);
+                          });
+                          return counts;
+                        }
+                      
+                        function updateCategorySharesPanel(){
+                          const tbody = document.getElementById('catSharesBody');
+                          if (!tbody) return;
+                      
+                          const counts = collectCategoryCounts();
+                          const total  = Array.from(counts.values()).reduce((a,b)=>a+b,0);
+                      
+                          if (!total){
+                            tbody.innerHTML = `<tr><td colspan="3" class="muted">${t('catshare_empty')}</td></tr>`;
+                            return;
+                          }
+                      
+                          const rows = Array.from(counts.entries())
+                            .map(([cat, n]) => ({ cat, n, p: (n * 100) / total }))
+                            .sort((a,b) => b.p - a.p || a.cat.localeCompare(b.cat));
+                      
+                          tbody.innerHTML = rows.map(r => `
+                            <tr>
+                              <td class="cat">${escapeHTML(r.cat)}</td>
+                              <td class="share">
+                                <div class="bar" style="--w:${r.p}%;"></div>
+                                <span class="pct">${r.p.toFixed(1)}%</span>
+                              </td>
+                              <td class="count">${r.n}</td>
+                            </tr>
+                          `).join('');
+                        }
+                      </script>
+                      <script>
+                        document.getElementById('btnHome')?.addEventListener('click', () => {
+                          // On recharge index.html avec un flag
+                          window.location.href = '/?autoDiscover=1';
+                        });
+                        document.addEventListener('DOMContentLoaded', () => {
+                          const url = new URL(window.location.href);
+                          if (url.searchParams.get("autoDiscover") === "1") {
+                            // Simule le clic sur Découvrir l’outil
+                            document.getElementById('btnDiscover')?.click();
+                          }
+                        });
+                      </script>   
+</body>
+</html>

@@ -1,0 +1,2827 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #121821;
+  --muted: #9fb3c8;
+  --text: #e8f0f7;
+  --accent: #53b0ff;
+  --accent-2: #00d18f;
+  --danger: #ff5f64;
+  --border: #223147;
+  --page-bottom: 1cm;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 34% 66%;
+  gap: 16px;
+  padding: 16px;
+}
+
+.left, .right, .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; }
+.left, .right { padding: 16px; }
+
+h2, h3 { margin: 0 0 12px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+.card { padding: 16px; margin-bottom: 16px; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+
+input, select, button, .button {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0e1420;
+  color: var(--text);
+  outline: none;
+}
+input:focus, select:focus { border-color: var(--accent); }
+
+button, .button {
+  background: var(--accent);
+  border: none;
+  color: #001018;
+  cursor: pointer;
+  font-weight: 600;
+}
+.button.secondary { background: #1d2a3d; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.grid label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.grid input, .grid select { width: 100%; }
+
+.step { border: 1px dashed var(--border); border-radius: 12px; padding: 12px; margin: 12px 0; }
+.actions { display: flex; gap: 8px; margin-top: 8px; }
+pre.log {
+  background: #0a1018;
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 10px;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 12px;
+}
+
+.status { margin-top: 12px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+code { background: #0e1420; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); }
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  background: #0a1018;
+}
+.dropzone.over { border-color: var(--accent-2); color: var(--accent-2); }
+
+.ns-result { margin-top: 10px; }
+details { margin-bottom: 8px; }
+summary { cursor: pointer; color: var(--muted); }
+
+
+/* ==== Modal Clustering Review ==== */
+.modal.hidden { display: none; }
+.modal {
+position: fixed; inset: 0; z-index: 9999;
+background: rgba(0,0,0,0.58);
+display: flex; align-items: center; justify-content: center;
+padding: 20px;
+}
+.modal .window {
+width: min(1100px, 96vw);
+max-height: 92vh;
+overflow: hidden;
+background: var(--panel);
+border: 1px solid var(--border);
+border-radius: 16px;
+display: flex; flex-direction: column;
+}
+.modal-header, .modal-footer {
+padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+border-bottom: 1px solid var(--border);
+}
+.modal-footer { border-top: 1px solid var(--border); border-bottom: none; }
+.modal-header h3 { margin: 0; }
+.modal-header .close { margin-left: auto; background: #1d2a3d; color: var(--text); }
+.modal-body { padding: 14px; overflow: auto; display: grid; gap: 12px; }
+.cluster-img-wrap { position: relative; min-height: 120px; border: 1px dashed var(--border); border-radius: 12px; display: grid; place-items: center; padding: 10px; background: #0a1018; }
+.cluster-img-wrap img { max-width: 100%; height: auto; display: none; }
+.cluster-img-wrap .placeholder { color: var(--muted); padding: 30px 0; }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pane { border: 1px solid var(--border); border-radius: 12px; padding: 10px; background: #0e1420; }
+.pane h4 { margin: 0 0 8px; color: var(--text); }
+
+.table { display: grid; gap: 6px; }
+.tr { display: grid; grid-template-columns: 0.8fr 1.2fr 1fr 0.5fr; gap: 6px; }
+.tr.head { color: var(--muted); font-size: 13px; }
+.tr .td, .tr div { background: #0a1018; border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+.tr .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.table.scroll { max-height: 340px; overflow: auto; }
+.table input.rename, .table input.doccat { width: 100%; }
+
+.modal .actions { display: flex; gap: 8px; margin-top: 6px; }
+.modal .muted { color: var(--muted); font-size: 12px; }
+.modal .spacer { flex: 1; }
+.modal .primary { background: var(--accent); }
+/* Colonnes dédiées */
+.table.clusters .tr { grid-template-columns: 0.8fr 1.2fr 1fr 0.5fr; }
+.table.docs .tr     { grid-template-columns: 1fr 1fr 1fr; }
+
+/* Petits plus visuels */
+.table .tr.info { color: var(--muted); border: 1px dashed var(--border); }
+.table .tr.info > div { background: transparent; border: none; padding-left: 0; }
+
+/* Modal: faire scroller le corps au lieu de couper le bas */
+.modal .window { display: flex; flex-direction: column; } /* tu l'as déjà, on confirme */
+.modal .modal-body { 
+flex: 1 1 auto;      /* occupe l'espace restant */
+min-height: 0;       /* autorise le scroll dans un parent flex */
+overflow: auto;      /* scroll interne */
+}
+
+/* Limiter la place prise par l'aperçu clustering */
+.cluster-img-wrap { 
+max-height: 42vh;    /* ajuste comme tu veux */
+overflow: auto; 
+}
+.cluster-img-wrap img { 
+max-width: 100%; 
+max-height: 40vh;    /* garantit que l’image ne mange pas tout */
+object-fit: contain; 
+display: block;
+}
+/* === Validation "Choose Fields" === */
+.cat-list details {
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 8px 10px;
+background: #0e1420;
+margin-bottom: 10px;
+}
+.cat-list summary {
+cursor: pointer;
+font-size: 15px;
+display: flex; align-items: baseline; gap: 8px;
+}
+.fields-wrap { margin-top: 8px; }
+.table.fields .tr { grid-template-columns: 1fr auto; }
+.table.fields .td { display: flex; align-items: center; }
+.table .button.mini { padding: 6px 10px; border-radius: 8px; }
+.button.danger { background: var(--danger); color: #fff; }
+
+/* Toujours au-dessus de tout */
+.modal {
+position: fixed;
+inset: 0;
+z-index: 2147483647; /* max safe */
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 20px;
+pointer-events: auto;
+}
+
+/* Met l'assombrissement derrière le contenu, pas via opacity */
+.modal::before {
+content: "";
+position: absolute;
+inset: 0;
+background: rgba(0,0,0,0.58);
+z-index: 0; /* overlay sous la fenêtre */
+}
+
+/* La fenêtre est devant l'overlay */
+.modal .window {
+position: relative;
+z-index: 1;
+}
+
+
+
+/* (Garde ces règles si tu les avais) */
+.modal .window { 
+width: min(1100px, 96vw);
+max-height: 92vh;
+overflow: hidden;
+background: var(--panel);
+border: 1px solid var(--border);
+border-radius: 16px;
+display: flex; flex-direction: column;
+}
+
+.modal .modal-body {
+flex: 1 1 auto;
+min-height: 0;
+overflow: auto;
+}
+
+
+/* === Frise chronologique === */
+.timeline {
+position: relative;
+margin-top: 8px;
+padding-left: 18px;
+border-left: 2px solid var(--border, #2b3340);
+max-height: 42vh;
+overflow: auto;
+}
+.tl-item {
+position: relative;
+margin: 10px 0;
+padding-left: 6px;
+cursor: default;
+}
+.tl-item::before {
+content: "";
+position: absolute;
+left: -8px; top: 8px;
+width: 10px; height: 10px; border-radius: 50%;
+background: var(--accent, #5aa0ff);
+box-shadow: 0 0 0 2px #0a1018;
+}
+.tl-title { font-weight: 600; }
+.tl-date { font-size: 12px; opacity: .8; }
+.tl-cat  { font-size: 12px; padding: 2px 6px; border: 1px solid var(--border, #2b3340); border-radius: 8px; background: #0e1420; margin-left: 6px; }
+
+/* Tooltip */
+.tl-tooltip {
+position: fixed;
+display: none;
+max-width: 380px;
+background: #0e1420;
+border: 1px solid var(--border, #2b3340);
+border-radius: 12px;
+padding: 10px 12px;
+z-index: 2147483647;
+pointer-events: none;
+}
+.tl-tooltip h4 { margin: 0 0 6px; }
+.tl-tooltip .kv { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; }
+.tl-tooltip .kv div { display: flex; gap: 6px; margin: 2px 0; }
+.tl-tooltip .kv b { opacity: .8; min-width: 120px; text-align: right; }
+
+body.theme-beige-red {
+--bg: #F5EFE6;
+--panel: #FFFAF1;
+--text: #1f2328;
+--muted: #6f6a60;
+--accent: #C83C3C;   /* rouge principal */
+--accent-2: #FF8A8F; /* survols/détails */
+--danger: #B13434;
+--border: #E4D6C5;
+}
+
+body.theme-beige-green {
+--bg: #F5EFE6;
+--panel: #FFFAF1;
+--text: #1f2328;
+--muted: #6f6a60;
+--accent: #2FAF79;   /* vert principal */
+--accent-2: #6AD3A6; /* survols/détails */
+--danger: #B13434;
+--border: #E4D6C5;
+}
+
+/* Harmonise quelques fonds qui étaient codés en dur sur le thème beige */
+body.theme-beige-red input,
+body.theme-beige-red select,
+body.theme-beige-red .dropzone,
+body.theme-beige-red pre.log,
+body.theme-beige-red .pane,
+body.theme-beige-red .cluster-img-wrap,
+body.theme-beige-green input,
+body.theme-beige-green select,
+body.theme-beige-green .dropzone,
+body.theme-beige-green pre.log,
+body.theme-beige-green .pane,
+body.theme-beige-green .cluster-img-wrap {
+background: #ffffff;
+color: var(--text);
+border-color: var(--border);
+}
+
+body.theme-beige-red .button.secondary,
+body.theme-beige-green .button.secondary {
+background: #ffffff;
+color: var(--text);
+border: 1px solid var(--border);
+}
+
+/* Boutons primaires utilisent --accent automatiquement via .button existant */
+button:hover, .button:hover { filter: brightness(1.02); }
+
+/* ==== SÉLECTEUR DE MODE (overlay) ==== */
+.mode-picker {
+position: fixed; inset: 0;
+display: none; /* affiché par JS */
+place-items: center;
+background: rgba(0,0,0,0.5);
+z-index: 2147483647;
+padding: 20px;
+}
+.mode-grid {
+width: min(980px, 95vw);
+display: grid;
+grid-template-areas:
+  "medical"
+  "unsup dev";
+grid-template-columns: 1fr;
+gap: 14px;
+}
+@media (min-width: 800px) {
+.mode-grid {
+  grid-template-areas:
+    "medical medical"
+    "unsup   dev";
+  grid-template-columns: 1fr 1fr;
+}
+}
+
+.mode-card {
+display: grid; place-items: center;
+border-radius: 18px;
+padding: 28px 22px;
+border: 2px solid transparent;
+cursor: pointer;
+font-weight: 700;
+text-align: center;
+transition: transform .08s ease, box-shadow .12s ease;
+}
+.mode-card .mode-title { font-size: 22px; }
+.mode-card .mode-sub   { font-size: 13px; opacity: .85; margin-top: 6px; }
+
+.mode-card:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,0,0,0.18); }
+
+.mode-medical { grid-area: medical; min-height: 160px; background: #EAF7F0; color: #0f3d2c; border-color: #BFE5D0; }
+.mode-unsup   { grid-area: unsup;   min-height: 120px; background: #FDEDEE; color: #5a1115; border-color: #F6C5C8; }
+.mode-dev     { grid-area: dev;     min-height: 120px; background: #0e1420; color: #e8f0f7; border-color: #223147; }
+
+.mode-dev .mode-sub { color: #9fb3c8; }
+
+/* Bouton pour réouvrir le sélecteur */
+.mode-switcher {
+position: fixed; right: 14px; bottom: 14px;
+z-index: 2147483646;
+border-radius: 999px;
+padding: 10px 14px;
+background: var(--accent);
+color: #001018;
+border: none; cursor: pointer; font-weight: 700;
+}
+
+/* Petits polish quand une modal app est ouverte */
+body.modal-open .mode-switcher { opacity: .6; pointer-events: none; }
+
+/* Agrandir la grille du picker */
+.mode-grid {
+width: min(1200px, 96vw);   /* avant: min(980px, 95vw) */
+gap: 18px;                  /* avant: 14px */
+}
+
+/* Cartes plus grandes */
+.mode-card {
+border-radius: 22px;        /* avant: 18px */
+padding: 40px 28px;         /* avant: 28px 22px */
+}
+
+/* Titres plus grands */
+.mode-card .mode-title { font-size: 26px; }  /* avant: 22px */
+.mode-card .mode-sub   { font-size: 15px; }  /* avant: 13px */
+
+/* Hauteur mini plus généreuse */
+.mode-medical { min-height: 200px; }         /* avant: 160px */
+.mode-unsup   { min-height: 160px; }         /* avant: 120px */
+.mode-dev     { min-height: 160px; }         /* avant: 120px */
+
+
+
+
+
+/* Noir sur blanc – modes Médical & Non supervisé */
+body.theme-beige-red .left,
+body.theme-beige-red .right,
+body.theme-beige-red .card,
+body.theme-beige-green .left,
+body.theme-beige-green .right,
+body.theme-beige-green .card {
+background: #ffffff;
+color: var(--text);
+border-color: var(--border);
+}
+
+/* Tooltip frise en blanc aussi */
+body.theme-beige-red .tl-tooltip,
+body.theme-beige-green .tl-tooltip {
+background: #ffffff;
+color: var(--text);
+border-color: var(--border);
+}
+
+/* Pastille catégorie sur fond blanc (cohérence visuelle) */
+body.theme-beige-red .tl-cat,
+body.theme-beige-green .tl-cat {
+background: #ffffff;
+color: var(--text);
+border-color: var(--border);
+}
+
+/* En-tête du tooltip : catégorie à gauche, date_doc à droite */
+.tl-tip-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+margin: 0 0 6px;
+}
+
+.tl-tip-cat {
+font-weight: 600;
+}
+
+.tl-tip-date {
+font-size: 12px;
+opacity: 0.8;
+white-space: nowrap; /* évite les retours à la ligne moches */
+}
+/* Tooltip header: cat à gauche (ellipse), date_doc à droite (nowrap) */
+.tl-tip-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.tl-tip-cat { font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tl-tip-date { font-size:12px; opacity:.8; white-space:nowrap; }
+
+/* Ligne catégorie + date (dans la frise) */
+.timeline .tl-row {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.timeline .tl-cat {
+margin-left: 0;            /* annule le margin-left existant */
+}
+.timeline .tl-date {
+margin-left: auto;         /* pousse la date à droite */
+white-space: nowrap;
+font-size: 12px;
+opacity: .8;
+}
+
+
+
+body.theme-beige-red input,
+body.theme-beige-red select,
+body.theme-beige-red .dropzone,
+body.theme-beige-red pre.log,
+body.theme-beige-red .pane,
+body.theme-beige-red .cluster-img-wrap,
+body.theme-beige-green input,
+body.theme-beige-green select,
+body.theme-beige-green .dropzone,
+body.theme-beige-green pre.log,
+body.theme-beige-green .pane,
+body.theme-beige-green .cluster-img-wrap,
+body.theme-beige-red textarea,
+body.theme-beige-green textarea {
+background: #ffffff;
+color: var(--text);
+border-color: var(--border);
+}
+
+
+.muted { opacity:.7; font-size:.9em; }
+
+.indicators { list-style: none; padding: 0; margin: .75rem 0 0 0; }
+.indicator-item {
+display: grid;
+grid-template-columns: auto 1fr auto auto auto;
+align-items: center;
+gap: .5rem .75rem;
+padding: .5rem .6rem;
+border-radius: .6rem;
+}
+.swatch { width:14px; height:14px; border:1px solid #00000022; border-radius:2px; }
+.swatch.green  { background:#2ecc71; }
+.swatch.orange { background:#f39c12; }
+.swatch.red    { background:#e74c3c; }
+.swatch.neutral{ background:#bdc3c7; }
+
+.grow { flex:1; }
+.row.mini, label.mini { display:flex; flex-direction:column; gap:.25rem; font-size:.9em; }
+label.mini input { width: 8ch; }
+.muted { opacity:.7; font-size:.9em; }
+
+/* 1) Carrés de statut plus gros */
+.swatch {
+width: 20px;      /* avant 14px */
+height: 20px;     /* avant 14px */
+border-radius: 3px;
+border: 1px solid #00000022;
+}
+
+/* 2) Champs Valeur/Ligne plus petits */
+.indicators .indicator-item input.indicator-value,
+.indicators .indicator-item input.indicator-row {
+width: 6ch;              /* plus étroit */
+padding: 2px 6px;        /* plus compact */
+font-size: 0.85rem;      /* texte un peu plus petit */
+line-height: 1.3;
+height: 1.6rem;          /* réduit la hauteur */
+}
+
+/* 3) Retirer les flèches (spinners) sur ces deux inputs uniquement */
+/* Chrome / Safari */
+.indicators .indicator-item input.indicator-value::-webkit-outer-spin-button,
+.indicators .indicator-item input.indicator-value::-webkit-inner-spin-button,
+.indicators .indicator-item input.indicator-row::-webkit-outer-spin-button,
+.indicators .indicator-item input.indicator-row::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+
+
+.lang-switcher{position:fixed;top:10px;right:10px;z-index:9999209209093039093094049}
+.lang-toggle,.lang-menu .lang-btn{
+width:34px;height:34px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+border:2px solid rgba(255,255,255,.6);
+background:var(--lang-bg, rgba(0,0,0,.25));
+cursor:pointer;font-size:18px;line-height:1
+}
+.lang-toggle{box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}
+.lang-menu{
+position:absolute;top:40px;right:0;display:flex;flex-direction:column;gap:8px;
+padding:8px;background:rgba(0,0,0,.25);backdrop-filter:blur(6px);
+border-radius:14px;border:1px solid rgba(255,255,255,.2)
+}
+.lang-menu .lang-btn.active{outline:2px solid #fff}
+
+/* === FICHE TUMEUR: viewer sous la frise === */
+.fiche-card { margin-top: 12px; }
+
+.fiche-actions { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+.fiche-preview {
+border: 1px solid var(--border);
+border-radius: 10px;
+background: #0a1018; /* sera blanchi par thèmes beige */
+overflow: hidden;
+}
+.fiche-preview iframe {
+width: 100%;
+height: 420px;      /* ajuste selon ton goût */
+border: none;
+display: block;
+}
+
+/* Harmonisation thèmes beige */
+body.theme-beige-red .fiche-preview,
+body.theme-beige-green .fiche-preview {
+background: #ffffff;
+border-color: var(--border);
+}
+/* Lang picker : n'intercepte pas toute la page */
+.lang-switcher{
+position: fixed; top: 10px; right: 10px;
+display: flex; gap: 8px;
+z-index: 90390393090390390393903;               /* pas 9999 */
+pointer-events: none;       /* le conteneur n'intercepte rien */
+}
+.lang-toggle{
+pointer-events: auto;       /* seul le bouton est cliquable */
+width: 36px; height: 36px; border-radius: 50%;
+border: 0; cursor: pointer;
+background: var(--lang-bg, #2b2b2b); color: #fff;
+}
+.lang-menu{
+position: absolute;         /* se positionne sous le bouton */
+top: 42px; right: 0;
+display: flex; gap: 6px;
+background: var(--surface, #111);
+padding: 6px; border-radius: 10px;
+box-shadow: 0 8px 24px rgba(0,0,0,.25);
+pointer-events: auto;       /* cliquable uniquement ici */
+}
+.lang-menu[hidden]{ display: none !important; }
+
+.lang-btn{
+width: 32px; height: 32px; border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+border: 2px solid rgba(255,255,255,.3);
+background: transparent; cursor: pointer; font-size: 18px; line-height: 1;
+}
+.lang-btn:hover{ transform: scale(1.05); }
+.lang-btn.active{ box-shadow: 0 0 0 2px rgba(255,255,255,.6) inset; }
+
+.fiche-empty { padding: 12px 0; color: var(--text-muted, #666); }
+.button[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+
+/* === Galerie bas de page : Filmstrip === */
+.footer-gallery{
+margin: 16px;
+margin-top: 0;
+padding: 8px;
+border: 1px solid var(--border);
+border-radius: 14px;
+background: var(--panel);
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 8px;
+overflow: hidden; /* arrondis effectifs */
+}
+
+.footer-gallery img{
+width: 100%;
+height: clamp(160px, 22vh, 240px);
+object-fit: cover;   /* recadrage propre, pas de bandes blanches */
+display: block;
+border-radius: 10px; /* coins doux sur chaque image */
+transition: transform .35s ease, filter .35s ease, box-shadow .35s ease;
+filter: saturate(1.04) contrast(1.02);
+box-shadow: 0 0 0 rgba(0,0,0,0);
+}
+
+.footer-gallery img:hover{
+transform: scale(1.03);
+filter: saturate(1.12) contrast(1.05);
+box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+/* Responsive */
+@media (max-width: 1000px){
+.footer-gallery{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px){
+.footer-gallery{ grid-template-columns: 1fr; }
+}
+
+/* Dézoomer les images dans leurs cadres (sans fond ajouté) */
+.footer-gallery{
+/* rien à changer ici, on garde ton style Option 1 */
+/* bonus: on centre le contenu de chaque cellule */
+align-items: center;
+justify-items: center;
+}
+
+/* Approche recommandée : padding interne + contain */
+.footer-gallery img{
+box-sizing: border-box;       /* la taille inclut le padding */
+padding: 10px;                /* ← règle le “dézoom” (met 6–16px selon ton goût) */
+width: 100%;
+height: clamp(160px, 22vh, 240px);
+object-fit: contain;          /* plus de recadrage, l’image tient dans le cadre */
+background: transparent;      /* on voit la couleur de la boîte autour (var(--panel)) */
+border-radius: 10px;          /* garde tes coins doux */
+transition: transform .35s ease, filter .35s ease, box-shadow .35s ease;
+}
+
+/* Optionnel : hover doux sans trop “rezoomer” */
+.footer-gallery img:hover{
+transform: translateY(-2px);  /* ou scale(1.01) si tu préfères */
+filter: saturate(1.06) contrast(1.04);
+box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+/* === ALT STYLE: Boutons de choix de mode (cartes à icône) === */
+.mode-card {
+/* layout */
+display: flex; align-items: center; gap: 16px;
+text-align: left;
+/* look */
+background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+border: 1.5px solid var(--border);
+border-radius: 18px;
+padding: 18px 20px;
+min-height: 110px;
+/* motion */
+transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.mode-card .mode-title { font-size: 20px; line-height: 1.2; }
+.mode-card .mode-sub   { font-size: 12px; opacity: .75; margin-top: 4px; }
+
+/* Icône à gauche (ajoutée via pseudo-élément, pas besoin de modifier le HTML) */
+.mode-card::before {
+content: "";
+width: 44px; height: 44px;
+border-radius: 12px;
+display: grid; place-items: center;
+font-size: 22px;
+background: #1d2a3d; color: var(--text);
+box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* Effets focus/hover */
+.mode-card:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(0,0,0,.20); }
+.mode-card:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(83,176,255,.35); border-color: var(--accent); }
+
+/* Thèmes par carte + icônes */
+.mode-medical {
+background: linear-gradient(180deg, rgba(47,175,121,.10), transparent);
+}
+.mode-medical::before {
+content: "🩺";
+background: linear-gradient(135deg, #2FAF79, #6AD3A6);
+color: #0b2d1e;
+}
+.mode-medical:hover { border-color: #2FAF79; }
+
+.mode-unsup {
+background: linear-gradient(180deg, rgba(200,60,60,.10), transparent);
+}
+.mode-unsup::before {
+content: "🧪";
+background: linear-gradient(135deg, #C83C3C, #FF8A8F);
+color: #3b0a0c;
+}
+.mode-unsup:hover { border-color: #C83C3C; }
+
+.mode-dev {
+background: linear-gradient(180deg, rgba(83,176,255,.08), rgba(0,0,0,0));
+}
+.mode-dev::before {
+content: "⚙️";
+background: linear-gradient(135deg, #223147, #0e1420);
+color: #e8f0f7;
+}
+.mode-dev:hover { border-color: #53b0ff; }
+
+/* Respecte l’accessibilité */
+@media (prefers-reduced-motion: reduce) {
+.mode-card { transition: none; }
+.mode-card:hover { transform: none; }
+}
+/* === Mode Picker: cartes pleines + halo de fond dynamique === */
+
+/* 1) Halo derrière l’overlay (aucun changement au HTML) */
+#modePicker { position: relative; }
+#modePicker::before {
+content: "";
+position: absolute; inset: 0;
+pointer-events: none;
+/* centre du halo piloté par --gx/--gy, couleur par --glow */
+background: radial-gradient(
+  700px 420px at var(--gx, 50%) var(--gy, 0%),
+  var(--glow, rgba(0,0,0,0)),
+  transparent 60%
+);
+z-index: 0;
+transition: opacity .15s ease;
+}
+#modePicker .mode-grid { position: relative; z-index: 1; }
+
+/* Couleur du halo selon la carte survolée (remplie via JS data-hover) */
+#modePicker[data-hover="medical"] { --glow: rgba(47,175,121, .22); }
+#modePicker[data-hover="unsup"]   { --glow: rgba(200, 60, 60, .22); }
+#modePicker[data-hover="dev"]     { --glow: rgba( 83,176,255, .22); }
+
+/* 2) Cartes PLEINES (pas transparentes) */
+#modePicker .mode-card {
+display: flex; align-items: center; gap: 16px;
+text-align: left;
+border-radius: 18px;
+padding: 18px 20px;
+min-height: 112px;
+
+/* plein + contraste */
+background: var(--card-bg, #182028);
+color: var(--card-fg, #f4f7fb);
+border: 1.5px solid var(--card-border, rgba(255,255,255,.08));
+box-shadow:
+  inset 0 0 0 1px rgba(255,255,255,.03),
+  0 12px 30px rgba(0,0,0,.22);
+
+transition:
+  transform .08s ease,
+  box-shadow .15s ease,
+  border-color .15s ease,
+  filter .15s ease;
+}
+
+#modePicker .mode-title { font-size: 20px; line-height: 1.2; }
+#modePicker .mode-sub   { font-size: 12px; opacity: .8; margin-top: 4px; }
+
+#modePicker .mode-card:hover {
+transform: translateY(-1px);
+filter: saturate(1.04);
+}
+
+/* Thèmes par carte (remplissage) */
+#modePicker .mode-medical { --card-bg:#0f2b21; --card-border:#2FAF79; }
+#modePicker .mode-unsup   { --card-bg:#2a1010; --card-border:#C83C3C; }
+#modePicker .mode-dev     { --card-bg:#0f1a2b; --card-border:#53b0ff; }
+
+/* Icône à gauche (pas besoin de modifier le HTML) */
+#modePicker .mode-card::before {
+content: "";
+width: 44px; height: 44px;
+border-radius: 12px;
+display: grid; place-items: center;
+font-size: 22px;
+box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+#modePicker .mode-medical::before { content: "🩺"; background: linear-gradient(135deg,#2FAF79,#6AD3A6); color:#0b2d1e; }
+#modePicker .mode-unsup::before   { content: "🧪"; background: linear-gradient(135deg,#C83C3C,#FF8A8F); color:#3b0a0c; }
+#modePicker .mode-dev::before     { content: "⚙️"; background: linear-gradient(135deg,#223147,#0e1420); color:#e8f0f7; }
+
+/* Focus accessible */
+#modePicker .mode-card:focus-visible {
+outline: none;
+box-shadow: 0 0 0 3px rgba(83,176,255,.35), 0 12px 30px rgba(0,0,0,.28);
+}
+
+/* Réduction d’animations si demandé */
+@media (prefers-reduced-motion: reduce) {
+#modePicker .mode-card { transition: none; }
+#modePicker .mode-card:hover { transform: none; }
+}
+/* PATCH — centrage du contenu des cartes + halo recentré */
+#modePicker .mode-card{
+/* empile icône puis textes, tout centré */
+display: grid;
+grid-auto-flow: row;
+justify-items: center;
+align-items: center;
+text-align: center;
+gap: 12px;              /* espace icône ↔ libellés */
+padding: 26px 22px;     /* un peu d’air */
+}
+
+/* Icône au-dessus du texte (pas de décalage latéral) */
+#modePicker .mode-card::before{
+margin: 0;
+}
+
+/* Halo: centre par défaut (plus “en haut”) */
+#modePicker::before{
+background: radial-gradient(
+  700px 420px at var(--gx, 50%) var(--gy, 50%),
+  var(--glow, rgba(0,0,0,0)),
+  transparent 60%
+);
+}
+
+/* Assure que le picker recouvre bien l’interface, centré */
+.mode-picker{
+position: fixed; inset: 0;
+display: grid; place-items: center;
+z-index: 2147483647;
+}
+/* HOTFIX — le picker doit rester en overlay plein écran */
+#modePicker{
+position: fixed !important;
+inset: 0;
+}
+#modePicker .mode-grid{ position: relative; z-index: 1; } /* contenu au-dessus du halo */
+/* Définis une hauteur par défaut pour toutes les cartes */
+:root{ --mode-card-minh: 112px; }
+#modePicker .mode-card{ min-height: var(--mode-card-minh); }
+
+/* Et double seulement pour "médical" */
+#modePicker .mode-medical{ --mode-card-minh: calc(2 * 112px); }
+/* === Progress steps (Run All) === */
+.progress-steps {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.pstep {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0e1420;
+}
+
+.pstep .label { flex: 1; }
+.pstep .meta  { font-size: 12px; color: var(--muted); }
+
+.pstep .box {
+  width: 18px; height: 18px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  display: grid; place-items: center;
+  font-weight: 800;
+}
+
+/* États */
+.pstep.todo  .box { background: transparent; }
+.pstep.doing { border-color: var(--accent); }
+.pstep.doing .box { border-color: var(--accent); }
+.pstep.doing .box::after {
+  content: ""; width: 10px; height: 10px;
+  border: 2px solid var(--accent); border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.pstep.done .box {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+.pstep.done .box::after { content: "✓"; color: #001018; font-size: 12px; }
+
+.pstep.error { border-color: var(--danger); }
+.pstep.error .box { background: var(--danger); border-color: var(--danger); }
+.pstep.error .box::after { content: "!"; color: #fff; font-size: 12px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Thèmes beige → fond blanc homogène */
+body.theme-beige-red .pstep,
+body.theme-beige-green .pstep {
+  background: #ffffff;
+}
+/* Layout 2 colonnes pour la carte médicale */
+#cardMedical .med-layout{
+  display: grid;
+  grid-template-columns: minmax(380px, 1fr) 320px; /* form | progression */
+  gap: 16px;
+  align-items: start;
+}
+
+/* La colonne droite reste compacte et alignée en haut */
+#cardMedical .med-right{ align-self: start; }
+
+/* Optionnel : la progression “colle” visuellement au haut lors du scroll */
+#cardMedical .med-right .progress-steps{ position: sticky; top: 8px; }
+
+/* Responsive : rebasculer en 1 colonne sur petits écrans */
+@media (max-width: 900px){
+  #cardMedical .med-layout{ grid-template-columns: 1fr; }
+  #cardMedical .med-right{ order: 3; } /* sous le bouton */
+}
+/* --- Progression compacte (dots) --- */
+#cardMedical .med-layout{
+  /* assure une colonne droite MINIMALE (laisse le form garder sa largeur) */
+  grid-template-columns: 1fr min-content;
+}
+
+.progress-steps.compact{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  /* pas de marge qui pousse le formulaire */
+  margin: 0;
+}
+
+.progress-steps.compact .pstep{
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.progress-steps.compact .label,
+.progress-steps.compact .meta{
+  display: none; /* on retire le texte visuel */
+}
+
+/* le dot */
+.progress-steps.compact .box{
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: inline-grid;
+  place-items: center;
+}
+
+/* états */
+.progress-steps.compact .pstep.todo  .box{ background: transparent; }
+.progress-steps.compact .pstep.doing .box{
+  border-color: var(--accent);
+  position: relative;
+}
+.progress-steps.compact .pstep.doing .box::after{
+  content:"";
+  width: 8px; height: 8px;
+  border: 2px solid var(--accent);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.progress-steps.compact .pstep.done  .box{
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+.progress-steps.compact .pstep.error .box{
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Thèmes beige : fond clair déjà géré, rien d’autre à changer */
+/* ==== Page d'accueil (overlay beige) ==== */
+.home-intro{
+  position: fixed; inset: 0;
+  z-index: 2147483646; /* sous la langue si on la met au-dessus */
+  display: grid; place-items: center;
+  background: #F5EFE6; /* beige */
+  color: #1f2328;
+  overflow: auto;
+  transition: transform .55s cubic-bezier(.22,.7,.12,1), opacity .35s ease;
+}
+
+.home-intro .home-wrap{
+  width: min(1100px, 92vw);
+  display: grid; gap: 18px;
+  padding: 22px;
+}
+
+.home-head .home-title{ margin: 0 0 6px; font-size: clamp(22px, 3.2vw, 36px); }
+.home-head .home-lead{ margin: 0 0 6px; font-size: clamp(14px, 2vw, 18px); opacity: .9; }
+.home-head .home-text{ margin: 0; color: #6f6a60; }
+
+.home-gallery{ background: #FFFAF1; border-color: #E4D6C5; }
+.home-gallery img{ background: transparent; }
+
+/* Grille de modes (réutilisation .mode-grid/.mode-card existants) */
+.home-modes .mode-card{
+  border-radius: 22px;
+  background: #fff; color: #1f2328; border: 1px solid #E4D6C5;
+}
+.home-modes .mode-medical{ background: #EAF7F0; border-color:#BFE5D0; }
+.home-modes .mode-unsup  { background: #FDEDEE; border-color:#F6C5C8; }
+.home-modes .mode-dev    { background: #dfe3f5;     border-color:#adc2db; }
+
+/* Swipe out (départ) */
+.home-intro.swipe-out{
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Entrée douce de l'app au dévoilement */
+.layout.swipe-in{
+  animation: layoutIn .55s cubic-bezier(.22,.7,.12,1) both;
+}
+@keyframes layoutIn{
+  from{ transform: translateY(14px); opacity: 0; }
+  to  { transform: translateY(0);    opacity: 1; }
+}
+
+/* S'assurer que le sélecteur de langue reste cliquable au-dessus */
+.lang-switcher{ z-index: 90939093093093039039039 !important; }
+/* Centrage complet de la page d'accueil */
+.home-intro .home-wrap{
+  justify-items: center;   /* centre chaque bloc dans la grille */
+  text-align: center;      /* centre tout le texte par défaut */
+}
+
+.home-intro .home-head{
+  text-align: center;
+}
+.home-intro .home-head .home-title,
+.home-intro .home-head .home-lead,
+.home-intro .home-head .home-text{
+  margin-left: auto;
+  margin-right: auto;      /* recentre les paragraphes et le titre */
+}
+.home-intro .home-head .home-text{
+  max-width: 70ch;         /* largeur de lecture confortable */
+}
+
+/* Galerie d'accueil */
+.home-intro .home-gallery{
+  margin-inline: auto;     /* centre le bloc galerie */
+}
+
+/* Grille des cartes de mode */
+.home-intro .home-modes.mode-grid{
+  justify-items: center;   /* centre chaque carte dans sa cellule */
+}
+.home-intro .mode-card{
+  display: grid;           /* force l’alignement centré même si .mode-card est flex ailleurs */
+  place-items: center;
+  text-align: center;
+}
+
+/* === Home Intro : mêmes dimensions que le picker === */
+/* Le picker utilise var(--mode-card-minh) + padding 26/22 + titres 20/12 */
+.home-intro .mode-card{
+  min-height: var(--mode-card-minh);
+  padding: 26px 22px;      /* idem #modePicker .mode-card */
+  text-align: center;      /* centre le texte sans changer la taille */
+}
+.home-intro .mode-medical{
+  /* double hauteur pour "Médical", comme dans le picker */
+  --mode-card-minh: calc(2 * 112px);
+}
+.home-intro .mode-card .mode-title{ font-size: 20px; line-height: 1.2; }
+.home-intro .mode-card .mode-sub  { font-size: 12px; opacity: .8; margin-top: 4px; }
+/* === Accueil : grille pleine largeur pour les boutons de mode === */
+.home-intro .home-modes.mode-grid{
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;        /* mobile: 1 par ligne */
+  justify-items: stretch;             /* étirer les éléments sur la largeur */
+  align-items: stretch;
+}
+
+/* Desktop: 2 colonnes ; Médical prend toute la rangée */
+@media (min-width: 860px){
+  .home-intro .home-modes.mode-grid{
+    grid-template-columns: 1fr 1fr;   /* deux colonnes */
+  }
+  .home-intro .home-modes .mode-medical{
+    grid-column: 1 / -1;              /* span 2 colonnes */
+  }
+}
+
+/* Les cartes prennent 100% de la cellule, mais gardent leur style d'origine */
+.home-intro .home-modes .mode-card{
+  width: 100%;
+  max-width: none;                     /* annule d'éventuelles limites globales */
+  text-align: center;                  /* texte centré, tailles conservées */
+}
+:root{
+  --swipe-dur: 0.9s;                    /* ⇦ augmentez si vous voulez encore plus lent (ex: 1.2s) */
+  --swipe-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+.home-intro{
+  transition:
+    transform var(--swipe-dur) var(--swipe-ease),
+    opacity   var(--swipe-dur) ease;    /* même durée que transform pour éviter les “cuts” */
+}
+
+.layout.swipe-in{
+  animation: layoutIn var(--swipe-dur) var(--swipe-ease) both;
+}
+/* === Pastilles de chargement : carrés (même format & même endroit) === */
+/* On écrase la version "dots" de .progress-steps.compact en ciblant la zone médicale */
+#cardMedical .progress-steps.compact .box{
+  width: 18px;                  /* comme les carrés standard */
+  height: 18px;
+  border-radius: 6px;           /* coins doux (plus carré que 50%) */
+  border: 2px solid var(--border);
+}
+
+/* Spinner carré */
+#cardMedical .progress-steps.compact .pstep.doing .box{
+  border-color: var(--accent);
+  position: relative;
+}
+#cardMedical .progress-steps.compact .pstep.doing .box::after{
+  content:"";
+  width: 10px; height: 10px;
+  border: 2px solid var(--accent);
+  border-right-color: transparent;  /* “secteur” manquant pour l’anim */
+  border-radius: 2px;               /* petit arrondi du mini-carré animé */
+  animation: spin 1s linear infinite;
+}
+
+/* États "terminé" et "erreur" restylés en carrés pleins */
+#cardMedical .progress-steps.compact .pstep.done  .box{
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+#cardMedical .progress-steps.compact .pstep.error .box{
+  background: var(--danger);
+  border-color: var(--danger);
+}
+/* --- Filmstrip scrollable pour le bandeau d'accueil --- */
+.home-intro .footer-gallery{
+  /* on passe en flux horizontal scrollable */
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 1fr);    /* largeur d'une vignette */
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;                     /* Firefox */
+}
+.home-intro .footer-gallery img{
+  scroll-snap-align: start;
+  /* garde ton rendu "dézoomé" actuel */
+  box-sizing: border-box;
+  padding: 10px;
+  height: clamp(160px, 22vh, 240px);
+  object-fit: contain;
+}
+
+/* Optionnel : masquer la scrollbar sur WebKit sans bloquer le scroll */
+.home-intro .footer-gallery::-webkit-scrollbar{ height: 8px; }
+.home-intro .footer-gallery::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.15); border-radius: 8px;
+}
+.home-lead { white-space: pre-line; }
+
+/* === Galerie bas de page (footerGallery) === */
+.footerGallery{
+  width: min(1100px, 95vw);
+  margin: 24px auto 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.footerGallery .img-link{
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border: 1px solid var(--border, #e6e6e6);
+  border-radius: 14px;
+  background: var(--card-bg, #fff);
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.footerGallery .img-link:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  border-color: var(--accent, #8bbf9f);
+}
+
+.footerGallery .img-link img{
+  display: block;
+  width: 100%;
+  height: 80px;              /* ajuste à 64–120px selon tes logos */
+  object-fit: contain;
+  background: transparent;
+}
+.home-intro.swipe-out {
+  transform: translateX(-10%);
+  opacity: 0;
+  transition: transform .35s ease, opacity .35s ease;
+}
+
+.landing-intro .landing-title { font-size: clamp(42px, 7vw, 88px); }
+.landing-intro .home-lead     { font-size: clamp(16px, 2.2vw, 20px); }
+.landing-intro .cta           { margin-top: 12px; padding: 12px 16px; }
+/* Logo du landing */
+.landing-intro .landing-logo {
+  display: block;
+  margin: .5rem auto .75rem;  /* centre + espace entre le titre et le texte */
+  max-width: min(320px, 40vw);
+  width: 100%;
+  height: auto;
+  image-rendering: -webkit-optimize-contrast; /* un poil plus net sur WebKit */
+}
+/* Logo principal du landing */
+.landing-intro .landing-logo{
+  display:block;
+  margin:.5rem auto .75rem;
+  max-width:min(320px,40vw);
+  width:100%;
+  height:auto;
+}
+
+/* Bandeau Europe sous le bouton */
+.landing-intro .eu-banner{
+  margin-top:.75rem;
+  text-align:center;
+  opacity:.95;
+}
+.landing-intro .eu-logo{
+  display:block;
+  margin:0 auto .35rem;
+  max-width:min(220px,38vw);
+  width:100%;
+  height:auto;
+}
+.landing-intro .eu-caption{
+  font-size:.95rem;
+  line-height:1.35;
+}
+.eu-caption { white-space: pre-line; }
+
+/* pour afficher les \n comme retours à la ligne */
+.landing-lead, [data-i18n="landing.lead"] { white-space: pre-line; }
+/* Landing lead plus petit */
+.landing-intro .landing-lead,
+.landing-intro [data-i18n="landing.lead"],
+.landing-intro [data-i18n-html="landing.lead"]{
+  font-size: clamp(13px, 1.4vw, 17px);
+  line-height: 1.45;
+}
+
+/* Landing lead : moitié de la largeur du conteneur sur desktop, full en mobile */
+.landing-intro .landing-lead,
+.landing-intro [data-i18n="landing.lead"],
+.landing-intro [data-i18n-html="landing.lead"]{
+  width: min(50%, 70ch);   /* 50% de la zone, borné à ~70 caractères */
+  font-size: clamp(12px, 1.1vw, 15px); /* un cran plus petit qu'avant */
+  line-height: 1.5;
+  white-space: pre-line;   /* si tu utilises \n dans les strings */
+}
+
+@media (max-width: 860px){
+  .landing-intro .landing-lead,
+  .landing-intro [data-i18n="landing.lead"],
+  .landing-intro [data-i18n-html="landing.lead"]{
+    width: 100%;           /* en mobile : pleine largeur */
+  }
+}
+.eu-caption strong{ font-weight: 700; } /* style du gras dans la bannière */
+
+:root{
+  --swipe-dur: 0.9s;
+  --swipe-ease: cubic-bezier(.2,.8,.2,1);
+  --swipe-bg: #F5EFE6; /* beige par défaut */
+}
+
+/* Calque de fond pour les transitions */
+.swipe-bg{
+  position: fixed;
+  inset: 0;
+  z-index: 2147483645;           /* sous .home-intro (2147483646) et sous .lang-switcher */
+  background: var(--swipe-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--swipe-dur) var(--swipe-ease);
+  will-change: opacity;
+}
+
+/* afficher/masquer */
+.swipe-bg.show{ opacity: 1; }
+
+/* si tu veux un léger dégradé pour “cacher” les bordures pendant le slide */
+.swipe-bg.gradient{
+  background: linear-gradient(180deg, #F5EFE6 0%, #F8F4EC 35%, #F5EFE6 100%);
+}
+
+/* selon le thème, tu peux changer la couleur du fond de swipe */
+body.theme-beige-green { --swipe-bg: #F3F6F2; }  /* vert/beige doux */
+body.theme-beige-red   { --swipe-bg: #FDEDEE; }  /* rouge/beige doux */
+
+/* petits boosts anti-flicker pendant les traductions/animations */
+.home-intro, .layout{
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+/* Assure l’ordre des couches : landing au-dessus de home, qui est au-dessus du layout */
+.landing-intro { position: fixed; inset: 0; z-index: 2147483647; }
+.home-intro    { position: fixed; inset: 0; z-index: 2147483646; }
+
+/* Quand on veut utiliser la vue entrante comme “fond” pendant le swipe */
+.home-intro.as-bg {
+  z-index: 1 !important;       /* passe sous la landing le temps de l’anim */
+  pointer-events: none;
+}
+
+/* Applique la même anim de sortie aux deux overlays */
+.landing-intro.swipe-out,
+.home-intro.swipe-out{
+  transform: translateY(-100%);
+  opacity: 0;
+  transition:
+    transform var(--swipe-dur) var(--swipe-ease),
+    opacity   var(--swipe-dur) ease;
+}
+/* === Bouton "Découvrir l’outil" : glass + liquid gradient === */
+.landing-intro #btnDiscover{
+  /* layout / taille */
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: clamp(14px, 1.6vw, 18px) clamp(28px, 3.6vw, 42px);
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 800;
+  letter-spacing: .2px;
+  border-radius: 999px;
+  cursor: pointer;
+
+  /* fond dégradé + “verre” */
+  background:
+    radial-gradient(120% 140% at 12% 0%, rgba(255,255,255,.45), rgba(255,255,255,0) 36%),
+    linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #001018;
+  border: 1px solid rgba(255,255,255,.44);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -1px 0 rgba(0,0,0,.08),
+    0 10px 26px rgba(0,0,0,.18);
+  backdrop-filter: saturate(130%) blur(10px);
+  -webkit-backdrop-filter: saturate(130%) blur(10px);
+
+  /* motion */
+  transition: transform .15s ease, filter .2s ease, box-shadow .2s ease, background-position .2s ease;
+  will-change: transform, filter;
+  position: relative;
+  isolation: isolate; /* pour le ::before */
+
+
+}
+
+/* reflet “liquid” animé au survol */
+.landing-intro #btnDiscover::before{
+  content:"";
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.65) 0%, rgba(255,255,255,0) 45% 55%, rgba(255,255,255,.25) 100%);
+  mix-blend-mode: screen;
+  transform: translateX(-120%) skewX(-18deg);
+  opacity: .7;
+  transition: opacity .2s ease;
+}
+
+/* Hover / Active / Focus */
+.landing-intro #btnDiscover:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -1px 0 rgba(0,0,0,.08),
+    0 14px 34px rgba(0,0,0,.22);
+  filter: saturate(1.06) contrast(1.03);
+}
+.landing-intro #btnDiscover:hover::before{
+  animation: discoverSheen 1.1s ease forwards;
+}
+.landing-intro #btnDiscover:active{
+  transform: translateY(0) scale(.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.25),
+    inset 0 -1px 0 rgba(0,0,0,.12),
+    0 8px 18px rgba(0,0,0,.20);
+}
+.landing-intro #btnDiscover:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 50%, #ffffff 50%),
+    0 10px 26px rgba(0,0,0,.18);
+}
+
+/* Désactivé (si jamais) */
+.landing-intro #btnDiscover[disabled]{
+  opacity: .6; filter: grayscale(.2);
+  pointer-events: none;
+}
+
+/* Animation du reflet */
+@keyframes discoverSheen{
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity:.65; }
+  60%  { opacity:.85; }
+  100% { transform: translateX(220%)  skewX(-18deg); opacity:0; }
+}
+
+/* (Optionnel) variantes sur thèmes beige pour un rendu un poil plus doux */
+body.theme-beige-green .landing-intro #btnDiscover{
+  color:#0e1612;
+  border-color: rgba(0,0,0,.06);
+}
+body.theme-beige-red .landing-intro #btnDiscover{
+  color:#201113;
+  border-color: rgba(0,0,0,.06);
+}
+/* Reflet statique, pas d'animation */
+.landing-intro #btnDiscover::before{
+  animation: none !important;
+  transform: none !important;
+  opacity: .35;                 /* ajuste l’intensité du verre */
+}
+.landing-intro #btnDiscover:hover::before{
+  animation: none !important;
+}
+
+/* Schéma sous le lead OptiCAIre */
+.landing-intro .landing-schema{
+  /* même logique que le lead: 50% de largeur sur desktop, full en mobile */
+  width: 50%;
+  max-width: 70ch;                 /* borne visuelle cohérente avec du texte */
+  margin: 14px auto 22px;          /* centré */
+}
+
+.landing-intro .schema-img{
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+
+  /* style “card / glass” doux */
+  border-radius: 16px;
+  border: 1px solid var(--border, #e6e6e6);
+  background: rgba(255,255,255,.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 10px 26px rgba(0,0,0,.08);
+}
+
+/* Mobile: pleine largeur */
+@media (max-width: 860px){
+  .landing-intro .landing-schema{
+    width: 100%;
+    max-width: 92vw;
+  }
+}
+/* === Landing: compaction + scale-up === */
+#landingIntro .home-wrap{
+  gap: 10px;                               /* moins d'espace vertical */
+  padding: clamp(8px, 1.4vw, 16px);        /* marges internes réduites */
+}
+
+/* Titre plus grand, resserré */
+#landingIntro .landing-title{
+  font-size: clamp(48px, 8vw, 96px);       /* + grand qu'avant */
+  line-height: 1.05;
+  margin-bottom: .25rem;
+}
+
+/* Logo plus large, marges réduites */
+#landingIntro .landing-logo{
+  max-width: min(420px, 52vw);
+  margin: .25rem auto .5rem;
+}
+
+/* Lead plus large et un peu plus gros */
+#landingIntro .home-lead{
+  width: min(60%, 80ch);                   /* avant ~50% → 60% */
+  font-size: clamp(14px, 1.6vw, 18px);     /* un cran au-dessus */
+  line-height: 1.5;
+  margin: 4px auto 8px;
+  white-space: pre-line;                   /* garde les retours \n */
+}
+
+/* Schéma plus large, marges réduites */
+#landingIntro .landing-schema{
+  width: 60%;
+  max-width: 84ch;
+  margin: 8px auto 12px;
+}
+#landingIntro .schema-img{ border-radius: 18px; }
+
+/* Bouton Discover plus massif */
+#landingIntro #btnDiscover{
+  padding: clamp(16px, 1.8vw, 22px) clamp(34px, 4.5vw, 56px);
+  font-size: clamp(17px, 2.2vw, 22px);
+}
+
+/* Bandeau Europe: taille et marges */
+#landingIntro .eu-banner{ margin-top: 8px; }
+#landingIntro .eu-logo  { max-width: min(260px, 42vw); }
+#landingIntro .eu-caption{ font-size: clamp(13px, 1.2vw, 16px); }
+
+/* Mobile: pleine largeur pour lead et schéma + échelle adaptée */
+@media (max-width: 860px){
+  #landingIntro .home-lead,
+  #landingIntro .landing-schema{
+    width: 100%;
+    max-width: 92vw;
+  }
+  #landingIntro .landing-title{
+    font-size: clamp(36px, 9vw, 56px);
+  }
+}
+/* === Rail partenaires (vertical, landing only) === */
+#landingIntro .partners-rail{
+  --rail-size: 84px;                 /* taille des vignettes */
+  position: fixed;
+  top: 14px;                         /* espace sous la barre langue */
+  left: 14px;
+  z-index: 2600;                     /* sous .lang-switcher (9999), au-dessus du contenu du landing */
+  display: grid;
+  grid-auto-rows: var(--rail-size);
+  gap: 10px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 8px 20px rgba(0,0,0,.08);
+  backdrop-filter: saturate(130%) blur(8px);
+  -webkit-backdrop-filter: saturate(130%) blur(8px);
+  max-height: calc(100vh - 28px);    /* pour éviter de déborder l’écran */
+  overflow: auto;                    /* scroll si beaucoup de logos */
+}
+
+/* on réutilise .img-link mais en style “rail” compact */
+#landingIntro .partners-rail .img-link{
+  display: grid;
+  place-items: center;
+  width: var(--rail-size);
+  height: var(--rail-size);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.8);
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+#landingIntro .partners-rail .img-link:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.10);
+  border-color: var(--accent, #8bbf9f);
+}
+#landingIntro .partners-rail .img-link img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Mobile : masquer ou transformer en bande horizontale selon préférence */
+@media (max-width: 860px){
+  /* Option 1 : masquer pour libérer l’espace */
+  #landingIntro .partners-rail{ display: none; }
+
+  /* Option 2 (à la place) : bande horizontale en haut-gauche
+  #landingIntro .partners-rail{
+    top: 10px; left: 10px; right: 10px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 76px;
+    overflow-x: auto; overflow-y: hidden;
+    max-height: none; width: auto;
+  }
+  #landingIntro .partners-rail .img-link{
+    width: 76px; height: 76px;
+  }
+  */
+}
+/* titres de groupe */
+.cluster-group { border: 1px solid rgba(255,255,255,.08); border-radius: 10px; margin: 8px 0; }
+.cluster-group > summary { cursor: pointer; padding: 6px 10px; display: flex; align-items: center; gap: .5rem; }
+.cluster-group > summary::-webkit-details-marker { display:none; }
+.cluster-group .table.clusters { border-top: 1px solid rgba(255,255,255,.08); }
+.cluster-group .table.clusters .tr.head { background: rgba(0,0,0,.06); }
+/* === Indicateurs: pastille jaune + badge "!" === */
+.swatch.yellow { background: #f1c40f; }  /* même logique que green/orange/red */
+
+.ind-flag { 
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; margin-left: .5rem;
+}
+.ind-flag .bang {
+  display: inline-block; width: 18px; height: 18px; line-height: 18px;
+  border-radius: 50%; text-align: center; font-weight: 700; color: #000;
+  background: currentColor;
+}
+.ind-flag.yellow { color: #168016; }
+.ind-flag.orange { color: #f39c12; }
+.ind-flag.red    { color: #e74c3c; }
+
+.ind-flag .bang { display: none !important; }
+/* Indicateurs – cache vraiment l’alerte quand [hidden] */
+.ind-flag[hidden] { display: none !important; }
+
+/* Ne garder que le nombre de jours (retire le rond noir !) */
+.ind-flag .bang { display: none; }
+/* Rendre l'attribut HTML hidden fiable malgré nos styles */
+[hidden] { display: none !important; }
+
+/* Espace global en bas de page */
+body::after {
+  content: "";
+  display: block;
+  height: var(--page-bottom); /* 1cm défini dans :root */
+}
+
+/* Si tu veux aussi “gonfler” les zones principales qui scrollent */
+.layout { padding-bottom: calc(16px + var(--page-bottom)); }
+.modal .modal-body { padding-bottom: calc(14px + var(--page-bottom)); }
+/* APRÈS (scopé à HomeIntro uniquement) */
+#homeIntro .home-wrap { padding-bottom: var(--page-bottom); }
+/* 1) Réserver 1 cm en bas pour les pages d'intro */
+/* APRÈS : seulement HomeIntro */
+#homeIntro {
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--page-bottom));
+  padding-bottom: var(--page-bottom);
+}
+
+
+
+/* 2) Au lieu de centrer, décaler TOUT le contenu de l’intro vers la gauche de 1 cm */
+/* APRÈS : décale uniquement HomeIntro */
+#homeIntro {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding-left: 0cm;
+}
+/* AVANT : ça touche landing + home */
+#landingIntro,
+#homeIntro,
+.landing-intro,
+.home-intro {
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--page-bottom));
+  padding-bottom: var(--page-bottom);
+}
+:root{
+  --accent-y: #FFD54F; /* jaune chaud (peut être ajusté) */
+}
+
+@supports (background: color-mix(in srgb, black 50%, white 50%)) {
+  body.theme-beige-red .landing-intro #btnDiscover,
+  body.theme-beige-green .landing-intro #btnDiscover{
+    background:
+      radial-gradient(120% 140% at 12% 0%, rgba(255,255,255,.45), rgba(255,255,255,0) 36%),
+      linear-gradient(
+        135deg,
+        var(--accent) 0%,
+        color-mix(in srgb, var(--accent) 85%, #FFD54F 15%) 40%,
+        color-mix(in srgb, var(--accent) 40%, #FFD54F 60%) 50%,
+        color-mix(in srgb, var(--accent-2) 85%, #FFD54F 15%) 60%,
+        var(--accent-2) 100%
+      );
+  }
+}
+
+/* --- Landing swipe (sortie vers le haut) --- */
+#landingIntro{
+  /* si déjà fixed/inset, tu peux enlever ces 2 lignes */
+  position: fixed; inset: 0;
+  z-index: 3000;
+
+  /* l’animation se joue quand on ajoute .swipe-out */
+  transition: transform .45s cubic-bezier(.22,.7,.12,1), opacity .45s ease;
+  will-change: transform, opacity;
+}
+
+#landingIntro.swipe-out{
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none; /* évite les clics pendant la sortie */
+}
+/* Calque + transitions */
+#landingIntro {
+  position: fixed; inset: 0;
+  transition: transform var(--swipe-dur) var(--swipe-ease),
+              opacity   var(--swipe-dur) var(--swipe-ease);
+  z-index: 2147483646;
+}
+#landingIntro.swipe-out { transform: translateY(-100%); opacity: 0; }
+
+/* Home utilisé comme fond pendant le swipe */
+.home-intro.as-bg { z-index: 1 !important; pointer-events: none; }
+/* === Images du mode médical === */
+#cardMedical .med-run-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.med-img-run{
+  width: clamp(56px, 10vw, 88px);
+  max-height: 44px;
+  height: auto;
+  object-fit: contain;
+}
+
+#cardMedical .med-img-key{
+  width: clamp(60px, 9vw, 110px);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 0 10px auto; /* colle à droite de la colonne */
+  object-fit: contain;
+}
+
+/* Sur mobile : cache l'image de droite pour garder un layout compact */
+@media (max-width: 900px){
+  #cardMedical .med-img-key{ display: none; }
+}
+/* évite que le bouton Dashboard se place sur la même zone que le médical */
+#btnDashboard { grid-area: auto !important; grid-column: auto !important; grid-row: auto !important; position: static !important; }
+/* grille : deux colonnes pour les petits, mais les "gros" prennent toute la largeur */
+.home-modes.mode-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* le bouton médical prend toute la rangée */
+.mode-card.mode-medical{ grid-column: 1 / -1; }
+
+/* et le Dashboard aussi */
+#btnDashboard{ grid-column: 1 / -1; }
+.mode-title.landing-title {
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+}
+
+
+/* === PATCH — Ordre & tailles des boutons de mode === */
+/* Grille : Médical (grand), Dashboard (grand), puis Unsup & Dev (petits) */
+.home-intro .home-modes.mode-grid,
+#modePicker .mode-grid{
+  grid-template-areas:
+    "medical medical"
+    "dash    dash"
+    "unsup   dev"
+    "custom  review";
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Zones dédiées (assigne chaque carte à son emplacement) */
+.home-intro .mode-medical, #modePicker .mode-medical{ grid-area: medical; }
+#btnDashboard{ grid-area: dash; }                 /* dashboard au milieu */
+.home-intro .mode-unsup, #modePicker .mode-unsup{ grid-area: unsup; }
+.home-intro .mode-dev,   #modePicker .mode-dev  { grid-area: dev; }
+
+/* Mobile : tout en colonne, dans le même ordre */
+@media (max-width: 860px){
+  .home-intro .home-modes.mode-grid,
+  #modePicker .mode-grid{
+    grid-template-areas:
+      "medical"
+      "dash"
+      "unsup"
+      "dev"
+      "custom"
+      "review";
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Styles “grands” pour Médical et Dashboard */
+.home-intro .mode-medical,
+#modePicker .mode-medical,
+#btnDashboard{
+  min-height: 220px;                /* plus grand */
+}
+
+.home-intro .mode-medical .mode-title,
+#modePicker .mode-medical .mode-title,
+#btnDashboard .mode-title{
+  font-size: clamp(22px, 2.2vw, 28px);
+}
+.home-intro .mode-medical .mode-sub,
+#modePicker .mode-medical .mode-sub,
+#btnDashboard .mode-sub{
+  font-size: clamp(13px, 1.4vw, 16px);
+}
+
+/* Donne à Dashboard le même style couleur que “mode-medical” */
+#btnDashboard{
+  /* Si ton bouton Dashboard a déjà .mode-card, ces règles complètent juste le thème */
+  background: #EAF7F0;           /* même fond vert/beige */
+  color: #0f3d2c;                 /* même texte foncé */
+  border-color: #BFE5D0;          /* même bordure */
+}
+/* Petite icône à gauche, cohérente avec l’icône 🩺 du médical */
+#btnDashboard::before{
+  content: "📊";
+  background: linear-gradient(135deg, #2FAF79, #6AD3A6);
+  color: #0b2d1e;
+}
+
+/* Styles “petits” pour Unsup & Dev */
+.home-intro .mode-unsup, #modePicker .mode-unsup,
+.home-intro .mode-dev,   #modePicker .mode-dev{
+  min-height: 120px;              /* plus compact */
+}
+.home-intro .mode-unsup .mode-title, #modePicker .mode-unsup .mode-title,
+.home-intro .mode-dev .mode-title,   #modePicker .mode-dev .mode-title{
+  font-size: clamp(16px, 1.6vw, 18px);
+}
+.home-intro .mode-unsup .mode-sub, #modePicker .mode-unsup .mode-sub,
+.home-intro .mode-dev .mode-sub,   #modePicker .mode-dev .mode-sub{
+  font-size: clamp(11px, 1.2vw, 13px);
+}
+
+/* S’assure que Dashboard span bien toute la largeur quand il faut */
+#btnDashboard{ grid-column: 1 / -1; }
+
+/* === FIX — Dashboard même largeur que Médical === */
+:is(.home-intro, #modePicker) .mode-grid{
+  grid-template-areas:
+    "medical   medical"
+    "dashboard dashboard"
+    "unsup     dev";
+  grid-template-columns: 1fr 1fr; /* desktop */
+}
+
+
+
+/* Pleine largeur comme Médical */
+:is(.home-intro, #modePicker) .mode-grid > :is(.mode-dashboard, #btnDashboard, .btn-dashboard){
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 200px; /* même hauteur mini que .mode-medical actuelle */
+}
+/* === DASHBOARD pleine largeur (même que Médical) === */
+:is(.home-intro, #modePicker) .mode-grid{
+  grid-template-areas:
+    "medical   medical"
+    "dashboard dashboard"
+    "unsup     dev";
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 1) Si l’item de grille EST Dashboard */
+:is(.home-intro, #modePicker) .mode-grid > :is(#btnDashboard, .mode-dashboard, .btn-dashboard){
+  grid-area: dashboard;
+  grid-column: 1 / -1 !important;
+  width: 100%;
+}
+
+/* 2) Si Dashboard est IMBRIQUÉ dans un wrapper (carte) */
+:is(.home-intro, #modePicker) .mode-grid > *:has(#btnDashboard){
+  grid-area: dashboard;
+  grid-column: 1 / -1 !important;
+  width: 100%;
+}
+
+/* Empilement mobile inchangé */
+@media (max-width: 860px){
+  :is(.home-intro, #modePicker) .mode-grid{
+    grid-template-areas:
+      "medical"
+      "dashboard"
+      "unsup"
+      "dev";
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Cache le bouton quand un des overlays d’intro est visible (pas .swipe-out et pas [hidden]) */
+body:has(:is(#landingIntro,.landing-intro):not(.swipe-out,[hidden])) .mode-switcher,
+body:has(:is(#homeIntro,.home-intro):not(.swipe-out,[hidden])) .mode-switcher{
+  display: none !important;
+}
+
+.home-intro{ align-content: start; }  /* au lieu de center */
+#homeIntro{ align-content: start; }   /* écrase ta règle actuelle qui centre verticalement */
+/* resserre le bloc de contenu */
+.home-intro .home-wrap{ width: min(900px, 92vw); }
+
+/* resserre vraiment le texte (lead + paragraphe) */
+.home-intro .home-head .home-lead,
+.home-intro .home-head .home-text{ max-width: 58ch; }  /* tu es à ~70ch actuellement */
+
+/* Centre le contenu HomeIntro sans être affecté par le bouton langue */
+#homeIntro .home-wrap{
+  margin: 0 auto;          /* centre horizontalement */
+  text-align: center;      /* centre le texte */
+  justify-items: center;   /* centre chaque élément de la grille */
+  padding-right: 32cm;
+}
+
+.home-fab {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 3000;
+
+  background: #f7f7f7;         /* gris clair neutre */
+  color: #333;                 /* texte sombre */
+  border: 1px solid #ccc;      /* bord discret */
+  border-radius: 8px;          /* arrondi doux */
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* ombre douce */
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.home-fab:hover {
+  background: #eaeaea;         /* hover un peu plus foncé */
+  border-color: #bbb;
+}
+
+         /* Styles de base */
+         body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background: #F5EFE6;
+          color: #e8f0f7;
+      }
+      
+      /* Conteneur principal avec défilement horizontal */
+      .home-gallery.footer-gallery {
+          display: flex;
+          overflow-x: auto;
+          gap: 15px;
+          padding: 15px 10px;
+          scrollbar-width: thin; /* Pour Firefox */
+          -ms-overflow-style: none; /* Pour IE et Edge */
+          scroll-behavior: smooth;
+          background: #F5EFE6;
+          border: 1px solid #d8d3ca;
+          border-radius: 14px;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+      }
+      
+      /* Masquer la scrollbar pour Chrome, Safari et Opera */
+      .home-gallery.footer-gallery::-webkit-scrollbar {
+          display: none;
+      }
+      
+      /* Style des liens images */
+      .home-gallery.footer-gallery .img-link {
+          flex: 0 0 calc(20% - 12px); /* 5 images visibles (20% chacune) avec ajustement pour l'espacement */
+          min-width: 180px; /* Largeur minimale pour les petits écrans */
+          transition: transform 0.2s ease;
+          box-sizing: border-box;
+      }
+      
+      /* Effet au survol */
+      .home-gallery.footer-gallery .img-link:hover {
+          transform: scale(1.03);
+      }
+      
+      /* Style des images */
+      .home-gallery.footer-gallery .img-link img {
+          width: 100%;
+          height: auto;
+          border-radius: 8px;
+          object-fit: contain;
+          max-height: 120px;
+          background-color: #F5EFE6;
+          padding: 10px;
+          box-sizing: border-box;
+          border: 1px solid #F5EFE6
+      }
+      
+      /* Indicateurs de défilement (optionnel) */
+      .scroll-hint {
+          text-align: center;
+          color: #9fb3c8;
+          font-size: 14px;
+          margin-top: 10px;
+      }
+      
+      /* Media Query pour les écrans plus petits */
+      @media (max-width: 1200px) {
+          .home-gallery.footer-gallery .img-link {
+              flex: 0 0 calc(25% - 12px); /* 4 images visibles */
+          }
+      }
+      
+      @media (max-width: 900px) {
+          .home-gallery.footer-gallery .img-link {
+              flex: 0 0 calc(33.33% - 12px); /* 3 images visibles */
+          }
+      }
+      
+      @media (max-width: 600px) {
+          .home-gallery.footer-gallery .img-link {
+              flex: 0 0 calc(50% - 12px); /* 2 images visibles */
+          }
+      }
+
+      /* --- Thème clair beige + accent bleu (pour mode dev) --- */
+      body.theme-beige-blue {
+        --bg: #F5EFE6;
+        --panel: #FFFAF1;
+        --text: #1f2328;
+        --muted: #6f6a60;
+        --accent: #53b0ff;   /* bleu existant */
+        --accent-2: #9cd1ff; /* bleu clair pour survols */
+        --danger: #B13434;
+        --border: #E4D6C5;
+      }
+      /* a) Inputs, selects, dropzone, logs, panes, etc. en blanc */
+      body.theme-beige-blue input,
+      body.theme-beige-blue select,
+      body.theme-beige-blue .dropzone,
+      body.theme-beige-blue pre.log,
+      body.theme-beige-blue .pane,
+      body.theme-beige-blue .cluster-img-wrap,
+      body.theme-beige-blue textarea {
+        background:#ffffff;
+        color: var(--text);
+        border-color: var(--border);
+      }
+      
+      /* b) Boutons secondaires en blanc */
+      body.theme-beige-blue .button.secondary {
+        background:#ffffff;
+        color: var(--text);
+        border:1px solid var(--border);
+      }
+      
+      /* c) Panneaux/cards en blanc */
+      body.theme-beige-blue .left,
+      body.theme-beige-blue .right,
+      body.theme-beige-blue .card {
+        background:#ffffff;
+        color: var(--text);
+        border-color: var(--border);
+      }
+      
+      /* d) Tooltip frise + pastille catégorie + viewer PDF en blanc */
+      body.theme-beige-blue .tl-tooltip,
+      body.theme-beige-blue .tl-cat,
+      body.theme-beige-blue .fiche-preview {
+        background:#ffffff;
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      /* --- DEV clair (beige + accent bleu) : Catégories / Champs --- */
+
+/* Panneaux de sélection */
+body.theme-beige-blue .pane,
+body.theme-beige-blue .cluster-img-wrap,
+body.theme-beige-blue .dropzone,
+body.theme-beige-blue pre.log {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Liste des catégories (accordéons) */
+body.theme-beige-blue .cat-list details,
+body.theme-beige-blue .cat-list details[open] {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--border);
+}
+body.theme-beige-blue .cat-list details > summary {
+  background: #fff;
+}
+
+/* Boutons dans la liste (tags/ajouts) */
+body.theme-beige-blue .cat-list button {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+body.theme-beige-blue .cat-list button:hover {
+  background: #f8f5ee; /* léger beige au survol */
+}
+
+/* Tables de clustering / mapping de champs */
+body.theme-beige-blue .table .tr.head {
+  background: var(--panel);   /* en-tête sur beige clair */
+  color: var(--text);
+}
+body.theme-beige-blue .table .tr .td,
+body.theme-beige-blue .table .tr div {
+  background: #fff;           /* cellules en blanc */
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Groupes de clusters (si tu utilises <details> groupés) */
+body.theme-beige-blue .cluster-group {
+  border-color: var(--border);
+}
+body.theme-beige-blue .cluster-group .table.clusters .tr.head {
+  background: var(--panel);
+}
+/* === DEV clair (beige + accent bleu) — boost couleur Catégories/Champs === */
+
+/* 0) Petites variables utiles pour des teintes légères */
+body.theme-beige-blue{
+  --accent-tint: rgba(83,176,255,.12);   /* bleu très léger */
+  --accent-tint-2: rgba(83,176,255,.20); /* un peu plus soutenu */
+  --accent-ring: rgba(83,176,255,.35);   /* halo focus */
+}
+
+/* 1) Panneaux – un léger bandeau bleu + focus agréable */
+body.theme-beige-blue .pane,
+body.theme-beige-blue .cluster-img-wrap,
+body.theme-beige-blue .dropzone,
+body.theme-beige-blue pre.log{
+  border-color: var(--border);
+  border-top: 3px solid var(--accent-2);
+}
+body.theme-beige-blue .pane:focus-within,
+body.theme-beige-blue .cluster-img-wrap:focus-within,
+body.theme-beige-blue .dropzone:focus-within{
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* 2) Accordéons Catégories – fond bleuté + liseré */
+body.theme-beige-blue .cat-list details{
+  background: var(--accent-tint);
+  border-left: 3px solid var(--accent-2);
+}
+body.theme-beige-blue .cat-list details[open]{
+  background: var(--accent-tint-2);
+  border-left-color: var(--accent);
+}
+body.theme-beige-blue .cat-list details > summary{
+  background: transparent;
+  color: var(--text);
+}
+body.theme-beige-blue .cat-list details > summary:hover{
+  background: rgba(83,176,255,.08);
+}
+
+/* 3) Boutons / tags dans les listes – pilules bleues */
+body.theme-beige-blue .cat-list button{
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-2);
+  color: var(--text);
+  border-radius: 999px;
+  padding: .35rem .7rem;
+}
+body.theme-beige-blue .cat-list button:hover{
+  background: var(--accent-tint-2);
+  border-color: var(--accent);
+}
+body.theme-beige-blue .cat-list button[aria-pressed="true"],
+body.theme-beige-blue .cat-list .is-active > button{
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* 4) Table clustering / mapping – en-tête bleuté + zébrage léger */
+body.theme-beige-blue .table .tr.head{
+  background: var(--accent-tint);
+  color: var(--text);
+  border-bottom: 2px solid var(--accent-2);
+}
+body.theme-beige-blue .table .tr:not(.head):nth-child(odd) .td,
+body.theme-beige-blue .table .tr:not(.head):nth-child(odd) div{
+  background: var(--accent-tint);
+}
+body.theme-beige-blue .table .tr.is-active .td,
+body.theme-beige-blue .table .tr.is-active div{
+  background: var(--accent-tint-2);
+  box-shadow: inset 0 0 0 1px var(--accent-2);
+}
+
+/* 5) Inputs / selects – anneau de focus bleu, checkboxes bleues */
+body.theme-beige-blue input:focus,
+body.theme-beige-blue select:focus,
+body.theme-beige-blue textarea:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  border-color: var(--accent);
+}
+body.theme-beige-blue input[type="checkbox"],
+body.theme-beige-blue input[type="radio"]{
+  accent-color: var(--accent);
+}
+
+/* 6) Petits headers/labels des panneaux – rappel d’accent */
+body.theme-beige-blue .pane h3,
+body.theme-beige-blue .pane h4,
+body.theme-beige-blue .pane .section-title{
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent-2);
+  padding-bottom: .25rem;
+  margin-bottom: .5rem;
+}
+
+
+
+/* === Thème beige & violet === */
+.theme-beige-violet {
+  --bg: #f6f1ea;
+  --card: #ffffff;
+  --text: #2a2333;
+  --muted: #6e627a;
+  --primary: #7a5af8;
+  --primary-600: #5f45d6;
+  --accent: #b289ff;
+  --border: #e9e0d8;
+  --ring: rgba(122,90,248,.25);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.theme-beige-violet .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(42,35,51,0.05);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.theme-beige-violet .header h1 { color: var(--text); }
+.theme-beige-violet .muted { color: var(--muted); }
+
+.theme-beige-violet .button,
+.theme-beige-violet .btn {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+.theme-beige-violet .button.primary,
+.theme-beige-violet .btn.primary {
+  color: #fff;
+  background: linear-gradient(180deg, var(--primary), var(--primary-600));
+  border: none;
+  box-shadow: 0 6px 16px var(--ring);
+}
+.theme-beige-violet .btn.ghost { background: transparent; }
+.theme-beige-violet .btn.danger { background: #ffe8e8; border-color:#ffd1d1; color:#a11; }
+
+.theme-beige-violet .dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  background: #fff;
+}
+
+.theme-beige-violet .grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+}
+
+.theme-beige-violet .form-grid {
+  display: grid; gap: 12px; grid-template-columns: 1fr 1fr 1fr;
+}
+.theme-beige-violet .field span { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+.theme-beige-violet .field input, .theme-beige-violet .textarea, .theme-beige-violet select {
+  width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff;
+}
+
+.theme-beige-violet .tabs { display:flex; gap:8px; margin-bottom:10px; }
+.theme-beige-violet .tab { padding:8px 12px; border:1px solid var(--border); border-radius:999px; background:#fff; cursor:pointer; }
+.theme-beige-violet .tab.active { background: var(--primary); color:#fff; border-color: var(--primary); }
+
+.theme-beige-violet .builder .cat {
+  border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:#fff;
+}
+.theme-beige-violet .builder .cat-head { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+.theme-beige-violet .builder .cat-name { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px; }
+.theme-beige-violet .builder .field-line { display:grid; grid-template-columns: 1.2fr 1fr auto; gap:8px; margin:6px 0; }
+.theme-beige-violet .hr { height:1px; background:var(--border); margin:14px 0; }
+
+.theme-beige-violet .log { background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px; max-height:220px; overflow:auto; }
+.theme-beige-violet .log.small { max-height:140px; }
+
+
+
+/* --- Thème beige/violet : fond d’édition beige clair --- */
+.theme-beige-violet .textarea,
+.theme-beige-violet input,
+.theme-beige-violet pre.log {
+  background: #faf5ef; /* beige clair */
+}
+
+/* (optionnel) si certains inputs deviennent trop clairs : bordure renforcée */
+.theme-beige-violet .textarea,
+.theme-beige-violet input {
+  border: 1px solid var(--border, #e9e0d8);
+}
+
+/* Harmonisation boutons si besoin */
+.theme-beige-violet .btn.primary,
+.theme-beige-violet .button.primary {
+  color: #fff;
+  background: linear-gradient(180deg, var(--primary, #7a5af8), var(--primary-600, #5f45d6));
+  border: none;
+  box-shadow: 0 6px 16px var(--ring, rgba(122,90,248,.25));
+}
+
+
+/* Donne au Custom un fond violet doux, comme Dashboard a son fond vert/beige */
+#btnCustom{
+  background: #F3EEFF;              /* violet très clair */
+  color: #2a2333;                    /* texte foncé thème beige/violet */
+  border-color: #DBCFFB;             /* bordure lavande */
+}
+
+/* Petite “pastille” icône à gauche, même esprit que Dashboard */
+#btnCustom::before{
+  content: "🧩";
+  background: linear-gradient(135deg, #7A5AF8, #B289FF);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  margin-right: .5rem;
+  box-shadow: 0 4px 12px rgba(122,90,248,.25);
+}
+
+/* Hover focus (optionnel, matching) */
+#btnCustom:hover{
+  filter: brightness(0.98);
+  box-shadow: 0 12px 28px rgba(122,90,248,.12);
+}
+
+/* ===== Fix ciblé index3 : switcher langue en haut-droite, ne bloque pas les clics ===== */
+body.theme-beige-violet .lang-switcher{
+  position: fixed !important;
+  top: 10px !important;
+  right: 10px !important;
+  left: auto !important;
+  display: flex;
+  gap: 8px;
+  z-index: 999999 !important;
+  pointer-events: none;            /* le conteneur ne capte pas */
+}
+body.theme-beige-violet .lang-toggle{
+  pointer-events: auto;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 0; cursor: pointer;
+  background: var(--lang-bg, #2b2b2b); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+body.theme-beige-violet .lang-menu{
+  position: absolute !important;
+  top: 42px !important;
+  right: 0 !important;
+  left: auto !important;
+  inset: auto !important;          /* neutralise tout "inset:0" éventuel */
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 160px;
+  background: #fff; color: #1f2328;
+  border: 1px solid var(--border, #E4D6C5);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  padding: 6px;
+  pointer-events: auto;            /* le menu reste cliquable */
+}
+body.theme-beige-violet .lang-menu[hidden]{ display: none !important; }
+
+body.theme-beige-violet .lang-btn{
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.08);
+  background: transparent; color: inherit;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; line-height: 1;
+}
+body.theme-beige-violet .lang-btn:hover{ transform: scale(1.05); }
+body.theme-beige-violet .lang-btn.active{ box-shadow: 0 0 0 2px rgba(0,0,0,.12) inset; }
+
+
+/* === Thème beige + jaune-orangé === */
+body.theme-beige-orange {
+  --bg: #F5EFE6;
+  --panel: #FFFAF1;
+  --text: #1f2328;
+  --muted: #6f6a60;
+  --accent: #F59E0B;   /* jaune-orangé principal */
+  --accent-2: #FCD34D; /* survols/détails (ambre clair) */
+  --danger: #B13434;
+  --border: #E4D6C5;
+}
+
+/* Harmonisation fonds (comme pour les autres thèmes beige) */
+body.theme-beige-orange input,
+body.theme-beige-orange select,
+body.theme-beige-orange .dropzone,
+body.theme-beige-orange pre.log,
+body.theme-beige-orange .pane,
+body.theme-beige-orange .cluster-img-wrap,
+body.theme-beige-orange .card,
+body.theme-beige-orange .viewer,
+body.theme-beige-orange textarea {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+body.theme-beige-orange .button.secondary {
+  background: #ffffff;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+/* Home : carte review en jaune/beige doux */
+.home-modes .mode-review {
+  background: #FFF6E5;          /* beige chaud */
+  border-color: #F3D3A1;
+  color: #4a3909;
+}
+
+/* Picker : style plein comme les autres cartes du sélecteur */
+#modePicker .mode-review {
+  --card-bg:    #2b210f;        /* fond sombre tirant sur le sépia */
+  --card-border:#f5a623;        /* liseré orange doux */
+  /* le texte reste hérité (#f4f7fb) */
+}
+
+/* === Home uniquement : on neutralise les zones nommées pour éviter les chevauchements === */
+#homeIntro .mode-grid {
+  grid-template-areas: none;                     /* on désactive les aires nommées du picker */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+#homeIntro .mode-grid .mode-card { grid-area: auto; }  /* chaque carte s’auto-place */
+
+/* Styles visuels des nouvelles cartes Home */
+#homeIntro .mode-grid .mode-review {
+  background: #FFF6E5;      /* beige chaud */
+  border-color: #F3D3A1;
+  color: #4a3909;
+}
+#homeIntro .mode-grid .mode-dashboard {
+  background: #EAF0FF;      /* bleu très clair */
+  border-color: #C7D6FF;
+  color: #0f254a;
+}
+/* (optionnel) Custom déjà présent, mais tu peux l’harmoniser si tu veux */
+#homeIntro .mode-grid .mode-custom {
+  background: #FEF7FF;      /* lilas très clair */
+  border-color: #E9D4FF;
+  color: #3c1c5c;
+}
+
+
+/* === PATCH — Ordre & tailles des boutons de mode === */
+/* Grille : Médical (grand), Dashboard (grand), puis Unsup & Dev (petits) */
+.home-intro .home-modes.mode-grid,
+#modePicker .mode-grid{
+  grid-template-areas:
+    "medical medical"
+    "dash    dash"
+    "unsup   dev"
+    "custom  review";
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Zones dédiées (assigne chaque carte à son emplacement) */
+.home-intro .mode-medical, #modePicker .mode-medical{ grid-area: medical; }
+#btnDashboard{ grid-area: dash; }                 /* dashboard au milieu */
+.home-intro .mode-unsup, #modePicker .mode-unsup{ grid-area: unsup; }
+.home-intro .mode-dev,   #modePicker .mode-dev  { grid-area: dev; }
+
+/* Mobile : tout en colonne, dans le même ordre */
+@media (max-width: 860px){
+  .home-intro .home-modes.mode-grid,
+  #modePicker .mode-grid{
+    grid-template-areas:
+      "medical"
+      "dash"
+      "unsup"
+      "dev"
+      "custom"
+      "review";
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === PATCH — Ordre & tailles des boutons de mode === */
+/* Grille : Médical (grand), Dashboard (grand), puis Unsup & Dev (petits),
+   puis Custom & Review (petits) — valable pour Home et pour le Picker */
+   .home-intro .home-modes.mode-grid,
+   #modePicker .mode-grid{
+     grid-template-areas:
+       "medical medical"
+       "dash    dash"
+       "unsup   dev"
+       "custom  review";
+     grid-template-columns: 1fr 1fr;
+   }
+   
+   /* Zones dédiées (assigne chaque carte à son emplacement) */
+   .home-intro .mode-medical, #modePicker .mode-medical { grid-area: medical; }
+   #btnDashboard { grid-area: dash; }  /* dashboard au milieu (id suffit) */
+   .home-intro .mode-unsup, #modePicker .mode-unsup   { grid-area: unsup; }
+   .home-intro .mode-dev,   #modePicker .mode-dev     { grid-area: dev; }
+   .home-intro .mode-custom,#modePicker .mode-custom  { grid-area: custom; }
+   .home-intro .mode-review,#modePicker .mode-review  { grid-area: review; }
+   
+   /* Tailles : 2 rangées "grandes" puis "petites" */
+   .home-intro .mode-medical,
+   #modePicker .mode-medical,
+   #btnDashboard { min-height: 200px; }
+   .home-intro .mode-unsup,
+   .home-intro .mode-dev,
+   .home-intro .mode-custom,
+   .home-intro .mode-review,
+   #modePicker .mode-unsup,
+   #modePicker .mode-dev,
+   #modePicker .mode-custom,
+   #modePicker .mode-review { min-height: 140px; }
+   
+   /* Mobile : tout en colonne, dans le même ordre */
+   @media (max-width: 860px){
+     .home-intro .home-modes.mode-grid,
+     #modePicker .mode-grid{
+       grid-template-areas:
+         "medical"
+         "dash"
+         "unsup"
+         "dev"
+         "custom"
+         "review";
+       grid-template-columns: 1fr;
+     }
+   }
+   
+/* === [FINAL PATCH] Sélecteur de mode : ordre, tailles et icônes === */
+/* Source de vérité unique pour HOME (#homeIntro) + PICKER (#modePicker) */
+
+/* --- Layout (desktop) --- */
+:is(#homeIntro .home-modes.mode-grid, #modePicker .mode-grid){
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "medical medical"
+    "dash    dash"
+    "unsup   dev"
+    "custom  review";
+}
+
+/* --- Layout (mobile) --- */
+@media (max-width: 860px){
+  :is(#homeIntro .home-modes.mode-grid, #modePicker .mode-grid){
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "medical"
+      "dash"
+      "unsup"
+      "dev"
+      "custom"
+      "review";
+  }
+}
+
+/* --- Mapping des zones --- */
+:is(#homeIntro, #modePicker) .mode-medical{ grid-area: medical; }
+:is(#homeIntro, #modePicker) .mode-unsup  { grid-area: unsup;   }
+:is(#homeIntro, #modePicker) .mode-dev    { grid-area: dev;     }
+:is(#homeIntro, #modePicker) .mode-custom { grid-area: custom;  }
+:is(#homeIntro, #modePicker) .mode-review { grid-area: review;  }
+
+/* Dashboard : selon ton HTML, on cible l’id et/ou une classe éventuelle */
+:is(#homeIntro, #modePicker) #btnDashboard,
+:is(#homeIntro, #modePicker) .mode-dashboard{
+  grid-area: dash;
+  grid-column: 1 / -1;              /* pleine largeur comme Médical */
+}
+
+/* --- Tailles : gros pour Médical & Dashboard, plus compact pour le reste --- */
+:is(#homeIntro, #modePicker) .mode-medical,
+:is(#homeIntro, #modePicker) #btnDashboard,
+:is(#homeIntro, #modePicker) .mode-dashboard{
+  min-height: 220px;
+}
+
+:is(#homeIntro, #modePicker) .mode-unsup,
+:is(#homeIntro, #modePicker) .mode-dev,
+:is(#homeIntro, #modePicker) .mode-custom,
+:is(#homeIntro, #modePicker) .mode-review{
+  min-height: 140px;
+}
+
+/* --- Icônes (pseudo-éléments) --- */
+/* Médical / Unsup / Dev gardent tes icônes existantes. On ajoute Review + harmonise Dashboard. */
+:is(#homeIntro, #modePicker) .mode-card{
+  position: relative;
+  display: grid; place-items: center; text-align: center; gap: 10px;
+  padding: 26px 22px;
+}
+:is(#homeIntro, #modePicker) .mode-card::before{
+  content: "";
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 22px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* Dashboard = 📊 (même esprit que Médical) */
+:is(#homeIntro, #modePicker) #btnDashboard::before,
+:is(#homeIntro, #modePicker) .mode-dashboard::before{
+  content: "📊";
+  background: linear-gradient(135deg, #2FAF79, #6AD3A6);
+  color: #0b2d1e;
+}
+
+/* Review = 🔎 (loupe) */
+:is(#homeIntro, #modePicker) .mode-review::before,
+:is(#homeIntro, #modePicker) #btnReview::before{
+  content: "🔎";
+  /* Home (clair) → fond doux ; Picker (sombre) → fond ambré */
+  background: linear-gradient(135deg, #F59E0B, #FCD34D);
+  color: #3b2600;
+}
+
+/* Thèmes de fond déjà posés dans ton CSS :
+   - Home : .mode-review { background:#FFF6E5; border-color:#F3D3A1; color:#4a3909; }
+   - Picker : #modePicker .mode-review { --card-bg:#2b210f; --card-border:#f5a623; }
+   Rien à toucher ici, on ne fait qu’ajouter l’icône.
+*/
+
+/* --- Anti-conflit : si tu avais mis "grid-template-areas:none" quelque part, on écrase --- */
+#homeIntro .home-modes.mode-grid{ grid-template-areas:
+  "medical medical"
+  "dash    dash"
+  "unsup   dev"
+  "custom  review" !important;
+}
+
+/* === [PATCH] Restaure les icônes pour TOUS les modes === */
+/* Base commune aux icônes (override du reset précédent) */
+:is(#homeIntro, .home-intro, #modePicker) .mode-card::before{
+  display: grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  font-size: 22px !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06) !important;
+  margin: 0 !important;
+  content: "" !important; /* sera remplacé ci-dessous */
+}
+
+/* Médical 🩺 */
+:is(#homeIntro, .home-intro, #modePicker) .mode-medical::before{
+  content: "🩺" !important;
+  background: linear-gradient(135deg, #2FAF79, #6AD3A6) !important;
+  color: #0b2d1e !important;
+}
+
+/* Non supervisé 🧪 */
+:is(#homeIntro, .home-intro, #modePicker) .mode-unsup::before{
+  content: "🧪" !important;
+  background: linear-gradient(135deg, #C83C3C, #FF8A8F) !important;
+  color: #3b0a0c !important;
+}
+
+/* Dev ⚙️ */
+:is(#homeIntro, .home-intro, #modePicker) .mode-dev::before{
+  content: "⚙️" !important;
+  background: linear-gradient(135deg, #223147, #0e1420) !important;
+  color: #e8f0f7 !important;
+}
+
+/* Custom 🧩 */
+:is(#homeIntro, .home-intro, #modePicker) .mode-custom::before{
+  content: "🧩" !important;
+  background: linear-gradient(135deg, #7A5AF8, #B289FF) !important;
+  color: #ffffff !important;
+}
+
+/* Review 🔎 (loupe demandée) */
+:is(#homeIntro, .home-intro, #modePicker) .mode-review::before,
+:is(#homeIntro, .home-intro, #modePicker) #btnReview::before{
+  content: "🔎" !important;
+  background: linear-gradient(135deg, #F59E0B, #FCD34D) !important;
+  color: #3b2600 !important;
+}
+
+/* Dashboard 📊 (plein largeur déjà géré) */
+:is(#homeIntro, .home-intro, #modePicker) #btnDashboard::before,
+:is(#homeIntro, .home-intro, #modePicker) .mode-dashboard::before{
+  content: "📊" !important;
+  background: linear-gradient(135deg, #2FAF79, #6AD3A6) !important;
+  color: #0b2d1e !important;
+}
+
+/* rétablit les aires + 2 colonnes sur l'accueil */
+#homeIntro .mode-grid{
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-areas:
+    "medical medical"
+    "dash    dash"
+    "unsup   dev"
+    "custom  review" !important;
+}
+
+/* force Médical à prendre toute la largeur même si une règle plus haut casse les aires */
+:where(#homeIntro, .home-intro, #modePicker) .mode-medical{
+  grid-area: medical !important;
+  grid-column: 1 / -1 !important;  /* plein span quoi qu’il arrive */
+}
+
+/* si la carte Médical est imbriquée dans un wrapper */
+:where(#homeIntro, .home-intro, #modePicker) .mode-grid > *:has(.mode-medical){
+  grid-area: medical !important;
+  grid-column: 1 / -1 !important;
+}
+
+   
+/* --- Anti-casse : toujours afficher la carte Q/A --- */
+
+      .home-fab.home-fab--icon {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        z-index: 3000;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: white;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        display: grid;
+        place-items: center;
+        padding: 0;
+      }
+      .home-fab.home-fab--icon::before {
+        content:"";
+        width:28px; height:28px;
+        background: no-repeat center/contain url("data:image/svg+xml;utf8,\
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>\
+        <path d='M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9z' fill='%23333'/>\
+      </svg>");
+      }
+      
+
+
+
+

@@ -1,0 +1,406 @@
+{
+  "Laboratory": [
+    {
+      "name": "Patient name"
+    },
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Hemoglobin"
+    },
+    {
+      "name": "Leukocytes"
+    },
+    {
+      "name": "Neutrophils"
+    },
+    {
+      "name": "Platelets"
+    },
+    {
+      "name": "eGFR (CKD-EPI)"
+    },
+    {
+      "name": "Sodium"
+    },
+    {
+      "name": "Potassium"
+    },
+    {
+      "name": "AST (ASAT)"
+    },
+    {
+      "name": "ALT (ALAT)"
+    },
+    {
+      "name": "Alkaline phosphatase"
+    },
+    {
+      "name": "Total bilirubin"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Tumor Board": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Location"
+    },
+    {
+      "name": "Circumstances of discovery",
+      "allowed_values": [
+        "screening",
+        "incidental",
+        "clinical presentation",
+        "other"
+      ]
+    },
+    {
+      "name": "Date of discovery"
+    },
+    {
+      "name": "Therapeutic proposal",
+      "allowed_values": [
+        "surgery",
+        "chemotherapy",
+        "radiotherapy",
+        "combined surgery and radiotherapy",
+        "other"
+      ]
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Tumor organ",
+      "allowed_values": [
+        "breast",
+        "prostate",
+        "colon",
+        "lung",
+        "melanoma",
+        "glioblastoma",
+        "ovary",
+        "cervix",
+        "endometrium",
+        "sarcoma",
+        "other"
+      ]
+    },
+    {
+      "name": "WHO",
+      "allowed_values": [
+        "WHO 1",
+        "WHO 2",
+        "WHO 3",
+        "WHO 4",
+        "WHO 5"
+      ]
+    },
+    {
+      "name": "Stage",
+      "allowed_values": [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "NA"
+      ]
+    },
+    {
+      "name": "Tumor size (T)",
+      "allowed_values": [
+        "Tx",
+        "T0",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "NA"
+      ]
+    },
+    {
+      "name": "Nodes (N)",
+      "allowed_values": [
+        "N0",
+        "N1",
+        "N2",
+        "N3",
+        "Nx",
+        "NA"
+      ]
+    },
+    {
+      "name": "Metastasis (M)",
+      "allowed_values": [
+        "M0",
+        "M1",
+        "Mx",
+        "NA"
+      ]
+    }
+  ],
+  "Histology": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Tumor organ",
+      "allowed_values": [
+        "breast",
+        "prostate",
+        "colon",
+        "lung",
+        "melanoma",
+        "glioblastoma",
+        "ovary",
+        "cervix",
+        "endometrium",
+        "sarcoma",
+        "other"
+      ]
+    },
+    {
+      "name": "Histologic type",
+      "allowed_values": [
+        "adenocarcinoma",
+        "squamous cell carcinoma",
+        "sarcoma",
+        "Other",
+        "NA"
+      ]
+    },
+    {
+      "name": "Grade",
+      "allowed_values": [
+        "grade I",
+        "grade II",
+        "grade III",
+        "low grade",
+        "intermediate grade",
+        "high grade",
+        "NA"
+      ]
+    },
+    {
+      "name": "Markers"
+    },
+    {
+      "name": "Observations"
+    },
+    {
+      "name": "Conclusion"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Prescription": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Prescriber"
+    },
+    {
+      "name": "Medications"
+    },
+    {
+      "name": "Prescription durations"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Hospitalization": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Type",
+      "allowed_values": [
+        "inpatient",
+        "outpatient",
+        "NA"
+      ]
+    },
+    {
+      "name": "Department"
+    },
+    {
+      "name": "Cycle number"
+    },
+    {
+      "name": "Surgery type"
+    },
+    {
+      "name": "Chemotherapy protocol"
+    },
+    {
+      "name": "Intercurrent events"
+    },
+    {
+      "name": "WHO performance status"
+    },
+    {
+      "name": "Prescribed chemotherapy"
+    },
+    {
+      "name": "Other medications"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Surgery",
+      "allowed_values": [
+        "yes",
+        "no"
+      ]
+    },
+    {
+      "name": "Chemotherapy",
+      "allowed_values": [
+        "yes",
+        "no"
+      ]
+    },
+    {
+      "name": "Radiotherapy",
+      "allowed_values": [
+        "yes",
+        "no"
+      ]
+    },
+    {
+      "name": "WHO"
+    }
+  ],
+  "Imaging": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Imaging modality",
+      "allowed_values": [
+        "CT",
+        "MRI",
+        "PET scan",
+        "ultrasound",
+        "scintigraphy",
+        "other"
+      ]
+    },
+    {
+      "name": "Location"
+    },
+    {
+      "name": "Result"
+    },
+    {
+      "name": "Evolution"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Progression",
+      "allowed_values": [
+        "yes",
+        "no",
+        "NA"
+      ]
+    }
+  ],
+  "Radiotherapy session": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Location"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Endoscopy": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Procedure title"
+    },
+    {
+      "name": "Surgeon"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Operative report": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Procedure title"
+    },
+    {
+      "name": "Surgeon"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Reprise chirurgicale",
+      "allowed_values": [
+        "yes",
+        "no",
+        "NA"
+      ]
+    }
+  ],
+  "Remote monitoring": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Observations"
+    },
+    {
+      "name": "Toxicity grade 3"
+    },
+    {
+      "name": "Toxicity grade 4"
+    },
+    {
+      "name": "Conclusions"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Consultation": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Type of consultation (surgery, medical oncology, radiotherapy, organ specialist, ...)"
+    },
+    {
+      "name": "Reason for visit"
+    },
+    {
+      "name": "Evolution"
+    },
+    {
+      "name": "Conclusion"
+    },
+    {
+      "name": "id"
+    }
+  ]
+}

@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title data-i18n="review.title">Mode Review — Validation Excel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <style>
+    /* --- Mini spécifiques (si tu ne veux pas de fichier CSS dédié) --- */
+    .review-layout{
+      display:grid; gap:16px; padding:16px;
+      grid-template-columns: 1fr 420px; align-items:start;
+    }
+    @media (max-width: 980px){
+      .review-layout{ grid-template-columns: 1fr; }
+    }
+    .review-head{ display:flex; gap:8px; align-items:center; justify-content:space-between; }
+    .doc-header{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .doc-title{ font-weight:700; }
+    .doc-idx{ font-size:12px; opacity:.8; }
+    .viewer{
+      border:1px solid var(--border); border-radius:12px; background:#0a1018; overflow:hidden;
+      min-height:60vh;
+    }
+    body.theme-beige-orange .viewer{ background:#fff; }
+    .viewer iframe{ width:100%; height:70vh; border:0; display:block; }
+    .viewer .txt{
+      padding:12px; max-height:70vh; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space:pre-wrap;
+      background:inherit; color:inherit;
+    }
+
+    .fields-panel{ position:sticky; top:10px; }
+    .field-list{ display:grid; gap:8px; }
+    .field-list label{ display:grid; gap:6px; font-size:14px; color:var(--muted); }
+    .pager{ display:flex; gap:8px; align-items:center; }
+    .spacer{ flex:1; }
+    .muted{ color:var(--muted); }
+  </style>
+</head>
+<body class="theme-beige-orange">
+
+  <!-- Sélecteur de langue (reprise du composant existant) -->
+  <div class="lang-switcher" role="navigation" aria-label="Language menu">
+    <button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false" title="Language">
+      <span id="langFlag">🇫🇷</span>
+    </button>
+    <div class="lang-menu" id="langMenu" role="menu" hidden>
+      <button class="lang-btn" data-lang="fr" role="menuitem" aria-label="Français">🇫🇷</button>
+      <button class="lang-btn" data-lang="en" role="menuitem" aria-label="English">🇬🇧</button>
+      <button class="lang-btn" data-lang="es" role="menuitem" aria-label="Español">🇪🇸</button>
+      <button class="lang-btn" data-lang="it" role="menuitem" aria-label="Italiano">🇮🇹</button>
+      <button class="lang-btn" data-lang="de" role="menuitem" aria-label="Deutsch">🇩🇪</button>
+    </div>
+  </div>
+
+  <main class="review-layout">
+    <!-- Colonne gauche: upload + viewer -->
+    <section>
+      <div class="card">
+        <h2 data-i18n="review.setup.title">Préparer la revue</h2>
+        <div class="grid" style="grid-template-columns: 1fr;">
+          <label>
+            <span data-i18n="review.setup.excel">Excel d’extraction</span>
+            <input id="rv_excel" type="file" accept=".xlsx,.xls,.csv"/>
+          </label>
+          <label>
+            <span data-i18n="review.setup.folder">Dossier des documents d’origine</span>
+            <div id="rv_drop" class="dropzone" data-i18n="review.setup.drop">Glisser un dossier ici ou cliquer</div>
+            <input id="rv_folder" type="file" webkitdirectory directory multiple hidden/>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="rv_start" class="button" data-i18n="review.setup.start">Démarrer la revue</button>
+          <span id="rv_status" class="muted"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="review-head">
+          <div class="doc-header">
+            <span class="doc-title" id="docTitle">—</span>
+            <span class="doc-idx" id="docIdx">0 / 0</span>
+          </div>
+          <div class="pager">
+            <button id="btnPrev" class="button secondary" data-i18n="review.nav.prev">Précédent</button>
+            <button id="btnSave" class="button" data-i18n="review.nav.save">Enregistrer</button>
+            <button id="btnNext" class="button" data-i18n="review.nav.next">Suivant</button>
+          </div>
+        </div>
+
+        <div class="viewer" id="viewer">
+          <iframe id="docFrame" title="Preview" style="display:none;"></iframe>
+          <pre id="docText" class="txt" style="display:none;"></pre>
+        </div>
+
+        <div class="actions">
+          <a id="rv_download" class="button secondary" href="#" style="display:none;" data-i18n="review.download">Télécharger l’Excel modifié</a>
+          <span id="rv_tip" class="muted" data-i18n="review.tip">Astuce : les champs sont enregistrés à chaque “Enregistrer” ou “Suivant”.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Colonne droite: champs -->
+    <aside class="card fields-panel">
+      <h3 data-i18n="review.fields.title">Champs</h3>
+      <div id="fields" class="field-list"></div>
+    </aside>
+  </main>
+  <button id="btnHome" class="home-fab home-fab--icon" aria-label="Accueil" title="Retour à l’accueil"></button>
+  <script>
+    document.getElementById('btnHome')?.addEventListener('click', () => {
+      window.location.href = '/?autoDiscover=1';
+    });
+  </script>
+  <script>
+    // === i18n minimal (reprend la mécanique de ta page principale) ===
+    const I18N = {
+      fr: {
+        'review.title': 'Mode Review — Validation du tableur',
+        'review.setup.title': 'Préparer la revue',
+        'review.setup.excel': 'Tableur d’extraction',
+        'review.setup.folder': 'Dossier des documents d’origine',
+        'review.setup.drop': 'Glisser un dossier ici ou cliquer',
+        'review.setup.start': 'Démarrer la revue',
+        'review.fields.title': 'Champs',
+        'review.nav.prev': 'Précédent',
+        'review.nav.save': 'Enregistrer',
+        'review.nav.next': 'Suivant',
+        'review.download': 'Télécharger le tableur modifié',
+        'review.tip': 'Astuce : les champs sont enregistrés à chaque “Enregistrer” ou “Suivant”.'
+      },
+      en: {
+        'review.title': 'Review Mode — Spreadsheet Validation',
+        'review.setup.title': 'Prepare review',
+        'review.setup.excel': 'Extraction spreadsheet',
+        'review.setup.folder': 'Folder with source documents',
+        'review.setup.drop': 'Drop a folder here or click',
+        'review.setup.start': 'Start review',
+        'review.fields.title': 'Fields',
+        'review.nav.prev': 'Previous',
+        'review.nav.save': 'Save',
+        'review.nav.next': 'Next',
+        'review.download': 'Download updated spreadsheet',
+        'review.tip': 'Hint: data is saved on each “Save” or “Next”.'
+      },
+      es: {
+        'review.title': 'Modo Review — Validación de la hoja de cálculo',
+        'review.setup.title': 'Preparar la revisión',
+        'review.setup.excel': 'Hoja de cálculo de extracción',
+        'review.setup.folder': 'Carpeta con documentos originales',
+        'review.setup.drop': 'Arrastra una carpeta aquí o haz clic',
+        'review.setup.start': 'Iniciar revisión',
+        'review.fields.title': 'Campos',
+        'review.nav.prev': 'Anterior',
+        'review.nav.save': 'Guardar',
+        'review.nav.next': 'Siguiente',
+        'review.download': 'Descargar hoja de cálculo actualizada',
+        'review.tip': 'Consejo: se guarda en cada “Guardar” o “Siguiente”.'
+      },
+      it: {
+        'review.title': 'Modalità Review — Validazione del foglio di calcolo',
+        'review.setup.title': 'Prepara la revisione',
+        'review.setup.excel': 'Foglio di calcolo di estrazione',
+        'review.setup.folder': 'Cartella dei documenti originali',
+        'review.setup.drop': 'Trascina qui una cartella o clicca',
+        'review.setup.start': 'Avvia revisione',
+        'review.fields.title': 'Campi',
+        'review.nav.prev': 'Precedente',
+        'review.nav.save': 'Salva',
+        'review.nav.next': 'Avanti',
+        'review.download': 'Scarica il foglio di calcolo aggiornato',
+        'review.tip': 'Suggerimento: si salva ad ogni “Salva” o “Avanti”.'
+      },
+      de: {
+        'review.title': 'Review-Modus — Tabellenvalidierung',
+        'review.setup.title': 'Review vorbereiten',
+        'review.setup.excel': 'Extraktions-Tabelle',
+        'review.setup.folder': 'Ordner mit Originaldokumenten',
+        'review.setup.drop': 'Ordner hierher ziehen oder klicken',
+        'review.setup.start': 'Review starten',
+        'review.fields.title': 'Felder',
+        'review.nav.prev': 'Zurück',
+        'review.nav.save': 'Speichern',
+        'review.nav.next': 'Weiter',
+        'review.download': 'Aktualisierte Tabelle herunterladen',
+        'review.tip': 'Hinweis: Es wird bei „Speichern“ oder „Weiter“ gesichert.'
+      }
+      
+    };
+    const LANGS = ['fr','en','es','it','de'];
+    const FLAG = { fr:'🇫🇷', en:'🇬🇧', es:'🇪🇸', it:'🇮🇹', de:'🇩🇪' };
+    function t(k){ const L=window.appLang||'fr'; return (I18N[L] && I18N[L][k]) || I18N.fr[k] || k; }
+    function applyTranslations(){
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const key=el.getAttribute('data-i18n'); el.textContent=t(key);
+      });
+      document.title = t('review.title');
+    }
+    function toggleLangMenu(force){
+      const menu = document.getElementById('langMenu');
+      const btn  = document.getElementById('langToggle');
+      const show = (typeof force === 'boolean') ? force : menu.hidden;
+      menu.hidden = !show; btn.setAttribute('aria-expanded', String(show));
+    }
+    function setLang(lang){
+      if(!LANGS.includes(lang)) lang='fr';
+      window.appLang=lang; localStorage.setItem('app_lang', lang);
+      document.documentElement.setAttribute('lang', lang);
+      document.getElementById('langFlag').textContent = FLAG[lang] || '🏳️';
+      applyTranslations();
+    }
+    document.getElementById('langToggle').addEventListener('click', ()=>toggleLangMenu());
+    document.querySelectorAll('.lang-menu .lang-btn').forEach(b=>{
+      b.addEventListener('click', ()=>{ setLang(b.dataset.lang); toggleLangMenu(false); });
+    });
+    document.addEventListener('click', (e)=>{
+      const sw = document.querySelector('.lang-switcher');
+      if (sw && !sw.contains(e.target)) toggleLangMenu(false);
+    });
+    // init
+    setLang(localStorage.getItem('app_lang') || (navigator.language||'fr').slice(0,2));
+
+    // === Review client logic ===
+    const drop = document.getElementById('rv_drop');
+    const inFolder = document.getElementById('rv_folder');
+    const inExcel  = document.getElementById('rv_excel');
+    const btnStart = document.getElementById('rv_start');
+    const statusEl = document.getElementById('rv_status');
+
+    const docTitle = document.getElementById('docTitle');
+    const docIdx   = document.getElementById('docIdx');
+    const frame    = document.getElementById('docFrame');
+    const preTxt   = document.getElementById('docText');
+    const viewer   = document.getElementById('viewer');
+
+    const fieldsWrap = document.getElementById('fields');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnSave = document.getElementById('btnSave');
+    const aDownload = document.getElementById('rv_download');
+
+    let jobId = null;
+    let order = [];          // liste des fichiers (relatifs)
+    let columns = [];        // colonnes éditables
+    let idx = 0;             // index courant
+    let currentFile = null;  // chemin relatif du doc courant
+
+    // Dropzone
+    drop.addEventListener('click', ()=> inFolder.click());
+    ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e=>{
+      inFolder.files = e.dataTransfer.files;
+      drop.textContent = t('review.setup.drop') + ' — ' + inFolder.files.length + ' files';
+    });
+    inFolder.addEventListener('change', ()=>{
+      drop.textContent = t('review.setup.drop') + ' — ' + inFolder.files.length + ' files';
+    });
+
+    async function uploadAndStart(){
+      if (!inExcel.files?.length || !inFolder.files?.length){
+        statusEl.textContent = 'Sélectionne un Excel et un dossier.'; return;
+      }
+      statusEl.textContent = 'Upload…';
+      const fd = new FormData();
+      fd.append('excel', inExcel.files[0]);
+      Array.from(inFolder.files).forEach(f => fd.append('folder', f, f.webkitRelativePath || f.name));
+      const r = await fetch('/api/review/upload', { method:'POST', body: fd });
+      const js = await r.json().catch(()=>({ok:false, error:'bad json'}));
+      if (!js.ok){ statusEl.textContent = js.error || 'Erreur upload'; return; }
+      jobId = js.job_id; order = js.order || []; columns = js.columns || [];
+      idx = 0; aDownload.style.display = 'none';
+      aDownload.href = `/api/review/download?job_id=${encodeURIComponent(jobId)}`;
+      statusEl.textContent = `${order.length} documents chargés.`;
+      if (order.length) await loadDoc(0);
+    }
+
+    async function loadDoc(i){
+      idx = Math.max(0, Math.min(i, order.length-1));
+      currentFile = order[idx];
+      docTitle.textContent = currentFile || '—';
+      docIdx.textContent = `${idx+1} / ${order.length}`;
+
+      // Preview
+      frame.style.display = 'none'; preTxt.style.display = 'none';
+      const p = new URLSearchParams({ job_id: jobId, file: currentFile });
+      const r = await fetch(`/api/review/preview?${p.toString()}`);
+      const js = await r.json();
+      if (js.type === 'embed' && js.url){
+        frame.src = js.url + `?t=${Date.now()}`; frame.style.display = '';
+      } else if (js.type === 'text' && typeof js.text === 'string'){
+        preTxt.textContent = js.text; preTxt.style.display = '';
+      } else {
+        preTxt.textContent = js.msg || 'Aperçu indisponible (fichier téléchargeable).';
+        preTxt.style.display = '';
+      }
+
+      // Fields
+      fieldsWrap.innerHTML = '';
+      const rf = await fetch(`/api/review/fields?${p.toString()}`);
+      const fj = await rf.json();
+      const vals = fj.values || {};
+      const cols = fj.columns || columns;
+      cols.forEach(col=>{
+        const id = `fld_${col}`;
+        const lab = document.createElement('label');
+        lab.innerHTML = `<span>${col}</span><input id="${id}" value="${(vals[col] ?? '')}">`;
+        fieldsWrap.appendChild(lab);
+      });
+    }
+
+    async function saveCurrent(){
+      if (!jobId || !currentFile) return;
+      const values = {};
+      fieldsWrap.querySelectorAll('input').forEach(inEl=>{
+        const label = inEl.closest('label').querySelector('span')?.textContent || '';
+        values[label] = inEl.value;
+      });
+      const body = { job_id: jobId, file: currentFile, values };
+      const r = await fetch('/api/review/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const js = await r.json();
+      return js?.ok;
+    }
+
+    btnStart.addEventListener('click', uploadAndStart);
+    btnPrev.addEventListener('click', async ()=>{ if (idx>0){ await saveCurrent(); loadDoc(idx-1); } });
+    btnNext.addEventListener('click', async ()=>{
+      if (!order.length) return;
+      await saveCurrent();
+      if (idx < order.length-1){
+        loadDoc(idx+1);
+      } else {
+        // finished
+        aDownload.style.display = '';
+      }
+    });
+    btnSave.addEventListener('click', saveCurrent);
+
+    // Affiche le bouton download si la page est rechargée en cours de session
+    if (jobId) aDownload.style.display = '';
+  </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title data-i18n="title">Mode personnalisé — Nettoyage Code</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body class="theme-beige-violet">
+  <div class="container">
+
+    <header class="header header-flex">
+      <h1 data-i18n="title">Mode personnalisé</h1>
+
+<!-- Lang switcher (même composant que les autres pages) -->
+<div class="lang-switch lang-switcher">
+    <button id="langBtn" class="btn small ghost lang-toggle" aria-haspopup="true" aria-expanded="false" title="Language">
+      🌐
+    </button>
+    <div id="langMenu" class="lang-menu" hidden>
+        <button class="lang-btn" data-lang="fr">🇫🇷 FR</button>
+        <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+        <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+        <button class="lang-btn" data-lang="it">🇮🇹 IT</button>
+        <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+      </div>
+  </div>
+    </header>
+
+    <main class="grid-2">
+      <!-- Gauche : Source -->
+      <section class="card">
+        <h2 data-i18n="step1">1) Fichiers</h2>
+        <p class="muted" data-i18n="drop_hint">Dépose un dossier de documents (pdf, docx, txt, images…)</p>
+
+        <div id="drop" class="dropzone">
+          <input id="folder" type="file" webkitdirectory directory multiple hidden>
+          <button class="btn" id="chooseFolder" data-i18n="choose_folder">Choisir un dossier…</button>
+          <p id="dropStatus" class="muted"></p>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3 data-i18n="llm_settings">Réglages LLM</h3>
+        <div class="form-grid">
+          <label class="field">
+            <span data-i18n="model">Modèle</span>
+            <input id="llm_model" value="mistral-medium-2508" />
+          </label>
+          <label class="field">
+            <span data-i18n="api_key">API Key</span>
+            <input id="llm_key" placeholder="MISTRAL_API_KEY" />
+          </label>
+            <input id="llm_seed" type="hidden" value="42" />
+        </div>
+
+        <div class="hr"></div>
+        <button id="btnRunCustom" class="btn primary" data-i18n="run_btn">Lancer avec ce catalogue</button>
+        <pre id="runLog" class="log"></pre>
+      </section>
+
+      <!-- Droite : Catalogue -->
+      <section class="card">
+        <h2 data-i18n="step2">2) Catalogue</h2>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="build" data-i18n="tab_build">Créer</button>
+          <button class="tab" data-tab="import" data-i18n="tab_import">Importer JSON</button>
+        </div>
+
+        <div id="tab_build">
+          <div class="builder">
+            <div class="builder-head">
+              <label>
+                <span data-i18n="cat_lang">Langue du catalogue</span>
+                <select id="cat_lang">
+                  <option value="fr">fr</option>
+                  <option value="en">en</option>
+                  <option value="es">es</option>
+                  <option value="it">it</option>
+                  <option value="de">de</option>
+                </select>
+              </label>
+              <button id="addCat" class="btn small" data-i18n="add_cat">+ Catégorie</button>
+            </div>
+            <div id="cats"></div>
+          </div>
+          <div class="hr"></div>
+          <button id="previewCat" class="btn" data-i18n="preview_json">Prévisualiser JSON</button>
+          <pre id="catPreview" class="log small"></pre>
+        </div>
+
+        <div id="tab_import" hidden>
+          <p class="muted" data-i18n="import_hint">
+            Colle ici un JSON de catalogue compatible (mêmes formes que les fichiers fournis).
+          </p>
+          <textarea id="catJSON" rows="12" class="textarea" placeholder='{"Imagerie":[{"name":"date_doc"}, ...]}'></textarea>
+          <div class="row">
+            <button id="loadCatJSON" class="btn" data-i18n="load_json">Charger</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- FAB Home bas-gauche (même classe que le projet) -->
+  <a href="/" class="home-fab home-fab--icon" title="Home" aria-label="Home"></a>
+
+<script>
+  // -------- I18N 5 langues --------
+  const I18N = {
+    fr: {
+      title:"Mode personnalisé",
+      lang_label:"Langue de l'interface",
+      step1:"1) Fichiers",
+      drop_hint:"Dépose un dossier de documents (pdf, docx, txt, images…)",
+      choose_folder:"Choisir un dossier…",
+      llm_settings:"Réglages LLM",
+      model:"Modèle",
+      api_key:"API Key",
+      seed:"Seed",
+      run_btn:"Lancer avec ce catalogue",
+      step2:"2) Catalogue",
+      tab_build:"Créer",
+      tab_import:"Importer JSON",
+      cat_lang:"Langue du catalogue",
+      add_cat:"+ Catégorie",
+      add_field:"+ Champ",
+      preview_json:"Prévisualiser JSON",
+      import_hint:"Colle ici un JSON de catalogue compatible (mêmes formes que les fichiers fournis).",
+      load_json:"Charger",
+      upload_ing:"Upload…",
+      upload_done:"Dossier chargé. Job: {job}",
+      need_src:"Charge d'abord un dossier de documents.",
+      running:"Exécution…",
+      finished:"Terminé. ",
+      download_excel:"Télécharger le tableur",
+      error:"Erreur",
+      custom_mode:"Mode personnalisé",
+      custom_mode_hint:"Crée/importe ton catalogue et lance la pipeline avec."
+    },
+    en: {
+      title:"Custom mode",
+      lang_label:"Interface language",
+      step1:"1) Files",
+      drop_hint:"Drop a folder of documents (pdf, docx, txt, images…)",
+      choose_folder:"Choose a folder…",
+      llm_settings:"LLM settings",
+      model:"Model",
+      api_key:"API Key",
+      seed:"Seed",
+      run_btn:"Run with this catalog",
+      step2:"2) Catalog",
+      tab_build:"Build",
+      tab_import:"Import JSON",
+      cat_lang:"Catalog language",
+      add_cat:"+ Category",
+      add_field:"+ Field",
+      preview_json:"Preview JSON",
+      import_hint:"Paste a compatible catalog JSON (same shapes as provided files).",
+      load_json:"Load",
+      upload_ing:"Uploading…",
+      upload_done:"Folder uploaded. Job: {job}",
+      need_src:"Please upload a documents folder first.",
+      running:"Running…",
+      finished:"Done. ",
+      download_excel:"Download spreadsheet",
+      error:"Error",
+      custom_mode:"Custom mode",
+      custom_mode_hint:"Create/import your catalog and run the pipeline with it."
+    },
+    es: {
+      title:"Modo personalizado",
+      lang_label:"Idioma de la interfaz",
+      step1:"1) Archivos",
+      drop_hint:"Suelta una carpeta de documentos (pdf, docx, txt, imágenes…)",
+      choose_folder:"Elegir carpeta…",
+      llm_settings:"Ajustes LLM",
+      model:"Modelo",
+      api_key:"API Key",
+      seed:"Seed",
+      run_btn:"Ejecutar con este catálogo",
+      step2:"2) Catálogo",
+      tab_build:"Crear",
+      tab_import:"Importar JSON",
+      cat_lang:"Idioma del catálogo",
+      add_cat:"+ Categoría",
+      add_field:"+ Campo",
+      preview_json:"Previsualizar JSON",
+      import_hint:"Pega un JSON de catálogo compatible (mismas formas que los archivos provistos).",
+      load_json:"Cargar",
+      upload_ing:"Subiendo…",
+      upload_done:"Carpeta cargada. Job: {job}",
+      need_src:"Primero sube una carpeta de documentos.",
+      running:"Ejecutando…",
+      finished:"Listo. ",
+      download_excel:"Descargar hoja de cálculo",
+      error:"Error",
+      custom_mode:"Modo personalizado",
+      custom_mode_hint:"Crea/importa tu catálogo y ejecuta el pipeline con él."
+    },
+    it: {
+      title:"Modalità personalizzata",
+      lang_label:"Lingua dell'interfaccia",
+      step1:"1) File",
+      drop_hint:"Trascina una cartella di documenti (pdf, docx, txt, immagini…)",
+      choose_folder:"Scegli cartella…",
+      llm_settings:"Impostazioni LLM",
+      model:"Modello",
+      api_key:"API Key",
+      seed:"Seed",
+      run_btn:"Esegui con questo catalogo",
+      step2:"2) Catalogo",
+      tab_build:"Crea",
+      tab_import:"Importa JSON",
+      cat_lang:"Lingua del catalogo",
+      add_cat:"+ Categoria",
+      add_field:"+ Campo",
+      preview_json:"Anteprima JSON",
+      import_hint:"Incolla un JSON di catalogo compatibile (stesse forme dei file forniti).",
+      load_json:"Carica",
+      upload_ing:"Caricamento…",
+      upload_done:"Cartella caricata. Job: {job}",
+      need_src:"Carica prima una cartella di documenti.",
+      running:"In esecuzione…",
+      finished:"Fatto. ",
+      download_excel:"Scarica il foglio di calcolo",
+      error:"Errore",
+      custom_mode:"Modalità personalizzata",
+      custom_mode_hint:"Crea/importa il tuo catalogo ed esegui la pipeline."
+    },
+    de: {
+      title:"Benutzerdefinierter Modus",
+      lang_label:"Sprache der Oberfläche",
+      step1:"1) Dateien",
+      drop_hint:"Lege einen Dokumentenordner ab (pdf, docx, txt, Bilder…)",
+      choose_folder:"Ordner wählen…",
+      llm_settings:"LLM-Einstellungen",
+      model:"Modell",
+      api_key:"API-Schlüssel",
+      seed:"Seed",
+      run_btn:"Mit diesem Katalog ausführen",
+      step2:"2) Katalog",
+      tab_build:"Erstellen",
+      tab_import:"JSON importieren",
+      cat_lang:"Katalogsprache",
+      add_cat:"+ Kategorie",
+      add_field:"+ Feld",
+      preview_json:"JSON anzeigen",
+      import_hint:"Füge ein kompatibles Katalog-JSON ein (gleiche Formen wie die bereitgestellten Dateien).",
+      load_json:"Laden",
+      upload_ing:"Upload…",
+      upload_done:"Ordner geladen. Job: {job}",
+      need_src:"Bitte zuerst einen Dokumentenordner laden.",
+      running:"Läuft…",
+      finished:"Fertig. ",
+      download_excel:"Tabelle herunterladen",
+      error:"Fehler",
+      custom_mode:"Benutzerdefinierter Modus",
+      custom_mode_hint:"Katalog erstellen/importieren und Pipeline ausführen."
+    }
+  };
+
+  function t(key) {
+    const lang = (localStorage.getItem('app_lang') || 'fr').slice(0,2);
+    return (I18N[lang] && I18N[lang][key]) || (I18N['fr'][key] || key);
+  }
+  function applyI18N() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      const v = t(k);
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = v;
+      } else {
+        el.textContent = v;
+      }
+    });
+    document.title = t('title') + ' — Nettoyage Code';
+  }
+
+  // --- Lang header + injection 'lang' dans les POST JSON (comme index2)
+  (() => {
+    const origFetch = window.fetch;
+    window.fetch = function(input, init = {}) {
+      const lang = (localStorage.getItem('app_lang') || 'fr').slice(0,2);
+      init = init || {};
+      init.headers = Object.assign({}, init.headers, { 'X-App-Lang': lang });
+      try {
+        const ct = (init.headers['Content-Type'] || init.headers['content-type'] || '').toLowerCase();
+        if (ct.includes('application/json') && typeof init.body === 'string' && init.body.trim().startsWith('{')) {
+          const json = JSON.parse(init.body); json.lang = json.lang || lang; init.body = JSON.stringify(json);
+        }
+      } catch {}
+      return origFetch(input, init);
+    };
+  })();
+
+  // --- State
+  let jobId = null;
+  let srcPath = null;
+
+  // --- Lang init
+
+  applyI18N();
+
+  // --- UI tabs
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(b => b.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab_build').hidden = b.dataset.tab !== 'build';
+    document.getElementById('tab_import').hidden = b.dataset.tab !== 'import';
+  }));
+
+  // --- Upload dossier
+  const folderBtn = document.getElementById('chooseFolder');
+  folderBtn.addEventListener('click', () => document.getElementById('folder').click());
+  document.getElementById('folder').addEventListener('change', async (e) => {
+    const files = [...e.target.files || []];
+    if (!files.length) return;
+    document.getElementById('dropStatus').textContent = t('upload_ing');
+    const fd = new FormData();
+    files.forEach(f => fd.append('files', f, f.webkitRelativePath || f.name));
+    const r = await fetch('/api/source/upload', { method:'POST', body: fd });
+    const js = await r.json();
+    if (!js.ok) { document.getElementById('dropStatus').textContent = t('error'); return; }
+    jobId = js.job_id; srcPath = js.src_path;
+    document.getElementById('dropStatus').textContent = t('upload_done').replace('{job}', jobId);
+  });
+
+  // --- Builder Catalogue
+  const catsDiv = document.getElementById('cats');
+  document.getElementById('addCat').addEventListener('click', () => addCategory());
+
+  function addCategory(name=t('add_cat').replace('+ ','') || "Category") {
+    const wrap = document.createElement('div');
+    wrap.className = 'cat';
+    wrap.innerHTML = `
+      <div class="cat-head">
+        <input class="cat-name" value="${name}"/>
+        <button class="btn small ghost add-field">${t('add_field')}</button>
+        <button class="btn small danger del-cat">×</button>
+      </div>
+      <div class="fields"></div>
+    `;
+    catsDiv.appendChild(wrap);
+    wrap.querySelector('.add-field').addEventListener('click', () => addField(wrap.querySelector('.fields')));
+    wrap.querySelector('.del-cat').addEventListener('click', () => wrap.remove());
+  }
+
+  function addField(container, fname="date_doc", allowed="") {
+    const line = document.createElement('div');
+    line.className = 'field-line';
+    line.innerHTML = `
+      <input class="f-name" placeholder="nom du champ" value="${fname}">
+      <input class="f-allowed" placeholder="valeurs autorisées (séparées par des virgules)" value="${allowed}">
+      <button class="btn small ghost" title="Supprimer">×</button>
+    `;
+    line.querySelector('button').addEventListener('click', () => line.remove());
+    container.appendChild(line);
+  }
+
+  // prérempli
+  addCategory("Imagerie");
+  addField(catsDiv.querySelector('.fields'), "date_doc");
+  addField(catsDiv.querySelector('.fields'), "Examen", "Scanner, IRM, TEP");
+
+  function buildCatalogObject() {
+    const out = {};
+    catsDiv.querySelectorAll('.cat').forEach(cat => {
+      const cname = (cat.querySelector('.cat-name').value || "").trim();
+      if (!cname) return;
+      const fields = [];
+      cat.querySelectorAll('.field-line').forEach(li => {
+        const name = (li.querySelector('.f-name').value || "").trim();
+        const allowed = (li.querySelector('.f-allowed').value || "")
+            .split(",").map(s => s.trim()).filter(Boolean);
+        if (!name) return;
+        const f = {"name": name};
+        if (allowed.length) f["allowed_values"] = allowed;
+        fields.push(f);
+      });
+      out[cname] = fields;
+    });
+    return out;
+  }
+
+  document.getElementById('previewCat').addEventListener('click', () => {
+    const obj = buildCatalogObject();
+    document.getElementById('catPreview').textContent = JSON.stringify(obj, null, 2);
+  });
+
+  // Import JSON
+  document.getElementById('loadCatJSON').addEventListener('click', () => {
+    try {
+      const raw = JSON.parse(document.getElementById('catJSON').value || "{}");
+      catsDiv.innerHTML = "";
+      const byCat = (() => {
+        if (Array.isArray(raw)) {
+          const o = {};
+          raw.forEach(it => {
+            const k = (it && (it.name || it.category)) || "";
+            if (k) o[k] = it.fields || [];
+          });
+          return o;
+        } else if (raw && typeof raw === 'object') {
+          if (Array.isArray(raw.categories)) {
+            const o = {};
+            raw.categories.forEach(it => {
+              const k = (it && (it.name || it.category)) || "";
+              if (k) o[k] = it.fields || [];
+            });
+            return o;
+          }
+          if (raw.fields_catalog && typeof raw.fields_catalog === 'object')
+            return raw.fields_catalog;
+          return raw;
+        }
+        return {};
+      })();
+      for (const [cat, fields] of Object.entries(byCat)) {
+        addCategory(cat);
+        const container = catsDiv.lastElementChild.querySelector('.fields');
+        (fields || []).forEach(f => {
+          const nm = (f && f.name) || "";
+          const av = (f && f.allowed_values) ? f.allowed_values.join(", ") : "";
+          addField(container, nm, av);
+        });
+      }
+      document.querySelector('.tab[data-tab="build"]').click();
+    } catch (e) {
+      alert("JSON invalide / Invalid JSON");
+    }
+  });
+
+  // RUN
+  document.getElementById('btnRunCustom').addEventListener('click', async () => {
+    if (!jobId || !srcPath) { alert(t('need_src')); return; }
+    const model = document.getElementById('llm_model').value.trim();
+    const api_key = document.getElementById('llm_key').value.trim();
+    const seed = parseInt(document.getElementById('llm_seed').value || "42", 10);
+
+    const useBuilder = !document.getElementById('tab_build').hidden;
+    let catalog = null;
+    if (useBuilder) {
+      catalog = buildCatalogObject();
+    } else {
+      try { catalog = JSON.parse(document.getElementById('catJSON').value || "{}"); }
+      catch { alert("Catalogue JSON invalide"); return; }
+    }
+
+    document.getElementById('runLog').textContent = t('running');
+    const r = await fetch("/api/run_catalog", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        job_id: jobId,
+        src_path: srcPath,
+        catalog,
+        opts: { shared: { model, api_key, seed } }
+      })
+    });
+    const js = await r.json();
+    if (!js.ok) {
+      document.getElementById('runLog').textContent =
+        t('error') + ": " + (js.where || "") + "\n" + (js.log || js.error || "");
+      return;
+    }
+    document.getElementById('runLog').innerHTML =
+      `✅ ${t('finished')} <a href="${js.excel}" target="_blank">${t('download_excel')}</a>`;
+  });
+</script>
+
+<script>
+    // --- SAFE-GUARD: ancien select (si pas présent, on n'exécute pas)
+    (function legacyLangSelectCompat(){
+      const langSel = document.getElementById('langSel');
+      if (!langSel) return;
+      langSel.value = (localStorage.getItem('app_lang') || 'fr').slice(0,2);
+      langSel.addEventListener('change', () => {
+        localStorage.setItem('app_lang', langSel.value);
+        if (typeof applyI18N === 'function') applyI18N();
+      });
+    })();
+  
+    // --- SWITCHER ronds avec drapeaux (comme les autres pages)
+    (function initLangSwitcher(){
+      const wrap = document.querySelector('.lang-switcher');
+      const btn  = document.getElementById('langBtn');
+      const menu = document.getElementById('langMenu');
+      if (!wrap || !btn || !menu) return;
+  
+      const FLAGS = { fr:'🇫🇷', en:'🇬🇧', es:'🇪🇸', it:'🇮🇹', de:'🇩🇪' };
+      function currentLang(){ return (localStorage.getItem('app_lang') || 'fr').slice(0,2); }
+      function setBtnFlag(code){ btn.textContent = FLAGS[code] || '🌐'; }
+  
+      function openMenu(){
+        wrap.classList.add('is-open');
+        menu.removeAttribute('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+      function closeMenu(){
+        wrap.classList.remove('is-open');
+        menu.setAttribute('hidden','');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+  
+      // init drapeau
+      setBtnFlag(currentLang());
+  
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = wrap.classList.contains('is-open');
+        open ? closeMenu() : openMenu();
+      });
+  
+      // choix langue
+      menu.addEventListener('click', (e) => {
+        const opt = e.target.closest('.lang-btn');
+        if (!opt) return;
+        const code = opt.dataset.lang;
+        localStorage.setItem('app_lang', code);
+        if (typeof applyI18N === 'function') applyI18N();
+        setBtnFlag(code);
+        closeMenu();
+      });
+  
+      // click-outside pour fermer
+      document.addEventListener('click', () => closeMenu());
+      // ne pas fermer en cliquant DANS le menu
+      menu.addEventListener('click', (e) => e.stopPropagation());
+    })();
+  
+    // --- Header X-App-Lang (garde ton wrapper fetch tel quel)
+  </script>
+  
+
+</body>
+</html>

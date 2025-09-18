@@ -1,0 +1,406 @@
+{
+  "Laboratorio": [
+    {
+      "name": "Nombre del paciente"
+    },
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Hemoglobina"
+    },
+    {
+      "name": "Leucocitos"
+    },
+    {
+      "name": "Neutrófilos"
+    },
+    {
+      "name": "Plaquetas"
+    },
+    {
+      "name": "TFG (CKD-EPI)"
+    },
+    {
+      "name": "Sodio"
+    },
+    {
+      "name": "Potasio"
+    },
+    {
+      "name": "AST (ASAT)"
+    },
+    {
+      "name": "ALT (ALAT)"
+    },
+    {
+      "name": "Fosfatasa alcalina"
+    },
+    {
+      "name": "Bilirrubina total"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Comité de tumores": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Localización"
+    },
+    {
+      "name": "Circunstancias del descubrimiento",
+      "allowed_values": [
+        "cribado",
+        "fortuito",
+        "manifestación clínica",
+        "otro"
+      ]
+    },
+    {
+      "name": "Fecha del descubrimiento"
+    },
+    {
+      "name": "Propuesta terapéutica",
+      "allowed_values": [
+        "cirugía",
+        "quimioterapia",
+        "radioterapia",
+        "cirugía + radioterapia",
+        "otro"
+      ]
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Órgano tumoral",
+      "allowed_values": [
+        "seno",
+        "próstata",
+        "colon",
+        "pulmón",
+        "melanoma",
+        "glioblastoma",
+        "ovario",
+        "cuello uterino",
+        "endometrio",
+        "sarcoma",
+        "otro"
+      ]
+    },
+    {
+      "name": "OMS",
+      "allowed_values": [
+        "OMS 1",
+        "OMS 2",
+        "OMS 3",
+        "OMS 4",
+        "OMS 5"
+      ]
+    },
+    {
+      "name": "Estadio",
+      "allowed_values": [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "NA"
+      ]
+    },
+    {
+      "name": "Tamaño tumoral (T)",
+      "allowed_values": [
+        "Tx",
+        "T0",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "NA"
+      ]
+    },
+    {
+      "name": "Ganglios (N)",
+      "allowed_values": [
+        "N0",
+        "N1",
+        "N2",
+        "N3",
+        "Nx",
+        "NA"
+      ]
+    },
+    {
+      "name": "Metástasis (M)",
+      "allowed_values": [
+        "M0",
+        "M1",
+        "Mx",
+        "NA"
+      ]
+    }
+  ],
+  "Histología": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Órgano tumoral",
+      "allowed_values": [
+        "seno",
+        "próstata",
+        "colon",
+        "pulmón",
+        "melanoma",
+        "glioblastoma",
+        "ovario",
+        "cuello uterino",
+        "endometrio",
+        "sarcoma",
+        "otro"
+      ]
+    },
+    {
+      "name": "Tipo histológico",
+      "allowed_values": [
+        "adenocarcinoma",
+        "carcinoma escamoso",
+        "sarcoma",
+        "Otro",
+        "NA"
+      ]
+    },
+    {
+      "name": "Grado",
+      "allowed_values": [
+        "grade I",
+        "grade II",
+        "grade III",
+        "bajo grado",
+        "grado intermedio",
+        "alto grado",
+        "NA"
+      ]
+    },
+    {
+      "name": "Marcadores"
+    },
+    {
+      "name": "Observaciones"
+    },
+    {
+      "name": "Conclusión"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Prescripción": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Prescriptor"
+    },
+    {
+      "name": "Medicamentos"
+    },
+    {
+      "name": "Duración de las prescripciones"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Hospitalización": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Tipo",
+      "allowed_values": [
+        "hospitalaria",
+        "ambulatoria",
+        "NA"
+      ]
+    },
+    {
+      "name": "Servicio"
+    },
+    {
+      "name": "Número de ciclo"
+    },
+    {
+      "name": "Tipo de cirugía"
+    },
+    {
+      "name": "Protocolo de quimioterapia"
+    },
+    {
+      "name": "Eventos intercurrentes"
+    },
+    {
+      "name": "Estado funcional (OMS/ECOG)"
+    },
+    {
+      "name": "Quimioterapia prescrita"
+    },
+    {
+      "name": "Otros medicamentos"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Cirugía",
+      "allowed_values": [
+        "sí",
+        "no"
+      ]
+    },
+    {
+      "name": "Quimioterapia",
+      "allowed_values": [
+        "sí",
+        "no"
+      ]
+    },
+    {
+      "name": "Radioterapia",
+      "allowed_values": [
+        "sí",
+        "no"
+      ]
+    },
+    {
+      "name": "OMS"
+    }
+  ],
+  "Imagen": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Modalidad de imagen",
+      "allowed_values": [
+        "TAC",
+        "RM",
+        "PET",
+        "ecografía",
+        "gammagrafía",
+        "otro"
+      ]
+    },
+    {
+      "name": "Localización"
+    },
+    {
+      "name": "Resultado"
+    },
+    {
+      "name": "Evolución",
+      "allowed_values": [
+        "sí",
+        "no",
+        "NA"
+      ]
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Sesión de radioterapia": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Localización"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Endoscopia": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Título del procedimiento"
+    },
+    {
+      "name": "Cirujano"
+    },
+    {
+      "name": "id"
+    }
+  ],
+  "Informe operatorio": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Título del procedimiento"
+    },
+    {
+      "name": "Cirujano"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Reprise chirurgicale",
+      "allowed_values": [
+        "sí",
+        "no",
+        "NA"
+      ]
+    }
+  ],
+  "Telemonitorización": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Observaciones"
+    },
+    {
+      "name": "Toxicidad grado 3"
+    },
+    {
+      "name": "Toxicidad grado 4"
+    },
+    {
+      "name": "Conclusiones"
+    },
+    {
+      "name": "id"
+    },
+    {
+      "name": "Conclusions"
+    }
+  ],
+  "Consulta": [
+    {
+      "name": "date_doc"
+    },
+    {
+      "name": "Tipo de consulta (cirugía, oncología médica, radioterapia, especialista de órgano, ...)"
+    },
+    {
+      "name": "Motivo de consulta"
+    },
+    {
+      "name": "Evolución"
+    },
+    {
+      "name": "Conclusión"
+    },
+    {
+      "name": "id"
+    }
+  ]
+}

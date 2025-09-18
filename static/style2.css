@@ -1,0 +1,313 @@
+/* ====== Layout spécifique à index2.html ====== */
+
+/* grille : deux colonnes en haut (upload | médical), frises en plein en bas */
+.layout-2{
+  width: min(1200px, 96vw);
+  margin: 20px auto;
+  display: grid;
+  gap: 16px;
+  grid-template-areas:
+    "upl med"
+    "frises frises";
+  grid-template-columns: 1fr 420px;
+  align-items: start;
+}
+
+.top-left{ grid-area: upl; }
+.top-right{ grid-area: med; }
+.bottom{ grid-area: frises; }
+
+/* Cartes de base : on réutilise .card de style.css, juste de petits espacements */
+.layout-2 .card{ padding: 12px; }
+
+/* Reprise des styles du mode médical existant (grille + progression compacte) */
+#cardMedical2 .med-layout{
+  display: grid;
+  grid-template-columns: 1fr min-content; /* form | progression compacte */
+  gap: 16px;
+  align-items: start;
+}
+#cardMedical2 .med-right .progress-steps{ position: sticky; top: 8px; }
+
+/* Bande de frises horizontales (scrollable) */
+.frises-strip{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(420px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+}
+.frise-slot{
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--surface, #0a1018);  /* sera blanchi par thèmes beige */
+}
+body.theme-beige-green .frise-slot{ background: #ffffff; }
+
+.frise-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.frise-head strong{ font-size: 16px; }
+.frise-head .frise-sub{ font-size: 12px; opacity: .7; }
+
+/* La zone .timeline à l’intérieur de chaque slot : taille “raisonnable” par défaut */
+.frise-slot .timeline{
+  min-height: 160px;  /* adapte selon tes besoins */
+}
+
+/* Dropzone remaniée pour cette page (mêmes classes que style.css) */
+#dropZone2.dropzone{
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(0,0,0,0.05);
+}
+body.theme-beige-green #dropZone2.dropzone{ background: rgba(0,0,0,0.03); }
+#dropZone2.over{ outline: 2px dashed var(--accent); outline-offset: 2px; }
+
+/* Responsive : passe en une colonne en haut lorsque l’espace se réduit */
+@media (max-width: 980px){
+  .layout-2{
+    grid-template-areas:
+      "upl"
+      "med"
+      "frises";
+    grid-template-columns: 1fr;
+  }
+}
+/* espace sous la frise */
+.frise-slot .ind-card { margin-top: 10px; }
+
+/* Panneau indicateurs sous la frise patient */
+.indicators-card { margin-top: 8px; }
+.indicators .indicator-item { display:flex; align-items:center; gap:.5rem; }
+.indicators .swatch { width:12px; height:12px; border-radius:999px; display:inline-block; }
+.indicators .swatch.green{ background:#2ecc71; }
+.indicators .swatch.orange{ background:#f39c12; }
+.indicators .swatch.red{ background:#e74c3c; }
+.indicators .swatch.neutral{ background:#bdc3c7; }
+.ind-flag { display:inline-flex; align-items:center; gap:.25rem; padding:0 .35rem; border-radius:.5rem; }
+.ind-flag .bang{ font-weight:700; }
+/* style2.css */
+.indicators-card{ margin-top:12px; }
+
+/* Petit indicateur à côté de l'ID patient */
+.pid-flag{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px; height:16px; border-radius:999px; margin-left:6px;
+  font-weight:700; font-size:12px; line-height:1; color:#fff;
+  background:#bdc3c7; /* neutral */
+}
+.pid-flag.green{ background:#2ecc71; }
+.pid-flag.orange{ background:#f39c12; }
+.pid-flag.red{ background:#e74c3c; }
+.pid-flag.hidden{ display:none; }
+
+/* panneau des moyennes */
+.indicators-card.avg { margin-top: 12px; }
+.indicators-card.avg .indicator-value[disabled]{ background: #fafafa; opacity:.9; }
+/* --- Sticky footer layout --- */
+html, body { height: 100%; }
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1 0 auto; }        /* pousse le footer en bas */
+.site-footer { flex: 0 0 auto; }
+
+/* --- Footer partenaires --- */
+.site-footer {
+  border-top: 1px solid rgba(0,0,0,.08);
+  background: #fff;              /* adapte à ton thème */
+  padding: 16px 12px;
+}
+
+.footer-gallery {
+  width: min(1200px, 96vw);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  align-items: center;
+  justify-items: center;
+}
+
+.footer-gallery .img-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.footer-gallery img {
+  max-height: 44px;              /* hauteur logo */
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(100%);
+  opacity: .85;
+  transition: filter .2s ease, opacity .2s ease, transform .2s ease;
+}
+
+.footer-gallery .img-link:hover img,
+.footer-gallery .img-link:focus img {
+  filter: none;
+  opacity: 1;
+  transform: translateY(-1px);
+}
+.home-title.landing-title {
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+}
+
+
+.lang-switcher{position:fixed;top:10px;right:10px;z-index:9999}
+.lang-toggle,.lang-menu .lang-btn{
+width:34px;height:34px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+border:2px solid rgba(255,255,255,.6);
+background:var(--lang-bg, rgba(0,0,0,.25));
+cursor:pointer;font-size:18px;line-height:1
+}
+.lang-toggle{box-shadow:0 0 0 2px rgba(255,255,255,.35) inset}
+.lang-menu{
+position:absolute;top:40px;right:0;display:flex;flex-direction:column;gap:8px;
+padding:8px;background:rgba(0,0,0,.25);backdrop-filter:blur(6px);
+border-radius:14px;border:1px solid rgba(255,255,255,.2)
+}
+.lang-menu .lang-btn.active{outline:2px solid #fff}
+
+/* Lang picker : le conteneur ne capte pas les clics, seuls ses enfants oui */
+.lang-switcher { pointer-events: none; }
+.lang-switcher > * { pointer-events: auto; }
+
+
+/* === Footer index2 -> look du mode médical === */
+.site-footer .footer-gallery{
+  width: min(1100px, 95vw);
+  margin: 24px auto 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  /* on laisse le fond au conteneur .site-footer de style2.css */
+}
+
+.site-footer .footer-gallery .img-link{
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border: 1px solid var(--border, #e6e6e6);
+  border-radius: 14px;
+  background: var(--card-bg, #fff);
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.site-footer .footer-gallery .img-link:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  border-color: var(--accent, #8bbf9f);
+}
+
+.site-footer .footer-gallery img{
+  display: block;
+  width: 100%;
+  height: 80px;            /* ajuste 64–120px selon tes logos */
+  object-fit: contain;
+  background: transparent;
+}
+.frise-slot.appear { animation: frise-pop .25s ease-out; }
+@keyframes frise-pop { from {opacity:0; transform:scale(.98)} to {opacity:1; transform:scale(1)} }
+
+/* Dot rouge si tumorectomie */
+.timeline .tl-item.tumo-red::before,
+.timeline .tl-item.tumo-red::after,
+.timeline .tl-item.tumo-red .tl-dot,
+.timeline .tl-item.tumo-red .tl-node{
+  background:#e74c3c !important;
+  border-color:#e74c3c !important;
+}
+/* Petits plus si ton thème colorait autre chose */
+.timeline .tl-item.tumo-red .tl-cat{ border-color:#e74c3c !important; color:#e74c3c !important; }
+.timeline .tl-item.tumo-red .tl-date{ color:#e74c3c; }
+
+/* === Avg indicators + Category breakdown side-by-side === */
+#avgIndicators .avg-grid{
+  display: grid;
+  grid-template-columns: 1.1fr minmax(280px, 0.9fr);
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 900px){
+  #avgIndicators .avg-grid{ grid-template-columns: 1fr; }
+}
+
+#avgIndicators .cat-shares-card{
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--panel, #fff);
+}
+body.theme-beige-green #avgIndicators .cat-shares-card{ background:#fff; }
+
+.cat-share-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+.cat-share-table th{
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.cat-share-table td{ vertical-align: middle; }
+.cat-share-table td.cat{
+  max-width: 220px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cat-share-table td.share{ position: relative; }
+.cat-share-table td.share .bar{
+  height: 8px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent) var(--w,0%), #e6e6e6 var(--w,0%));
+}
+.cat-share-table td.share .pct{
+  font-variant-numeric: tabular-nums;
+  font-size: 12px; margin-left: 8px; opacity: .8;
+}
+.cat-share-table td.count{
+  text-align: right; font-variant-numeric: tabular-nums; opacity: .8;
+}
+
+/* Faire span le bloc du bas sur toute la grille */
+.layout-2 > #avgIndicators{
+  grid-column: 1 / -1;
+}
+
+.med-context{
+  margin-top: 10px;
+}
+.med-context textarea{
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--border,#ddd);
+  border-radius: 8px;
+  background: #fff;
+}
+

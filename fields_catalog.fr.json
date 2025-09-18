@@ -1,0 +1,106 @@
+{
+  "Biologie": [
+    {"name": "id"},
+    {"name": "Nom patient"},
+    {"name": "date_doc"},
+    {"name": "Hémoglobine"},
+    {"name": "Leucocytes"},
+    {"name": "Polynucléaires neutrophiles"},
+    {"name": "Plaquettes"},
+    {"name": "D.F.G. selon la formule de CKD-EPI"},
+    {"name": "Sodium"},
+    {"name": "Potassium"},
+    {"name": "Transaminases ASAT"},
+    {"name": "Transaminases ALAT"},
+    {"name": "Phosphatases alcalines"},
+    {"name": "Bilirubine Totale"}
+  ],
+  "RCP": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Organe de la tumeur primitive", "allowed_values": ["sein", "prostate", "colon", "poumon","mélanome","glioblastome","ovaire","col de l’utérus", "endomètre", "sarcome", "autre"]},
+    {"name": "Circonstances de la découverte", "allowed_values": ["dépistage", "fortuite", "manifestation clinique", "autre"]},
+    {"name": "OMS", "allowed_values": ["OMS 1", "OMS 2", "OMS 3", "OMS 4", "OMS 5"]},
+    {"name": "date_doc de la découverte"},
+    {"name": "Proposition thérapeutique", "allowed_values": ["chirurgie", "chimiothérapie", "radiothérapie","association chirurgie radiothérapie", "autre"]},
+    {"name": "Stade", "allowed_values": ["I", "II", "III","IV","NA"]},
+    {"name": "Taille de la tumeur (T)", "allowed_values": ["Tx", "T0", "T1", "T2","T3","T4","NA"]},
+    {"name": "Ganglion (N)", "allowed_values": ["N0", "N1", "N2", "N3", "Nx", "NA"]},
+    {"name": "Métastase (M)", "allowed_values": ["M0", "M1", "Mx", "NA"]}
+  ],
+  "Histologie": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Organe de la tumeur primitive", "allowed_values": ["sein", "prostate", "colon", "poumon","mélanome","glioblastome","ovaire","col de l’utérus", "endomètre", "sarcome", "autre"]},
+    {"name": "Type histologique", "allowed_values": ["adénocarcinome", "carcinome épidermoide", "sarcome", "Autre", "NA"]},
+    {"name": "Grade","allowed_values": ["grade I", " grade II", " grade III", "bas grade", "grade intermédiaire", "haut grade", "NA"]},
+    {"name": "Marqueurs"},
+    {"name": "Observations"},
+    {"name": "Conclusion"}
+  ],
+  "Ordonnance": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Prescripteur"},
+    {"name": "Médicaments"},
+    {"name": "Durées de prescriptions"}
+  ],
+  "Hospitalisation": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Type", "allowed_values": ["conventionnel", " ambulatoire", "NA"]},
+    {"name": "Service"},
+    {"name": "Numéro de la cure"},
+    {"name": "Chirurgie", "allowed_values": ["oui", "non"]},
+    {"name": "Type de chirurgie"},
+    {"name": "Chimiothérapie", "allowed_values": ["oui", "non"]},
+    {"name": "Protocole de chimiothérapie"},
+    {"name": "Radiothérapie", "allowed_values": ["oui", "non"]},
+    {"name": "Évènements intercurrents"},
+    {"name": "OMS"},
+    {"name": "Chimiothérapie prescrite"},
+    {"name": "Autres médicaments"}
+  ],
+  "Imagerie": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Type d'imagerie", "allowed_values": ["scanner", "IRM", "PET-scan", "échographie", "scintigraphie", "autre"]},
+    {"name": "Localisation"},
+    {"name": "Résultat"},
+    {"name": "Progression", "allowed_values": ["oui", "non", "NA"]}
+  ],
+  "Séance de radiothérapie": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Localisation"}
+  ],
+  "Endoscopie": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Titre de l'intervention"},
+    {"name": "Chirurgien"}
+  ],
+  "Compte rendu opératoire": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Titre de l'intervention"},
+    {"name": "Reprise chirurgicale", "allowed_values": ["oui", "non", "NA"]},
+    {"name": "Chirurgien"}
+  ],
+  "Télésurveillance": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Observations"},
+    {"name": "Toxicité grade 3"},
+    {"name": "Toxicité grade 4"},
+    {"name": "Conclusions"}
+  ],
+  "Consultation": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Type de consultation (chirurgie, oncologie médicale, radiothérapie, spécialiste d'organe,...)"},
+    {"name": "Motif de consultation"},
+    {"name": "Evolution"},
+    {"name": "Conclusion"}
+  ]
+}

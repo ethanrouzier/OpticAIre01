@@ -1,0 +1,106 @@
+{
+  "Laboratorio": [
+    {"name": "id"},
+    {"name": "Nome paziente"},
+    {"name": "date_doc"},
+    {"name": "Emoglobina"},
+    {"name": "Leucociti"},
+    {"name": "Neutrofili"},
+    {"name": "Piastrine"},
+    {"name": "eGFR (CKD-EPI)"},
+    {"name": "Sodio"},
+    {"name": "Potassio"},
+    {"name": "AST (ASAT)"},
+    {"name": "ALT (ALAT)"},
+    {"name": "Fosfatasi alcalina"},
+    {"name": "Bilirubina totale"}
+  ],
+  "Tumor board": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Organo tumorale", "allowed_values": ["Seno", "Prostata", "Colon", "Polmone", "Melanoma", "Glioblastoma", "Ovaio", "Cervice", "Endometrio", "Sarcoma", "altro"]},
+    {"name": "Circostanze della scoperta", "allowed_values": ["screening", "fortuito", "manifestazione clinica", "altro"]},
+    {"name": "OMS", "allowed_values": ["OMS 1", "OMS 2", "OMS 3", "OMS 4", "OMS 5"]},
+    {"name": "Data della scoperta"},
+    {"name": "Proposta terapeutica", "allowed_values": ["Chirurgia", "Chemioterapia", "Radioterapia", "Chirurgia+Radioterapia", "altro"]},
+    {"name": "Stadio", "allowed_values": ["I", "II", "III", "IV", "NA"]},
+    {"name": "Dimensione del tumore (T)", "allowed_values": ["Tx", "T0", "T1", "T2", "T3", "T4", "NA"]},
+    {"name": "Linfonodo (N)", "allowed_values": ["N0", "N1", "N2", "N3", "Nx", "NA"]},
+    {"name": "Metastasi (M)", "allowed_values": ["M0", "M1", "Mx", "NA"]}
+  ],
+  "Istologia": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Organo tumorale", "allowed_values": ["Seno", "Prostata", "Colon", "Polmone", "Melanoma", "Glioblastoma", "Ovaio", "Cervice", "Endometrio", "Sarcoma", "altro"]},
+    {"name": "Tipo istologico", "allowed_values": ["Adenocarcinoma", "Carcinoma squamoso", "Sarcoma", "Altro", "NA"]},
+    {"name": "Grado", "allowed_values": ["Grado I", "Grado II", "Grado III", "basso grado", "grado intermedio", "alto grado", "NA"]},
+    {"name": "Marcatori"},
+    {"name": "Osservazioni"},
+    {"name": "Conclusione"}
+  ],
+  "Prescrizione": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Prescrittore"},
+    {"name": "Farmaci"},
+    {"name": "Durata delle prescrizioni"}
+  ],
+  "Ricovero": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Tipo", "allowed_values": ["ricovero", "ambulatoriale", "NA"]},
+    {"name": "Reparto"},
+    {"name": "Numero del ciclo"},
+    {"name": "Chirurgia", "allowed_values": ["sì", "no"]},
+    {"name": "Tipo di chirurgia"},
+    {"name": "Chemioterapia", "allowed_values": ["sì", "no"]},
+    {"name": "Protocollo di chemioterapia"},
+    {"name": "Radioterapia", "allowed_values": ["sì", "no"]},
+    {"name": "Eventi intercorrenti"},
+    {"name": "OMS"},
+    {"name": "Chemioterapia prescritta"},
+    {"name": "Altri farmaci"}
+  ],
+  "Imaging": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Modalità di imaging", "allowed_values": ["TAC", "RM", "PET", "Ecografia", "Scintigrafia", "altro"]},
+    {"name": "Localizzazione"},
+    {"name": "Risultato"},
+    {"name": "Evoluzione", "allowed_values": ["sì", "no", "NA"]}
+  ],
+  "Seduta di radioterapia": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Localizzazione"}
+  ],
+  "Endoscopia": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Titolo della procedura"},
+    {"name": "Chirurgo"}
+  ],
+  "Referto operatorio": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Titolo della procedura"},
+    {"name": "Reintervento chirurgico", "allowed_values": ["sì", "no", "NA"]},
+    {"name": "Chirurgo"}
+  ],
+  "Telemonitoraggio": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Osservazioni"},
+    {"name": "Tossicità grado 3"},
+    {"name": "Tossicità grado 4"},
+    {"name": "Conclusioni"}
+  ],
+  "Consultazione": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Tipo di visita (chirurgia, oncologia medica, radioterapia, specialista d’organo, ...)"},
+    {"name": "Motivo della visita"},
+    {"name": "Evoluzione"},
+    {"name": "Conclusione"}
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "Labor": [
+    {"name": "id"},
+    {"name": "Patientenname"},
+    {"name": "date_doc"},
+    {"name": "Hämoglobin"},
+    {"name": "Leukozyten"},
+    {"name": "Neutrophile"},
+    {"name": "Thrombozyten"},
+    {"name": "eGFR (CKD-EPI)"},
+    {"name": "Natrium"},
+    {"name": "Kalium"},
+    {"name": "AST (ASAT)"},
+    {"name": "ALT (ALAT)"},
+    {"name": "Alkalische Phosphatase"},
+    {"name": "Gesamtbilirubin"}
+  ],
+  "Tumorboard": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Tumororgan", "allowed_values": ["Brust", "Prostata", "Darm", "Lunge", "Melanom", "Glioblastom", "Ovar", "Gebärmutterhals", "Endometrium", "Sarkom", "anderes"]},
+    {"name": "Umstände der Entdeckung", "allowed_values": ["Screening", "zufällig", "klinische Manifestation", "anderes"]},
+    {"name": "OMS", "allowed_values": ["OMS 1", "OMS 2", "OMS 3", "OMS 4", "OMS 5"]},
+    {"name": "Entdeckungsdatum"},
+    {"name": "Therapievorschlag", "allowed_values": ["Chirurgie", "Chemotherapie", "Strahlentherapie", "Chirurgie+Strahlentherapie", "anderes"]},
+    {"name": "Stadium", "allowed_values": ["I", "II", "III", "IV", "NA"]},
+    {"name": "Tumorgröße (T)", "allowed_values": ["Tx", "T0", "T1", "T2", "T3", "T4", "NA"]},
+    {"name": "Lymphknoten (N)", "allowed_values": ["N0", "N1", "N2", "N3", "Nx", "NA"]},
+    {"name": "Metastasen (M)", "allowed_values": ["M0", "M1", "Mx", "NA"]}
+  ],
+  "Histologie": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Tumororgan", "allowed_values": ["Brust", "Prostata", "Darm", "Lunge", "Melanom", "Glioblastom", "Ovar", "Gebärmutterhals", "Endometrium", "Sarkom", "anderes"]},
+    {"name": "Histologischer Typ", "allowed_values": ["Adenokarzinom", "Plattenepithelkarzinom", "Sarkom", "Anderes", "NA"]},
+    {"name": "Grad", "allowed_values": ["Grad I", "Grad II", "Grad III", "niedriger Grad", "mittlerer Grad", "hoher Grad", "NA"]},
+    {"name": "Marker"},
+    {"name": "Beobachtungen"},
+    {"name": "Schlussfolgerung"}
+  ],
+  "Verordnung": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Verschreiber"},
+    {"name": "Medikamente"},
+    {"name": "Dauer der Verordnungen"}
+  ],
+  "Krankenhausaufenthalt": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Typ", "allowed_values": ["stationär", "ambulant", "NA"]},
+    {"name": "Abteilung"},
+    {"name": "Zyklusnummer"},
+    {"name": "Chirurgie", "allowed_values": ["ja", "nein"]},
+    {"name": "Operationstyp"},
+    {"name": "Chemotherapie", "allowed_values": ["ja", "nein"]},
+    {"name": "Chemotherapieprotokoll"},
+    {"name": "Strahlentherapie", "allowed_values": ["ja", "nein"]},
+    {"name": "Interkurrente Ereignisse"},
+    {"name": "OMS"},
+    {"name": "Verschriebene Chemotherapie"},
+    {"name": "Andere Medikamente"}
+  ],
+  "Bildgebung": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Bildgebungsmodalität", "allowed_values": ["CT", "MRT", "PET", "Ultraschall", "Szintigrafie", "anderes"]},
+    {"name": "Lokalisation"},
+    {"name": "Ergebnis"},
+    {"name": "Verlauf", "allowed_values": ["ja", "nein", "NA"]}
+  ],
+  "Strahlentherapie-Sitzung": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Lokalisation"}
+  ],
+  "Endoskopie": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Bezeichnung des Eingriffs"},
+    {"name": "Chirurg"}
+  ],
+  "OP-Bericht": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Bezeichnung des Eingriffs"},
+    {"name": "Erneute Operation", "allowed_values": ["ja", "nein", "NA"]},
+    {"name": "Chirurg"}
+  ],
+  "Telemonitoring": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Beobachtungen"},
+    {"name": "Toxizität Grad 3"},
+    {"name": "Toxizität Grad 4"},
+    {"name": "Schlussfolgerungen"}
+  ],
+  "Konsultation": [
+    {"name": "id"},
+    {"name": "date_doc"},
+    {"name": "Art der Konsultation (Chirurgie, internistische Onkologie, Strahlentherapie, Organspezialist, ...)"},
+    {"name": "Grund der Konsultation"},
+    {"name": "Verlauf"},
+    {"name": "Schlussfolgerung"}
+  ]
+}
