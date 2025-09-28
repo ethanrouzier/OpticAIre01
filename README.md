@@ -1,25 +1,25 @@
 # OpticAIre01
 
-Application de structuration de données générative pour documents médicaux.
+Generative data structuring application for medical documents.
 
 ## Installation
 
-1. Installer les dépendances :
+1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Lancer l'application :
+2. Launch the application:
 ```bash
 python app.py
 ```
 
-L'application sera accessible sur http://localhost:3000
+The application will be accessible at http://localhost:3000
 
-## Fonctionnalités
+## Features
 
-- Structuration générative de documents médicaux
-- Clustering automatique de documents
-- Extraction de champs structurés
-- Export vers Excel
-- Interface web pour la gestion des données
+- Generative structuring of medical documents
+- Automatic document clustering
+- Structured field extraction
+- Excel export
+- Web interface for data management
